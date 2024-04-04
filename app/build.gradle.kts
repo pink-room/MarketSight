@@ -79,6 +79,9 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation)
 
+    // SPLASH
+    implementation(libs.splash)
+
     // UNIT TEST
     testImplementation(libs.junit)
     testImplementation(libs.junit.api)

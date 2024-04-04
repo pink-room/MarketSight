@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MarketSight.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.MarketSight</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/animation_logo</item>
+        <item name="android:windowSplashScreenAnimationDuration">1500</item>
+    </style>
+</resources>
