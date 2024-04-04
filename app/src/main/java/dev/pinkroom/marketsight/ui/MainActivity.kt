@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight
+package dev.pinkroom.marketsight.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
