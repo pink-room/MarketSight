@@ -31,7 +31,9 @@ class MainActivity : ComponentActivity() {
 
             zoomY.start()
         }
+
         super.onCreate(savedInstanceState)
+
         setContent {
             MarketSightTheme {
                 // A surface container using the 'background' color from the theme
