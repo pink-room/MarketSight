@@ -16,27 +16,26 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = BlackBackground,
+    primary = WoodSmoke,
     onPrimary = White,
     surfaceVariant = Gray,
-    surface = BlackBackground,
+    surface = WoodSmoke,
     onSurfaceVariant = White,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = GrayBackground,
+    primary = GrayAthens,
     onPrimary = Black,
     surfaceVariant = White,
-    surface = GrayBackground,
+    surface = GrayAthens,
     onSurfaceVariant = Black,
 )
 
 @Composable
 fun MarketSightTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
+    dynamicColor: Boolean = false, // Dynamic color is available on Android 12+
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
