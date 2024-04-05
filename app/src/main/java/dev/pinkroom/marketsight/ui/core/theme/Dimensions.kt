@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.ui.theme
+package dev.pinkroom.marketsight.ui.core.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration

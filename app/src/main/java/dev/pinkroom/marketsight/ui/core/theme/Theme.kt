@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.ui.theme
+package dev.pinkroom.marketsight.ui.core.theme
 
 import android.app.Activity
 import android.os.Build
