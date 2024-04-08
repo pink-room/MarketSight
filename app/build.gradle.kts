@@ -1,3 +1,6 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import java.util.Properties
+
 plugins {
     kotlin("kapt")
     alias(libs.plugins.androidApplication)
@@ -19,6 +22,18 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val keystoreFile = project.rootProject.file("local.properties")
+        val properties = Properties()
+        properties.load(keystoreFile.inputStream())
+
+        val alpacaStreamUrl = properties.getProperty("ALPACA_STREAM_URL") ?: ""
+        val alpacaApiId = properties.getProperty("ALPACA_API_ID") ?: ""
+        val alpacaApiSecret = properties.getProperty("ALPACA_API_SECRET") ?: ""
+
+        buildConfigField(type = "String", name = "ALPACA_STREAM_URL", value = alpacaStreamUrl)
+        buildConfigField(type = "String", name = "ALPACA_API_ID", value = alpacaApiId)
+        buildConfigField(type = "String", name = "ALPACA_API_SECRET", value = alpacaApiSecret)
     }
 
     buildTypes {
@@ -39,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
@@ -72,7 +88,10 @@ dependencies {
     implementation(libs.okhttp.interceptor)
 
     // SCARLET
-    implementation(libs.scarlet)
+    implementation(libs.scarlet.core)
+    implementation(libs.scarlet.stream)
+    implementation(libs.scarlet.gson)
+    implementation(libs.scarlet.okhttp)
 
     // DAGGER HILT
     kapt(libs.hilt.compiler)
