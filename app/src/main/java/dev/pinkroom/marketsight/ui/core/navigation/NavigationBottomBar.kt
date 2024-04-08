@@ -26,10 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import dev.pinkroom.marketsight.R
+import dev.pinkroom.marketsight.ui.core.theme.dimens
 
 @Composable
 fun NavigationBottomBar(
@@ -60,11 +60,11 @@ fun NavigationBottomBar(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 25.dp)
-                    .padding(bottom = 15.dp),
-                shape = RoundedCornerShape(10.dp),
+                    .padding(horizontal = dimens.horizontalPadding)
+                    .padding(bottom = dimens.menuBottomPadding),
+                shape = RoundedCornerShape(dimens.smallShape),
                 elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp
+                    defaultElevation = dimens.lowElevation,
                 ),
             ) {
                 NavigationBar(
@@ -101,7 +101,7 @@ fun RowScope.AddItem(
     val icon = if (isThisItemTheCurrentRoute) item.selectedIcon
     else item.unselectedIcon
     val sizeIcon = animateDpAsState(
-        targetValue = if (isThisItemTheCurrentRoute) 38.dp else 24.dp,
+        targetValue = if (isThisItemTheCurrentRoute) dimens.largeIconSize else dimens.normalIconSize,
         animationSpec = tween(
             durationMillis = 200,
         ),
