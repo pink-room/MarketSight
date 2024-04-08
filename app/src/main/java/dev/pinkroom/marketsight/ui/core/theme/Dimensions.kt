@@ -31,6 +31,26 @@ class Dimensions(
     val normalPadding: Dp = 16.dp,
     val largePadding: Dp = 24.dp,
     val xLargePadding: Dp = 32.dp,
+
+    // Icon
+    val normalIconSize: Dp = 24.dp,
+    val largeIconSize: Dp = 38.dp,
+
+    // Elevation
+    val lowElevation: Dp = 2.dp,
+    val normalElevation: Dp = 5.dp,
+    val largeElevation: Dp = 8.dp,
+
+    // Shape
+    val smallShape: Dp = 10.dp,
+    val normalShape: Dp = 15.dp,
+    val largeShape: Dp = 22.dp,
+
+    // Page Padding
+    val horizontalPadding: Dp = 25.dp,
+
+    // Others
+    val menuBottomPadding: Dp = 15.dp,
 )
 
 val dimens: Dimensions
