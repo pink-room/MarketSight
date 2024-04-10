@@ -1,6 +1,6 @@
 package dev.pinkroom.marketsight.data.remote.model.dto
 
-data class MessageErrorDto(
+data class ErrorMessageDto(
     val code: Int,
     val msg: String,
 )

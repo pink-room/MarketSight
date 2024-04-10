@@ -1,15 +1,28 @@
 package dev.pinkroom.marketsight.di
 
+import android.content.Context
+import com.google.gson.Gson
+import com.tinder.scarlet.Lifecycle
 import com.tinder.scarlet.Scarlet
+import com.tinder.scarlet.lifecycle.android.AndroidLifecycle
 import com.tinder.scarlet.messageadapter.gson.GsonMessageAdapter
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.pinkroom.marketsight.BuildConfig
+import dev.pinkroom.marketsight.MarketSightApp
+import dev.pinkroom.marketsight.common.DefaultDispatchers
+import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.FlowStreamAdapterFactory
+import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
+import dev.pinkroom.marketsight.common.addLoggingInterceptor
+import dev.pinkroom.marketsight.data.data_source.AlpacaRemoteDataSource
 import dev.pinkroom.marketsight.data.remote.AlpacaService
+import dev.pinkroom.marketsight.data.repository.NewsRepositoryImp
+import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -26,28 +39,42 @@ object AppModule {
         .connectTimeout(API_TIMEOUT, TimeUnit.SECONDS)
         .readTimeout(API_TIMEOUT, TimeUnit.SECONDS)
         .writeTimeout(API_TIMEOUT, TimeUnit.SECONDS)
-        .addInterceptor { chain ->
-            val original = chain.request()
-
-            // Request customization: add request headers
-            val requestBuilder = original.newBuilder()
-                .addHeader("APCA-API-KEY-ID", BuildConfig.ALPACA_API_ID)
-                .addHeader("APCA-API-SECRET-KEY", BuildConfig.ALPACA_API_SECRET)
-
-            val request = requestBuilder.build()
-            chain.proceed(request)
-        }
+        .addAuthenticationInterceptor()
+        .addLoggingInterceptor()
         .build()
 
     @Provides
     @Singleton
-    fun provideAlpacaNewsService(okHttpClient: OkHttpClient): AlpacaService {
+    fun provideLifeCycle(@ApplicationContext context: Context): Lifecycle = AndroidLifecycle.ofApplicationForeground(
+        context as MarketSightApp
+    )
+
+    @Provides
+    @Singleton
+    fun provideAlpacaNewsService(okHttpClient: OkHttpClient, lifecycle: Lifecycle): AlpacaService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_NEWS))
             .addMessageAdapterFactory(GsonMessageAdapter.Factory())
             .addStreamAdapterFactory(FlowStreamAdapterFactory())
+            //.lifecycle(lifecycle)
             .build()
 
         return scarlet.create(AlpacaService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
+
+    @Provides
+    @Singleton
+    fun provideDispatchers(): DispatcherProvider{
+        return DefaultDispatchers()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsRepository(alpacaRemoteDataSource: AlpacaRemoteDataSource, dispatcherProvider: DispatcherProvider): NewsRepository {
+        return NewsRepositoryImp(remoteDataSource = alpacaRemoteDataSource, dispatchers = dispatcherProvider)
     }
 }

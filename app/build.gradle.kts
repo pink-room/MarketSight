@@ -1,10 +1,11 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import java.util.Properties
 
 plugins {
     kotlin("kapt")
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.hiltAndroid)
+    alias(libs.plugins.jsonSerialization)
 }
 
 android {
@@ -46,6 +47,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -68,6 +70,7 @@ android {
 
 dependencies {
     // CORE
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.ui)
@@ -92,6 +95,8 @@ dependencies {
     implementation(libs.scarlet.stream)
     implementation(libs.scarlet.gson)
     implementation(libs.scarlet.okhttp)
+    implementation(libs.scarlet.lifecycle)
+    implementation(libs.scarlet.moshi)
 
     // DAGGER HILT
     kapt(libs.hilt.compiler)
@@ -100,6 +105,9 @@ dependencies {
 
     // SPLASH
     implementation(libs.splash)
+
+    // JSON
+    implementation(libs.json)
 
     // UNIT TEST
     testImplementation(libs.junit)
