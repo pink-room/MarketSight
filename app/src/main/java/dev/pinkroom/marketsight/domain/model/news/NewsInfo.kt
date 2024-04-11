@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.domain.model
+package dev.pinkroom.marketsight.domain.model.news
 
 import java.time.LocalDateTime
 
@@ -12,4 +12,5 @@ data class NewsInfo(
     val url: String,
     val symbols: List<String>,
     val source: String,
+    val images: List<ImagesNews>? = null,
 )

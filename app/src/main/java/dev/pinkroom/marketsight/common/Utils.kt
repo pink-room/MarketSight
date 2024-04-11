@@ -30,3 +30,8 @@ sealed class ActionAlpaca(val action: String) {
     data object Subscribe: ActionAlpaca(action = "subscribe")
     data object Unsubscribe: ActionAlpaca(action = "unsubscribe")
 }
+
+sealed class SortType(val type: String){
+    data object DESC: SortType(type = "desc")
+    data object ASC: SortType(type = "asc")
+}

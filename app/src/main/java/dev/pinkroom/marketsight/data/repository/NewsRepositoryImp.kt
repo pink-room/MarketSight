@@ -3,8 +3,10 @@ package dev.pinkroom.marketsight.data.repository
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
+import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.data.data_source.AlpacaRemoteDataSource
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
+import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -40,4 +42,18 @@ class NewsRepositoryImp @Inject constructor(
             }
         }
     }.flowOn(dispatchers.IO).single()
+
+    override suspend fun getNews(
+        symbols: List<String>?,
+        limit: Int?,
+        pageToken: String?,
+        sort: SortType?
+    ): Resource<NewsResponse> {
+        return remoteDataSource.getNews(
+            symbols = symbols,
+            limit = limit,
+            pageToken = pageToken,
+            sort = sort,
+        )
+    }
 }

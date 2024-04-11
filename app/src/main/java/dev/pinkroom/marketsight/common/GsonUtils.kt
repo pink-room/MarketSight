@@ -1,8 +1,8 @@
 package dev.pinkroom.marketsight.common
 
 import com.google.gson.Gson
-import dev.pinkroom.marketsight.data.remote.model.dto.ErrorMessageDto
-import dev.pinkroom.marketsight.data.remote.model.dto.TypeMessageDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorMessageDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.TypeMessageDto
 
 fun <T> Gson.toJsonValue(value: Any?, classOfT: Class<T>): T = fromJson(toJson(value), classOfT)
 

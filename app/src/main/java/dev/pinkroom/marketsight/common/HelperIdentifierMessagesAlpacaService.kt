@@ -1,8 +1,8 @@
 package dev.pinkroom.marketsight.common
 
-import dev.pinkroom.marketsight.data.remote.model.dto.ErrorMessageDto
-import dev.pinkroom.marketsight.data.remote.model.dto.NewsMessageDto
-import dev.pinkroom.marketsight.data.remote.model.dto.SubscriptionMessageDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorMessageDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 
 sealed class HelperIdentifierMessagesAlpacaService<T>(
     val identifier: String,

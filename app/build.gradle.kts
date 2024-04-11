@@ -29,10 +29,12 @@ android {
         properties.load(keystoreFile.inputStream())
 
         val alpacaStreamUrl = properties.getProperty("ALPACA_STREAM_URL") ?: ""
+        val alpacaDataUrl = properties.getProperty("ALPACA_DATA_URL") ?: ""
         val alpacaApiId = properties.getProperty("ALPACA_API_ID") ?: ""
         val alpacaApiSecret = properties.getProperty("ALPACA_API_SECRET") ?: ""
 
         buildConfigField(type = "String", name = "ALPACA_STREAM_URL", value = alpacaStreamUrl)
+        buildConfigField(type = "String", name = "ALPACA_DATA_URL", value = alpacaDataUrl)
         buildConfigField(type = "String", name = "ALPACA_API_ID", value = alpacaApiId)
         buildConfigField(type = "String", name = "ALPACA_API_SECRET", value = alpacaApiSecret)
     }
@@ -70,7 +72,7 @@ android {
 
 dependencies {
     // CORE
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring(libs.androidx.desugar)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.ui)

@@ -1,9 +1,8 @@
-package dev.pinkroom.marketsight.data.remote.model.dto
+package dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api
 
 import com.google.gson.annotations.SerializedName
 
-
-data class NewsMessageDto(
+data class NewsDto(
     val id: Long,
     val headline: String,
     val summary: String,
@@ -11,7 +10,7 @@ data class NewsMessageDto(
     @SerializedName("created_at") val createdAt: String,
     @SerializedName("updated_at") val updatedAt: String,
     val url: String,
-    val content: String,
     val symbols: List<String> = emptyList(),
     val source: String,
+    val images: List<ImagesNewsDto> = emptyList(),
 )

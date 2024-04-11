@@ -20,10 +20,14 @@ import dev.pinkroom.marketsight.common.FlowStreamAdapterFactory
 import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
 import dev.pinkroom.marketsight.common.addLoggingInterceptor
 import dev.pinkroom.marketsight.data.data_source.AlpacaRemoteDataSource
-import dev.pinkroom.marketsight.data.remote.AlpacaService
+import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
+import dev.pinkroom.marketsight.data.remote.AlpacaNewsService
 import dev.pinkroom.marketsight.data.repository.NewsRepositoryImp
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -51,7 +55,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlpacaNewsService(okHttpClient: OkHttpClient, lifecycle: Lifecycle): AlpacaService {
+    fun provideAlpacaNewsService(okHttpClient: OkHttpClient, lifecycle: Lifecycle): AlpacaNewsService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_NEWS))
             .addMessageAdapterFactory(GsonMessageAdapter.Factory())
@@ -59,7 +63,18 @@ object AppModule {
             //.lifecycle(lifecycle)
             .build()
 
-        return scarlet.create(AlpacaService::class.java)
+        return scarlet.create(AlpacaNewsService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlpacaNewsApi(okHttpClient: OkHttpClient): AlpacaNewsApi {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.ALPACA_DATA_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create()
     }
 
     @Provides

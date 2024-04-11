@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.domain.model
+package dev.pinkroom.marketsight.domain.model.common
 
 data class SubscriptionMessage(
     val news: List<String>? = null,

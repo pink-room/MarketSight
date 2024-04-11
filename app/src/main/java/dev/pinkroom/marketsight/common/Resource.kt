@@ -1,6 +1,6 @@
 package dev.pinkroom.marketsight.common
 
-import dev.pinkroom.marketsight.domain.model.ErrorMessage
+import dev.pinkroom.marketsight.domain.model.common.ErrorMessage
 
 sealed class Resource<T>{
     data class Success<T>(val data: T): Resource<T>()
