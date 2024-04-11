@@ -15,7 +15,7 @@ hiltVersion = "2.51.1"
 hiltNavigationVersion = "1.2.0"
 splashVersion = "1.0.1"
 jsonVersion = "1.6.0"
-jsonPluginVersion = "1.9.23"
+desugarVersion = "2.0.4"
 
 [libraries]
 
@@ -26,6 +26,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview"}
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarVersion" }
 
 # COMPOSE
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
