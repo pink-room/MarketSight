@@ -113,7 +113,10 @@ dependencies {
 
     // UNIT TEST
     testImplementation(libs.junit)
-    testImplementation(libs.junit.api)
+    testImplementation(libs.mockk.android)
+    testImplementation(libs.mockk.agent)
+    testImplementation(libs.coroutine.test)
+    testImplementation(libs.assertk)
 
     // END-TO-END TEST
     androidTestImplementation(libs.androidx.junit)

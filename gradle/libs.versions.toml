@@ -2,7 +2,6 @@
 agp = "8.3.1"
 kotlin = "1.9.22"
 coreKtx = "1.12.0"
-junit = "5.10.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
 lifecycleRuntimeKtx = "2.7.0"
@@ -16,6 +15,10 @@ hiltNavigationVersion = "1.2.0"
 splashVersion = "1.0.1"
 jsonVersion = "1.6.0"
 desugarVersion = "2.0.4"
+junit4 = "4.13.2"
+mockkVersion = "1.13.10"
+coroutineVersion = "1.8.0"
+assertkVersion = "0.28.0"
 
 [libraries]
 
@@ -39,7 +42,6 @@ retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", ver
 # JSON
 json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "jsonVersion" }
 
-
 # OkHTTP
 okhttp-core = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okHttpVersion" }
 okhttp-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okHttpVersion" }
@@ -61,8 +63,15 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.r
 splash = { group = "androidx.core", name = "core-splashscreen", version.ref= "splashVersion" }
 
 # UNIT TEST
-junit = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
-junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
+junit = { group = "junit", name = "junit", version.ref = "junit4" }
+coroutine-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutineVersion" }
+
+# ASSERTK
+assertk = { group = "com.willowtreeapps.assertk", name = "assertk", version.ref = "assertkVersion"}
+
+# MOCKK
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockkVersion" }
+mockk-agent = { group = "io.mockk", name = "mockk-agent", version.ref = "mockkVersion" }
 
 # END-TO-END TEST
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
