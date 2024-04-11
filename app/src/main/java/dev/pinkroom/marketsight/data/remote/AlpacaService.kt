@@ -11,7 +11,7 @@ interface AlpacaService {
     fun observeOnConnectionEvent(): Flow<WebSocket.Event>
 
     @Send
-    fun sendSubscribe(message: MessageAlpacaService)
+    fun sendMessage(message: MessageAlpacaService)
 
     @Receive
     fun observeResponse(): Flow<List<Any>>

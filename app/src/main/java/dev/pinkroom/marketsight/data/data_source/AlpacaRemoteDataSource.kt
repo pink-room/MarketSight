@@ -16,9 +16,7 @@ import dev.pinkroom.marketsight.data.mapper.toSubscriptionMessage
 import dev.pinkroom.marketsight.data.remote.AlpacaService
 import dev.pinkroom.marketsight.data.remote.model.dto.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
-import dev.pinkroom.marketsight.domain.model.NewsInfo
 import dev.pinkroom.marketsight.domain.model.SubscriptionMessage
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.take
@@ -29,11 +27,11 @@ class AlpacaRemoteDataSource @Inject constructor(
     private val alpacaService: AlpacaService,
     private val dispatchers: DispatcherProvider,
 ) {
-    fun subscribeNews(symbols: List<String> = listOf("*")): Flow<Resource<WebSocket.Event>> = flow<Resource<WebSocket.Event>> {
+    fun subscribeNews(symbols: List<String> = listOf("*")) = flow<Resource<WebSocket.Event>> {
         alpacaService.observeOnConnectionEvent().collect{
             when(it){
                 is WebSocket.Event.OnConnectionOpened<*> -> {
-                    alpacaService.sendSubscribe(message = MessageAlpacaService(action = ActionAlpaca.Subscribe.action, news = symbols))
+                    alpacaService.sendMessage(message = MessageAlpacaService(action = ActionAlpaca.Subscribe.action, news = symbols))
                 }
                 is WebSocket.Event.OnMessageReceived -> {
                     Log.d(TAG,"Received: ${it.message}")
@@ -53,21 +51,20 @@ class AlpacaRemoteDataSource @Inject constructor(
         }
     }.flowOn(dispatchers.IO)
 
-    fun getRealTimeNews(): Flow<Resource<List<NewsInfo>>> = flow {
+    fun getRealTimeNews() = flow {
         alpacaService.observeResponse().collect{ data ->
-            Log.d("TESTE","AQUI SEMPRE")
             val listNews = mutableListOf<NewsMessageDto>()
             data.forEach {
                 gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.News)?.let { news ->
                     listNews.add(news)
                 }
             }
-            emit(Resource.Success(listNews.map { it.toNewsInfo() }))
+            if (listNews.isNotEmpty()) emit(listNews.map { it.toNewsInfo() })
         }
     }.flowOn(dispatchers.IO)
 
-    fun sendMessageToAlpacaService(message: MessageAlpacaService): Flow<Resource<SubscriptionMessage>> = flow<Resource<SubscriptionMessage>> {
-        alpacaService.sendSubscribe(message = message)
+    fun sendMessageToAlpacaService(message: MessageAlpacaService) = flow<Resource<SubscriptionMessage>> {
+        alpacaService.sendMessage(message = message)
         alpacaService.observeResponse().collect { data ->
             data.forEach {
                 gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.Subscription)?.let { sub ->
