@@ -5,6 +5,8 @@ import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
+import dev.pinkroom.marketsight.data.mapper.toNewsInfo
+import dev.pinkroom.marketsight.data.mapper.toNewsResponse
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
@@ -25,7 +27,7 @@ class NewsRepositoryImp @Inject constructor(
 
     override fun getRealTimeNews() = flow {
         newsRemoteDataSource.getRealTimeNews().collect{
-            emit(it)
+            emit(it.map { item -> item.toNewsInfo() })
         }
     }.flowOn(dispatchers.IO)
 
@@ -49,11 +51,17 @@ class NewsRepositoryImp @Inject constructor(
         pageToken: String?,
         sort: SortType?
     ): Resource<NewsResponse> {
-        return newsRemoteDataSource.getNews(
-            symbols = symbols,
-            limit = limit,
-            pageToken = pageToken,
-            sort = sort,
-        )
+        return try {
+            val response = newsRemoteDataSource.getNews(
+                symbols = symbols,
+                limit = limit,
+                pageToken = pageToken,
+                sort = sort,
+            )
+            Resource.Success(data = response.toNewsResponse())
+        } catch (e: Exception){
+            e.printStackTrace()
+            Resource.Error(message = e.message ?: "Something Went Wrong")
+        }
     }
 }

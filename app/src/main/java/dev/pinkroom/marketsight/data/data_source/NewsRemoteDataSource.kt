@@ -12,15 +12,12 @@ import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.common.toObject
 import dev.pinkroom.marketsight.common.verifyIfIsError
 import dev.pinkroom.marketsight.data.mapper.toErrorMessage
-import dev.pinkroom.marketsight.data.mapper.toNewsInfo
-import dev.pinkroom.marketsight.data.mapper.toNewsResponse
-import dev.pinkroom.marketsight.data.mapper.toSubscriptionMessage
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsService
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
-import dev.pinkroom.marketsight.domain.model.common.SubscriptionMessage
-import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.take
@@ -64,16 +61,16 @@ class NewsRemoteDataSource @Inject constructor(
                     listNews.add(news)
                 }
             }
-            if (listNews.isNotEmpty()) emit(listNews.map { it.toNewsInfo() })
+            if (listNews.isNotEmpty()) emit(listNews.toList())
         }
     }.flowOn(dispatchers.IO)
 
-    fun sendSubscribeMessageToAlpacaService(message: MessageAlpacaService) = flow<Resource<SubscriptionMessage>> {
+    fun sendSubscribeMessageToAlpacaService(message: MessageAlpacaService) = flow<Resource<SubscriptionMessageDto>> {
         alpacaNewsService.sendMessage(message = message)
         alpacaNewsService.observeResponse().collect { data ->
             data.forEach {
                 gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.Subscription)?.let { sub ->
-                    emit(Resource.Success(sub.toSubscriptionMessage()))
+                    emit(Resource.Success(sub))
                 } ?: run {
                     emit(Resource.Error(message = "Something went wrong on subscribe"))
                 }
@@ -86,19 +83,13 @@ class NewsRemoteDataSource @Inject constructor(
         limit: Int?,
         pageToken: String?,
         sort: SortType?
-    ): Resource<NewsResponse>{
-        return try {
-            val response = alpacaNewsApi.getNews(
-                symbols = symbols?.joinToString(","),
-                perPage = limit,
-                pageToken = pageToken,
-                sort = sort?.type,
-            )
-            Resource.Success(data = response.toNewsResponse())
-        } catch (e: Exception){
-            e.printStackTrace()
-            Resource.Error(message = e.message ?: "Something Went Wrong")
-        }
+    ): NewsResponseDto {
+        return alpacaNewsApi.getNews(
+            symbols = symbols?.joinToString(","),
+            perPage = limit,
+            pageToken = pageToken,
+            sort = sort?.type,
+        )
     }
 
     companion object {

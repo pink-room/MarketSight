@@ -91,7 +91,7 @@ class NewsRemoteDataSourceTest {
     }
 
     @Test
-    fun `When receive message on getRealTimeNews, then try to parse Json to NewsInfo class`() = runTest {
+    fun `When receive message on getRealTimeNews, then try to parse Json to NewsInfoDto class`() = runTest {
         // GIVEN
         val listNews = newsFactory.buildList()
         mockNewsServiceWithSuccess(newsList = listNews)
@@ -137,34 +137,7 @@ class NewsRemoteDataSourceTest {
                 sort = sort.type,
             )
         }
-        assertThat(response is Resource.Success).isTrue()
-        val data = response as Resource.Success
-        assertThat(data.data.news.size).isEqualTo(limit)
-    }
-
-    @Test
-    fun `Given params, then alpaca api throw error on call getNews`() = runTest {
-        // GIVEN
-        mockNewsResponseApiWithError()
-
-        // WHEN
-        val response = alpacaRemoteDataSource.getNews(
-            symbols = null,
-            limit = null,
-            pageToken = null,
-            sort = null
-        )
-
-        // THEN
-        coVerify {
-            alpacaNewsApi.getNews(
-                symbols = any(),
-                pageToken = any(),
-                sort = any(),
-                perPage = any(),
-            )
-        }
-        assertThat(response is Resource.Error).isTrue()
+        assertThat(response.news.size).isEqualTo(limit)
     }
 
     @Test
@@ -192,17 +165,6 @@ class NewsRemoteDataSourceTest {
         // THEN
         verify { alpacaNewsService.observeResponse() }
         assertThat(response is Resource.Error).isTrue()
-    }
-
-    private fun mockNewsResponseApiWithError() {
-        coEvery { alpacaNewsApi.getNews(
-            symbols = any(),
-            perPage = any(),
-            pageToken = any(),
-            sort = any(),
-        ) }.throws(
-            Exception("Test Error")
-        )
     }
 
     private fun mockNewsResponseApiWithSuccess(limit: Int) {
