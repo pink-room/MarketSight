@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
-class AlpacaRemoteDataSource @Inject constructor(
+class NewsRemoteDataSource @Inject constructor(
     private val gson: Gson,
     private val alpacaNewsService: AlpacaNewsService,
     private val alpacaNewsApi: AlpacaNewsApi,
@@ -68,7 +68,7 @@ class AlpacaRemoteDataSource @Inject constructor(
         }
     }.flowOn(dispatchers.IO)
 
-    fun sendMessageToAlpacaService(message: MessageAlpacaService) = flow<Resource<SubscriptionMessage>> {
+    fun sendSubscribeMessageToAlpacaService(message: MessageAlpacaService) = flow<Resource<SubscriptionMessage>> {
         alpacaNewsService.sendMessage(message = message)
         alpacaNewsService.observeResponse().collect { data ->
             data.forEach {

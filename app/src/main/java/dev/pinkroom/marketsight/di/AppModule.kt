@@ -19,7 +19,7 @@ import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.FlowStreamAdapterFactory
 import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
 import dev.pinkroom.marketsight.common.addLoggingInterceptor
-import dev.pinkroom.marketsight.data.data_source.AlpacaRemoteDataSource
+import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsService
 import dev.pinkroom.marketsight.data.repository.NewsRepositoryImp
@@ -89,7 +89,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNewsRepository(alpacaRemoteDataSource: AlpacaRemoteDataSource, dispatcherProvider: DispatcherProvider): NewsRepository {
-        return NewsRepositoryImp(remoteDataSource = alpacaRemoteDataSource, dispatchers = dispatcherProvider)
+    fun provideNewsRepository(newsRemoteDataSource: NewsRemoteDataSource, dispatcherProvider: DispatcherProvider): NewsRepository {
+        return NewsRepositoryImp(newsRemoteDataSource = newsRemoteDataSource, dispatchers = dispatcherProvider)
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 
 data class NewsMessageDto(
+    @SerializedName("T") val type: String,
     val id: Long,
     val headline: String,
     val summary: String,

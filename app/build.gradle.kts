@@ -117,6 +117,7 @@ dependencies {
     testImplementation(libs.mockk.agent)
     testImplementation(libs.coroutine.test)
     testImplementation(libs.assertk)
+    testImplementation(libs.faker)
 
     // END-TO-END TEST
     androidTestImplementation(libs.androidx.junit)
