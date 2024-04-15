@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.ui.theme
+package dev.pinkroom.marketsight.ui.core.theme
 
 import android.app.Activity
 import android.os.Build
@@ -21,6 +21,8 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = Gray,
     surface = WoodSmoke,
     onSurfaceVariant = White,
+    background = WoodSmoke,
+    onBackground = White,
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -29,6 +31,8 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = White,
     surface = GrayAthens,
     onSurfaceVariant = Black,
+    background = GrayAthens,
+    onBackground = Black,
 )
 
 @Composable
