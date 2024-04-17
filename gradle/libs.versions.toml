@@ -20,12 +20,14 @@ mockkVersion = "1.13.10"
 coroutineVersion = "1.8.0"
 assertkVersion = "0.28.0"
 fakerVersion = "1.0.2"
+coilVersion = "2.6.0"
 
 [libraries]
 
 # CORE
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview"}
@@ -62,6 +64,9 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.r
 
 # SPLASH
 splash = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashVersion" }
+
+# COIL
+coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilVersion" }
 
 # UNIT TEST
 junit = { group = "junit", name = "junit", version.ref = "junit4" }

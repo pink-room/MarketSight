@@ -34,7 +34,7 @@ import dev.pinkroom.marketsight.ui.core.theme.dimens
 @Composable
 fun NavigationBottomBar(
     navController: NavHostController,
-    startDestination: Route.HomeScreen,
+    startDestination: Route,
 ){
     val items = listOf(
         BottomBarItem.Home,

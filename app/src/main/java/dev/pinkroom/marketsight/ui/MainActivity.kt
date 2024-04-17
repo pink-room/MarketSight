@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val startDestination = Route.HomeScreen
+            val startDestination = Route.NewsScreen
 
             MarketSightTheme {
                 Surface(

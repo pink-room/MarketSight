@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.pinkroom.marketsight.domain.model.news.ImageSize
 
 class Dimensions(
     // Text
@@ -38,8 +39,8 @@ class Dimensions(
 
     // Elevation
     val lowElevation: Dp = 2.dp,
-    val normalElevation: Dp = 5.dp,
-    val largeElevation: Dp = 8.dp,
+    val normalElevation: Dp = 9.dp,
+    val largeElevation: Dp = 12.dp,
 
     // Shape
     val smallShape: Dp = 10.dp,
@@ -48,9 +49,14 @@ class Dimensions(
 
     // Page Padding
     val horizontalPadding: Dp = 25.dp,
+    val contentTopPadding: Dp = 10.dp,
+    val contentBottomPadding: Dp = 40.dp,
 
     // Others
     val menuBottomPadding: Dp = 15.dp,
+    val imageSizeMainNews: ImageSize = ImageSize.Small,
+    val circlePageIndicatorSize: Dp = 9.dp,
+    val spaceBetweenPageIndicator: Dp = 2.dp,
 )
 
 val dimens: Dimensions
@@ -64,6 +70,12 @@ val dimens: Dimensions
     }
 
 // Here you will override the dimensions needed depending on the screen size
-private val smallDimensions = Dimensions()
-private val normalDimensions = Dimensions()
-private val largeDimensions = Dimensions()
+private val smallDimensions = Dimensions(
+    imageSizeMainNews = ImageSize.Small,
+)
+private val normalDimensions = Dimensions(
+    imageSizeMainNews = ImageSize.Small,
+)
+private val largeDimensions = Dimensions(
+    imageSizeMainNews = ImageSize.Large,
+)

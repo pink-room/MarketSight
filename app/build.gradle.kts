@@ -75,6 +75,7 @@ dependencies {
     coreLibraryDesugaring(libs.androidx.desugar)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
@@ -107,6 +108,9 @@ dependencies {
 
     // SPLASH
     implementation(libs.splash)
+
+    // COIL
+    implementation(libs.coil)
 
     // JSON
     implementation(libs.json)

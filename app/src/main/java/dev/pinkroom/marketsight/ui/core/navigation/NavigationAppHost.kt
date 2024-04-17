@@ -3,6 +3,7 @@ package dev.pinkroom.marketsight.ui.core.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,6 +14,7 @@ import dev.pinkroom.marketsight.ui.detail_screen.DetailScreen
 import dev.pinkroom.marketsight.ui.home_screen.HomeScreen
 import dev.pinkroom.marketsight.ui.home_screen.HomeViewModel
 import dev.pinkroom.marketsight.ui.news_screen.NewsScreen
+import dev.pinkroom.marketsight.ui.news_screen.NewsViewModel
 
 @Composable
 fun NavigationAppHost(
@@ -34,7 +36,14 @@ fun NavigationAppHost(
         composable(
             route = Route.NewsScreen.route,
         ) {
-            NewsScreen()
+            val viewModel = hiltViewModel<NewsViewModel>()
+            val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+
+            NewsScreen(
+                news = uiState.news,
+                realTimeNews = uiState.realTimeNews,
+                symbols = uiState.symbols,
+            )
         }
         composable(
             route = Route.DetailScreen.route,
