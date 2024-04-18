@@ -1,5 +1,6 @@
 package dev.pinkroom.marketsight.ui.news_screen.components
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import dev.pinkroom.marketsight.common.Constants
 import dev.pinkroom.marketsight.ui.core.theme.PhilippineGray
 import dev.pinkroom.marketsight.ui.core.theme.PhilippineSilver
 import dev.pinkroom.marketsight.ui.core.theme.dimens
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun IndicatorPageCarousel(
     pagerState: PagerState,
+    changePage: (currentPage: Int) -> Unit,
 ){
     val scope = rememberCoroutineScope()
     val interactionSource = remember { MutableInteractionSource() }
@@ -50,10 +53,17 @@ fun IndicatorPageCarousel(
                         indication = null,
                         interactionSource = interactionSource,
                         onClick = {
-                            if (pagerState.currentPage != iteration)
+                            if (pagerState.currentPage != iteration) {
                                 scope.launch {
-                                    pagerState.animateScrollToPage(page = iteration)
+                                    pagerState.animateScrollToPage(
+                                        page = iteration,
+                                        animationSpec = tween(
+                                            durationMillis = Constants.ANIM_TIME_CAROUSEL
+                                        )
+                                    )
                                 }
+                                changePage(iteration)
+                            }
                         }
                     ),
             )

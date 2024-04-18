@@ -41,8 +41,12 @@ fun NavigationAppHost(
 
             NewsScreen(
                 news = uiState.news,
+                mainNews = uiState.mainNews,
                 realTimeNews = uiState.realTimeNews,
                 symbols = uiState.symbols,
+                isLoading = uiState.isLoading,
+                errorMessage = uiState.errorMessage,
+                onEvent = viewModel::onEvent
             )
         }
         composable(

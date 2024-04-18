@@ -16,23 +16,25 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = WoodSmoke,
+    primary = Gray,
     onPrimary = White,
     surfaceVariant = Gray,
     surface = WoodSmoke,
     onSurfaceVariant = White,
     background = WoodSmoke,
     onBackground = White,
+    tertiaryContainer = Gray,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = GrayAthens,
+    primary = White,
     onPrimary = Black,
     surfaceVariant = White,
     surface = GrayAthens,
     onSurfaceVariant = Black,
     background = GrayAthens,
     onBackground = Black,
+    tertiaryContainer = Black,
 )
 
 @Composable
@@ -53,8 +55,8 @@ fun MarketSightTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            window.navigationBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = colorScheme.background.toArgb()
+            window.navigationBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

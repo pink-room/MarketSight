@@ -5,29 +5,34 @@ import android.net.Uri
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import dev.pinkroom.marketsight.domain.model.news.ImageSize
 import dev.pinkroom.marketsight.domain.model.news.ImagesNews
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.ui.core.theme.dimens
+import dev.pinkroom.marketsight.ui.news_screen.components.EmptyNewsList
 import dev.pinkroom.marketsight.ui.news_screen.components.MainNews
 import java.time.LocalDateTime
 
 @Composable
 fun NewsScreen(
     modifier: Modifier = Modifier,
+    mainNews: List<NewsInfo>,
     news: List<NewsInfo>,
     realTimeNews: List<NewsInfo>,
     symbols: List<SubInfoSymbols>,
+    isLoading: Boolean,
+    errorMessage: Int? = null,
+    onEvent: (event: NewsEvent) -> Unit,
 ){
     val context = LocalContext.current
-    
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),
@@ -36,19 +41,28 @@ fun NewsScreen(
             bottom = dimens.contentBottomPadding,
         )
     ) {
-        item {
-            MainNews(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = dimens.horizontalPadding,
-                    ),
-                newsList = news,
-                onNewsClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.url))
-                    context.startActivity(intent)
-                }
-            )
+        if (!isLoading && news.isEmpty()){
+            item {
+                EmptyNewsList(
+                    modifier = Modifier
+                        .fillParentMaxSize(),
+                    errorMessage = errorMessage ?: R.string.get_news_error_message,
+                    onEvent = onEvent,
+                )
+            }
+        } else {
+            item {
+                MainNews(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    newsList = mainNews,
+                    isLoading = isLoading,
+                    onNewsClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.url))
+                        context.startActivity(intent)
+                    }
+                )
+            }
         }
     }
 }
@@ -60,7 +74,8 @@ fun NewsScreen(
 @Composable
 fun NewsScreenPreview(){
     NewsScreen(
-        news = listOf(
+        news = listOf(),
+        mainNews = listOf(
             NewsInfo(
                 id = 1L,
                 symbols = listOf("TSLA","AAPL","BTC"),
@@ -79,7 +94,7 @@ fun NewsScreenPreview(){
                 headline = "Market Clubhouse Morning Memo - April 11th, 2024 (Trade Strategy For SPY, QQQ, AAPL, MSFT, NVDA, GOOGL, META, And TSLA)",
             ),
             NewsInfo(
-                id = 1L,
+                id = 2L,
                 symbols = listOf("TSLA","AAPL","BTC"),
                 images = listOf(
                     ImagesNews(
@@ -118,5 +133,8 @@ fun NewsScreenPreview(){
                 name = "APPLE", symbol = "AAPL",
             ),
         ),
+        isLoading = true,
+        errorMessage = R.string.get_news_error_message,
+        onEvent = {},
     )
 }

@@ -21,12 +21,16 @@ data class NewsInfo(
 ){
     fun getImageUrl(imageSize: ImageSize) = images?.find { it.size == imageSize }?.url
 
-    fun getUpdatedDateFormatted(): String{
+    fun getUpdatedDateFormatted(): String {
         val formatter = DateTimeFormatter
                 .ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)
                 .withLocale(Locale.getDefault())
                 .withZone(ZoneId.systemDefault())
 
         return updatedAt.format(formatter)
+    }
+
+    fun getAllSymbols(): String {
+        return symbols.joinToString(separator = ", ")
     }
 }

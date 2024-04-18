@@ -34,7 +34,6 @@ class ChangeFilterNews @Inject constructor(
                 is Resource.Error -> {
                     symbolsToRevert.addAll(subscribeSymbols)
                 }
-                else -> Unit
             }
         }
 

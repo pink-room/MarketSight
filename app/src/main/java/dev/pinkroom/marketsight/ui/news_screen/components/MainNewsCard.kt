@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -115,19 +116,30 @@ fun MainNewsCard(
             ) {
                 Text(
                     text = news.headline,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                     color = White,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = news.getUpdatedDateFormatted(),
-                    fontWeight = FontWeight.Bold,
-                    color = White,
-                    textAlign = TextAlign.Start,
-                )
+                Row {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = news.getUpdatedDateFormatted(),
+                        color = White,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Start,
+                    )
+                    Text(
+                        modifier = Modifier.weight(0.8f),
+                        textAlign = TextAlign.End,
+                        text = news.getAllSymbols(),
+                        fontWeight = FontWeight.Bold,
+                        color = White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }

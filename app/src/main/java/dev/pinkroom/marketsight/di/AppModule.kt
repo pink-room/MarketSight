@@ -14,9 +14,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.pinkroom.marketsight.BuildConfig
 import dev.pinkroom.marketsight.MarketSightApp
+import dev.pinkroom.marketsight.common.ConnectivityObserver
 import dev.pinkroom.marketsight.common.DefaultDispatchers
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.FlowStreamAdapterFactory
+import dev.pinkroom.marketsight.common.NetworkConnectivityObserver
 import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
 import dev.pinkroom.marketsight.common.addLoggingInterceptor
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
@@ -83,7 +85,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDispatchers(): DispatcherProvider{
+    fun provideDispatchers(): DispatcherProvider {
         return DefaultDispatchers()
     }
 
@@ -92,4 +94,9 @@ object AppModule {
     fun provideNewsRepository(newsRemoteDataSource: NewsRemoteDataSource, dispatcherProvider: DispatcherProvider): NewsRepository {
         return NewsRepositoryImp(newsRemoteDataSource = newsRemoteDataSource, dispatchers = dispatcherProvider)
     }
+
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(@ApplicationContext context: Context): ConnectivityObserver =
+        NetworkConnectivityObserver(context = context)
 }

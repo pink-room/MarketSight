@@ -17,7 +17,7 @@ class Dimensions(
     val headlineMedium: TextUnit = 28.sp,
     val headlineSmall: TextUnit = 24.sp,
     val titleLarge: TextUnit = 22.sp,
-    val titleMedium: TextUnit = 16.sp,
+    val titleMedium: TextUnit = 19.sp,
     val titleSmall: TextUnit = 14.sp,
     val bodyLarge: TextUnit = 16.sp,
     val bodyMedium: TextUnit = 14.sp,

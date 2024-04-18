@@ -40,7 +40,6 @@ class NewsRepositoryImp @Inject constructor(
             when(response){
                 is Resource.Error -> emit(Resource.Error(data = symbols))
                 is Resource.Success -> emit(Resource.Success(data = response.data.news ?: symbols))
-                else -> Unit
             }
         }
     }.flowOn(dispatchers.IO).single()

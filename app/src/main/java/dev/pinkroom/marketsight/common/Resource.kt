@@ -9,5 +9,4 @@ sealed class Resource<T>{
         val errorInfo: ErrorMessage? = null,
         val data: T? = null
     ): Resource<T>()
-    data class Loading<T>(val isLoading: Boolean=true): Resource<T>()
 }
