@@ -31,6 +31,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -38,13 +39,29 @@ import javax.inject.Singleton
 object AppModule {
 
     private const val ALPACA_STREAM_URL_NEWS = BuildConfig.ALPACA_STREAM_URL + "v1beta1/news"
-    private const val API_TIMEOUT = 60L
+    private const val API_TIMEOUT_WS = 30L
+    private const val API_TIMEOUT_API = 10L
+    private const val OK_HTTP_WS = "okHttpWS"
+    private const val OK_HTTP_API = "okHttpAPI"
+
     @Provides
     @Singleton
-    fun provideOkHttpClient() = OkHttpClient.Builder()
-        .connectTimeout(API_TIMEOUT, TimeUnit.SECONDS)
-        .readTimeout(API_TIMEOUT, TimeUnit.SECONDS)
-        .writeTimeout(API_TIMEOUT, TimeUnit.SECONDS)
+    @Named(OK_HTTP_WS)
+    fun provideOkHttpClientWS() = OkHttpClient.Builder()
+        .connectTimeout(API_TIMEOUT_WS, TimeUnit.SECONDS)
+        .readTimeout(API_TIMEOUT_WS, TimeUnit.SECONDS)
+        .writeTimeout(API_TIMEOUT_WS, TimeUnit.SECONDS)
+        .addAuthenticationInterceptor()
+        .addLoggingInterceptor()
+        .build()
+
+    @Provides
+    @Singleton
+    @Named(OK_HTTP_API)
+    fun provideOkHttpClientAPI() = OkHttpClient.Builder()
+        .connectTimeout(API_TIMEOUT_API, TimeUnit.SECONDS)
+        .readTimeout(API_TIMEOUT_API, TimeUnit.SECONDS)
+        .writeTimeout(API_TIMEOUT_API, TimeUnit.SECONDS)
         .addAuthenticationInterceptor()
         .addLoggingInterceptor()
         .build()
@@ -57,7 +74,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlpacaNewsService(okHttpClient: OkHttpClient, lifecycle: Lifecycle): AlpacaNewsService {
+    fun provideAlpacaNewsService(
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: Lifecycle
+    ): AlpacaNewsService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_NEWS))
             .addMessageAdapterFactory(GsonMessageAdapter.Factory())
@@ -70,7 +89,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlpacaNewsApi(okHttpClient: OkHttpClient): AlpacaNewsApi {
+    fun provideAlpacaNewsApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaNewsApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.ALPACA_DATA_URL)
             .addConverterFactory(GsonConverterFactory.create())

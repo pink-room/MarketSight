@@ -17,13 +17,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.ui.core.theme.dimens
-import dev.pinkroom.marketsight.ui.news_screen.NewsEvent
 
 @Composable
 fun EmptyNewsList(
     modifier: Modifier = Modifier,
     errorMessage: Int,
-    onEvent: (event: NewsEvent) -> Unit,
+    onRetry: () -> Unit,
 ){
     Column(
         modifier = modifier
@@ -43,7 +42,7 @@ fun EmptyNewsList(
         )
         Spacer(modifier = Modifier.height(dimens.normalPadding))
         Button(
-            onClick = { onEvent(NewsEvent.RetryNews) }
+            onClick = onRetry
         ) {
             Text(
                 text = stringResource(id = R.string.retry)

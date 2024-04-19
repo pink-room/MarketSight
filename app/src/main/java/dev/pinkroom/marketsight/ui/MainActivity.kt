@@ -6,7 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
@@ -15,6 +19,7 @@ import dev.pinkroom.marketsight.ui.core.navigation.NavigationAppHost
 import dev.pinkroom.marketsight.ui.core.navigation.NavigationBottomBar
 import dev.pinkroom.marketsight.ui.core.navigation.Route
 import dev.pinkroom.marketsight.ui.core.theme.MarketSightTheme
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -25,13 +30,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val startDestination = Route.NewsScreen
-
+            val snackBarHostState = remember { SnackbarHostState() }
+            val scope = rememberCoroutineScope()
             MarketSightTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
+                        snackbarHost = {
+                            SnackbarHost(hostState = snackBarHostState)
+                        },
                         bottomBar = {
                             NavigationBottomBar(
                                 navController = navController,
@@ -43,6 +52,16 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(padding),
                             navController = navController,
                             startDestination = startDestination,
+                            onShowSnackBar = { message, duration ->
+                                scope.launch {
+                                    snackBarHostState.currentSnackbarData?.dismiss()
+                                    snackBarHostState.showSnackbar(
+                                        message = message,
+                                        duration = duration,
+                                        withDismissAction = true,
+                                    )
+                                }
+                            }
                         )
                     }
                 }

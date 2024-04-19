@@ -57,6 +57,8 @@ class Dimensions(
     val imageSizeMainNews: ImageSize = ImageSize.Small,
     val circlePageIndicatorSize: Dp = 9.dp,
     val spaceBetweenPageIndicator: Dp = 2.dp,
+    val newsCard: Dp = 120.dp,
+    val menuHeight: Dp = 100.dp
 )
 
 val dimens: Dimensions
@@ -71,6 +73,9 @@ val dimens: Dimensions
 
 // Here you will override the dimensions needed depending on the screen size
 private val smallDimensions = Dimensions(
+    largeIconSize = 24.dp,
+    normalIconSize = 15.dp,
+    menuHeight = 70.dp,
     imageSizeMainNews = ImageSize.Small,
 )
 private val normalDimensions = Dimensions(

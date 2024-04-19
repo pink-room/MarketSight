@@ -6,6 +6,7 @@ import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 
 data class NewsUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     @DrawableRes val errorMessage: Int? = null,
     val mainNews: List<NewsInfo> = listOf(),
     val news: List<NewsInfo> = listOf(),

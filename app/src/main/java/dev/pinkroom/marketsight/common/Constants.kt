@@ -1,5 +1,6 @@
 package dev.pinkroom.marketsight.common
 
 object Constants {
-    val ANIM_TIME_CAROUSEL = 700
+    const val ANIM_TIME_CAROUSEL = 700
+    const val MAX_ITEMS_CAROUSEL = 5
 }

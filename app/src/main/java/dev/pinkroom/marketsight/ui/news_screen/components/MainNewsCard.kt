@@ -1,6 +1,5 @@
 package dev.pinkroom.marketsight.ui.news_screen.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,16 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
-import coil.compose.SubcomposeAsyncImage
-import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.domain.model.news.ImageSize
 import dev.pinkroom.marketsight.domain.model.news.ImagesNews
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
@@ -41,7 +36,6 @@ import dev.pinkroom.marketsight.domain.model.news.getAspectRatio
 import dev.pinkroom.marketsight.ui.core.theme.Black
 import dev.pinkroom.marketsight.ui.core.theme.White
 import dev.pinkroom.marketsight.ui.core.theme.dimens
-import dev.pinkroom.marketsight.ui.core.theme.shimmerEffect
 import java.time.LocalDateTime
 
 @Composable
@@ -66,32 +60,10 @@ fun MainNewsCard(
                 onClick = { onClick(news) }
             ),
     ) {
-        SubcomposeAsyncImage(
-            model = news.getImageUrl(imageSize = dimens.imageSizeMainNews),
-            contentDescription = null,
-            error = {
-                val imageToLoad = when (dimens.imageSizeMainNews) {
-                    ImageSize.Large -> R.drawable.default_news_large
-                    ImageSize.Small -> R.drawable.default_news_small
-                    ImageSize.Thumb -> R.drawable.default_news_thumb
-                }
-                Image(
-                    painter = painterResource(id = imageToLoad),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                )
-            },
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .shimmerEffect()
-                )
-            },
-            contentScale = ContentScale.Crop,
+        ImageNews(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
+            url = news.getImageUrl(imageSize = dimens.imageSizeMainNews),
         )
         Box(
             modifier = Modifier

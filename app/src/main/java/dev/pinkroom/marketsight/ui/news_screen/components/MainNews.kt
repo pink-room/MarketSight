@@ -49,7 +49,7 @@ fun MainNews(
 
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     var currentPageKey by remember { mutableIntStateOf(pagerState.currentPage) }
-    if (isDragged.not() && newsList.isNotEmpty()) {
+    if (isDragged.not() && newsList.isNotEmpty() && !isLoading) {
         with(pagerState) {
             LaunchedEffect(key1 = currentPageKey) {
                 launch {
