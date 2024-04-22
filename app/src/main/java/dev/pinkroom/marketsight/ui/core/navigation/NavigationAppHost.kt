@@ -59,6 +59,7 @@ fun NavigationAppHost(
                 realTimeNews = uiState.realTimeNews,
                 symbols = uiState.symbols,
                 isLoading = uiState.isLoading,
+                isLoadingMoreNews = uiState.isLoadingMoreItems,
                 isRefreshing = uiState.isRefreshing,
                 errorMessage = uiState.errorMessage,
                 onEvent = viewModel::onEvent

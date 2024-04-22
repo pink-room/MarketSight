@@ -1,7 +1,6 @@
 package dev.pinkroom.marketsight.ui.news_screen.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +22,6 @@ import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.ui.core.theme.dimens
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun RealTimeNews(
     modifier: Modifier = Modifier,

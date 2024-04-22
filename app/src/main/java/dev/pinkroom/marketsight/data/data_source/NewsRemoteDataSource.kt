@@ -70,10 +70,10 @@ class NewsRemoteDataSource @Inject constructor(
     }.flowOn(dispatchers.IO).take(1)
 
     suspend fun getNews(
-        symbols: List<String>?,
+        symbols: List<String>? = null,
         limit: Int? = Constants.LIMIT_NEWS,
         pageToken: String?,
-        sort: SortType?
+        sort: SortType? = null
     ): NewsResponseDto {
         return alpacaNewsApi.getNews(
             symbols = symbols?.joinToString(","),

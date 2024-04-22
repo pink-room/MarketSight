@@ -26,47 +26,22 @@ import dev.pinkroom.marketsight.ui.core.theme.shimmerEffect
 fun LazyListScope.AllNews(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
+    isLoadingMoreNews: Boolean,
     news: List<NewsInfo>,
     navigateToNews: (newsInfo: NewsInfo) -> Unit,
 ){
     if (isLoading)
-        items(3){
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height(dimens.newsCard)
-                    .padding(horizontal = dimens.horizontalPadding, vertical = dimens.smallPadding),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .shadow(
-                            elevation = dimens.normalElevation,
-                            shape = RoundedCornerShape(size = dimens.normalShape)
-                        )
-                        .weight(0.5f)
-                        .fillMaxSize()
-                        .shimmerEffect()
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = dimens.smallPadding)
-                        .fillMaxHeight()
-                        .shimmerEffect()
-                )
-            }
-        }
+        LoadingNews()
     else {
         item {
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = dimens.horizontalPadding),
-                text = stringResource(id = R.string.latest_news),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
+            if (news.isNotEmpty())
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = dimens.horizontalPadding),
+                    text = stringResource(id = R.string.latest_news),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
         }
         items(news) { item ->
             AllNewsCard(
@@ -76,6 +51,41 @@ fun LazyListScope.AllNews(
                     .padding(horizontal = dimens.horizontalPadding, vertical = dimens.smallPadding),
                 news = item,
                 onNewsClick = navigateToNews
+            )
+        }
+        if (isLoadingMoreNews)
+            LoadingNews()
+    }
+}
+
+fun LazyListScope.LoadingNews(
+    modifier: Modifier = Modifier,
+){
+    items(3){
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(dimens.newsCard)
+                .padding(horizontal = dimens.horizontalPadding, vertical = dimens.smallPadding),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .shadow(
+                        elevation = dimens.normalElevation,
+                        shape = RoundedCornerShape(size = dimens.normalShape)
+                    )
+                    .weight(0.5f)
+                    .fillMaxSize()
+                    .shimmerEffect()
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = dimens.smallPadding)
+                    .fillMaxHeight()
+                    .shimmerEffect()
             )
         }
     }

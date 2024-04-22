@@ -10,6 +10,9 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Available
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Unavailable
+import dev.pinkroom.marketsight.common.paginator.DefaultPagination
+import dev.pinkroom.marketsight.domain.model.common.PaginationInfo
+import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNews
@@ -37,6 +40,31 @@ class NewsViewModel @Inject constructor(
     private val _action = Channel<NewsAction>()
     val action = _action.receiveAsFlow()
 
+    private var paginationInfo = PaginationInfo()
+    private val pagination = DefaultPagination<String, NewsResponse>(
+        initialKey = null,
+        onLoadUpdated = { isLoading ->
+            paginationInfo = paginationInfo.copy(isLoading = isLoading)
+            _uiState.update { it.copy(isLoadingMoreItems = isLoading) }
+        },
+        onRequest = { nextPage ->
+            getNews(pageToken = nextPage)
+        },
+        getNextKey = {
+            it.nextPageToken
+        },
+        onError = {
+            _action.send(NewsAction.ShowSnackBar(message = R.string.get_news_error_message))
+        },
+        onSuccess = { data, newKey ->
+            paginationInfo = paginationInfo.copy(
+                endReached = newKey == null,
+                page = newKey
+            )
+            _uiState.update { it.copy(news = it.news + data.news) }
+        }
+    )
+
     private var initNewsJob: Job? = null
     private var connectionStatus = Unavailable
 
@@ -50,6 +78,7 @@ class NewsViewModel @Inject constructor(
         when(event){
             NewsEvent.RetryNews -> retryToGetNews()
             NewsEvent.RefreshNews -> refreshNews()
+            NewsEvent.LoadMoreNews -> loadMoreNews()
         }
     }
 
@@ -73,6 +102,8 @@ class NewsViewModel @Inject constructor(
                     val mainNews = allNews.take(maxNumberNews)
                     val remainingNews = if (maxNumberNews == allNews.size) mainNews
                     else allNews.drop(maxNumberNews)
+
+                    pagination.reset(key = response.data.nextPageToken)
                     _uiState.update {
                         it.copy(
                             news = remainingNews, mainNews = mainNews,
@@ -105,6 +136,12 @@ class NewsViewModel @Inject constructor(
         if (initNewsJob == null){
             _uiState.update { it.copy(isRefreshing = true) }
             initNews()
+        }
+    }
+
+    private fun loadMoreNews(){
+        viewModelScope.launch(dispatchers.IO) {
+            if (!paginationInfo.isLoading) pagination.loadNextItems()
         }
     }
 

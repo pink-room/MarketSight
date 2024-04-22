@@ -6,16 +6,23 @@ import android.net.Uri
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import dev.pinkroom.marketsight.R
+import dev.pinkroom.marketsight.common.Constants.BUFFER_LIST
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import dev.pinkroom.marketsight.domain.model.news.ImageSize
 import dev.pinkroom.marketsight.domain.model.news.ImagesNews
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.ui.core.components.PullToRefreshLazyColumn
+import dev.pinkroom.marketsight.ui.core.components.reachedBottom
 import dev.pinkroom.marketsight.ui.core.theme.dimens
 import dev.pinkroom.marketsight.ui.news_screen.components.AllNews
 import dev.pinkroom.marketsight.ui.news_screen.components.EmptyNewsList
@@ -31,11 +38,20 @@ fun NewsScreen(
     realTimeNews: List<NewsInfo>,
     symbols: List<SubInfoSymbols>,
     isLoading: Boolean,
+    isLoadingMoreNews: Boolean,
     isRefreshing: Boolean,
     errorMessage: Int? = null,
     onEvent: (event: NewsEvent) -> Unit,
 ){
     val context = LocalContext.current
+
+    val listState = rememberLazyListState()
+    val reachedBottom: Boolean by remember {
+        derivedStateOf { listState.reachedBottom(buffer = BUFFER_LIST) }
+    }
+    LaunchedEffect(reachedBottom) {
+        if (reachedBottom && !isLoading && !isLoadingMoreNews) onEvent(NewsEvent.LoadMoreNews)
+    }
 
     PullToRefreshLazyColumn(
         modifier = modifier
@@ -51,13 +67,14 @@ fun NewsScreen(
         onRefresh = {
             onEvent(NewsEvent.RefreshNews)
         },
+        lazyListState = listState,
     ) {
         if (!isLoading && errorMessage != null && news.isEmpty()){
             item {
                 EmptyNewsList(
                     modifier = Modifier
                         .fillParentMaxSize(),
-                    errorMessage = errorMessage,
+                    message = errorMessage,
                     onRetry = {
                         onEvent(NewsEvent.RetryNews)
                     },
@@ -86,9 +103,19 @@ fun NewsScreen(
                     }
                 )
             }
+            if (news.isEmpty() && !isLoading)
+                item {
+                    EmptyNewsList(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillParentMaxHeight(dimens.emptyContentMaxHeight),
+                        message = R.string.empty_news,
+                    )
+                }
             AllNews(
                 news = news,
                 isLoading = isLoading,
+                isLoadingMoreNews = isLoadingMoreNews,
                 navigateToNews = {
                     context.navigateToNews(newsInfo = it)
                 }
@@ -216,6 +243,7 @@ fun NewsScreenPreview(){
             ),
         ),
         isLoading = false,
+        isLoadingMoreNews = false,
         errorMessage = R.string.get_news_error_message,
         isRefreshing = false,
         onEvent = {},

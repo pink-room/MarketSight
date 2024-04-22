@@ -79,7 +79,7 @@ fun MainNews(
                 .aspectRatio(dimens.imageSizeMainNews.getAspectRatio())
                 .shimmerEffect()
         )
-    } else {
+    } else if (newsList.isNotEmpty()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth(),

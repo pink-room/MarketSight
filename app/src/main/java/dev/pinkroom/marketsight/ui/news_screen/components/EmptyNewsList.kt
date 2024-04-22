@@ -21,8 +21,8 @@ import dev.pinkroom.marketsight.ui.core.theme.dimens
 @Composable
 fun EmptyNewsList(
     modifier: Modifier = Modifier,
-    errorMessage: Int,
-    onRetry: () -> Unit,
+    message: Int,
+    onRetry: (() -> Unit)? = null,
 ){
     Column(
         modifier = modifier
@@ -37,16 +37,18 @@ fun EmptyNewsList(
         )
         Spacer(modifier = Modifier.height(dimens.smallPadding))
         Text(
-            text = stringResource(id = errorMessage),
+            text = stringResource(id = message),
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(dimens.normalPadding))
-        Button(
-            onClick = onRetry
-        ) {
-            Text(
-                text = stringResource(id = R.string.retry)
-            )
+        if (onRetry != null) {
+            Button(
+                onClick = onRetry
+            ) {
+                Text(
+                    text = stringResource(id = R.string.retry)
+                )
+            }
         }
     }
 }
