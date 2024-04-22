@@ -58,7 +58,9 @@ class Dimensions(
     val circlePageIndicatorSize: Dp = 9.dp,
     val spaceBetweenPageIndicator: Dp = 2.dp,
     val newsCard: Dp = 120.dp,
-    val menuHeight: Dp = 100.dp
+    val menuHeight: Dp = 100.dp,
+    val liveNewsCardWidth: Dp = 270.dp,
+    val liveNewsCardHeight: Dp = 100.dp,
 )
 
 val dimens: Dimensions

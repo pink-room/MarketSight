@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.common
+package dev.pinkroom.marketsight.common.connection_network
 
 import kotlinx.coroutines.flow.Flow
 

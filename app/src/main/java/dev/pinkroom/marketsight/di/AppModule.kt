@@ -14,13 +14,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.pinkroom.marketsight.BuildConfig
 import dev.pinkroom.marketsight.MarketSightApp
-import dev.pinkroom.marketsight.common.ConnectivityObserver
 import dev.pinkroom.marketsight.common.DefaultDispatchers
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.FlowStreamAdapterFactory
-import dev.pinkroom.marketsight.common.NetworkConnectivityObserver
 import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
 import dev.pinkroom.marketsight.common.addLoggingInterceptor
+import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
+import dev.pinkroom.marketsight.common.connection_network.NetworkConnectivityObserver
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsService

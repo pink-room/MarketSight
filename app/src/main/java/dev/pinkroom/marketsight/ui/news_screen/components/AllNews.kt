@@ -11,9 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.ui.core.theme.dimens
 import dev.pinkroom.marketsight.ui.core.theme.shimmerEffect
@@ -53,8 +58,17 @@ fun LazyListScope.AllNews(
                 )
             }
         }
-    else
-        items(news){ item ->
+    else {
+        item {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = dimens.horizontalPadding),
+                text = stringResource(id = R.string.latest_news),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        items(news) { item ->
             AllNewsCard(
                 modifier = modifier
                     .fillMaxWidth()
@@ -64,4 +78,5 @@ fun LazyListScope.AllNews(
                 onNewsClick = navigateToNews
             )
         }
+    }
 }

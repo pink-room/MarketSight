@@ -4,16 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.pinkroom.marketsight.R
-import dev.pinkroom.marketsight.common.ConnectivityObserver
-import dev.pinkroom.marketsight.common.ConnectivityObserver.Status.Available
-import dev.pinkroom.marketsight.common.ConnectivityObserver.Status.Unavailable
 import dev.pinkroom.marketsight.common.Constants.MAX_ITEMS_CAROUSEL
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
+import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
+import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Available
+import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Unavailable
 import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNews
-import dev.pinkroom.marketsight.domain.use_case.news.SubscribeNews
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +25,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val subscribeNews: SubscribeNews,
     private val getRealTimeNews: GetRealTimeNews,
     private val getNews: GetNews,
     private val changeFilterNews: ChangeFilterNews,
@@ -45,6 +43,7 @@ class NewsViewModel @Inject constructor(
     init {
         observeNetworkStatus()
         initNews()
+        fetchRealTimeNews()
     }
 
     fun onEvent(event: NewsEvent){
@@ -106,6 +105,14 @@ class NewsViewModel @Inject constructor(
         if (initNewsJob == null){
             _uiState.update { it.copy(isRefreshing = true) }
             initNews()
+        }
+    }
+
+    private fun fetchRealTimeNews() {
+        viewModelScope.launch(dispatchers.IO) {
+            getRealTimeNews().collect{ news ->
+                _uiState.update { it.copy(realTimeNews = it.realTimeNews + news) }
+            }
         }
     }
 }

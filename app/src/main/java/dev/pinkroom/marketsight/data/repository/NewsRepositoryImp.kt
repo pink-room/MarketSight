@@ -19,11 +19,6 @@ class NewsRepositoryImp @Inject constructor(
     private val newsRemoteDataSource: NewsRemoteDataSource,
     private val dispatchers: DispatcherProvider,
 ): NewsRepository {
-    override fun subscribeNews(symbols: List<String>) = flow {
-        newsRemoteDataSource.subscribeNews(symbols = symbols).collect{
-            emit(it)
-        }
-    }.flowOn(dispatchers.IO)
 
     override fun getRealTimeNews() = flow {
         newsRemoteDataSource.getRealTimeNews().collect{

@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.common
+package dev.pinkroom.marketsight.common.connection_network
 
 import android.content.Context
 import android.net.ConnectivityManager

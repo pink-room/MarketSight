@@ -109,6 +109,10 @@ dependencies {
     // SPLASH
     implementation(libs.splash)
 
+    // PAGING
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
+
     // COIL
     implementation(libs.coil)
 
