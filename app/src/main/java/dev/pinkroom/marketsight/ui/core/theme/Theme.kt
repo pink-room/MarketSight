@@ -24,6 +24,7 @@ private val DarkColorScheme = darkColorScheme(
     background = WoodSmoke,
     onBackground = White,
     tertiaryContainer = Gray,
+    outline = GrayAthens,
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -35,6 +36,7 @@ private val LightColorScheme = lightColorScheme(
     background = GrayAthens,
     onBackground = Black,
     tertiaryContainer = Black,
+    outline = Manatee,
 )
 
 @Composable

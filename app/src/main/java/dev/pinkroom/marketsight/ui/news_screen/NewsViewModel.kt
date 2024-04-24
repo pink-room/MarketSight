@@ -4,18 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.pinkroom.marketsight.R
+import dev.pinkroom.marketsight.common.Constants.ALL_SYMBOLS
 import dev.pinkroom.marketsight.common.Constants.MAX_ITEMS_CAROUSEL
+import dev.pinkroom.marketsight.common.DateMomentType
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
+import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Available
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Unavailable
 import dev.pinkroom.marketsight.common.paginator.DefaultPagination
 import dev.pinkroom.marketsight.domain.model.common.PaginationInfo
+import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNews
+import dev.pinkroom.marketsight.ui.core.util.SelectableDatesImp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +29,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @HiltViewModel
@@ -74,15 +81,19 @@ class NewsViewModel @Inject constructor(
         fetchRealTimeNews()
     }
 
-    fun onEvent(event: NewsEvent){
-        when(event){
+    fun onEvent(event: NewsEvent) {
+        when(event) {
             NewsEvent.RetryNews -> retryToGetNews()
             NewsEvent.RefreshNews -> refreshNews()
             NewsEvent.LoadMoreNews -> loadMoreNews()
+            is NewsEvent.ShowOrHideFilters -> showOrHideFilters(isToShow = event.isToShow)
+            is NewsEvent.ChangeSort -> changeSort(newSort = event.sort)
+            is NewsEvent.ChangeSymbol -> changeSymbols(symbolToChange = event.symbolToChange)
+            is NewsEvent.ChangeDate -> changeDate(dateInMillis = event.newDateInMillis, dateMomentType = event.dateMomentType)
         }
     }
 
-    private fun observeNetworkStatus(){
+    private fun observeNetworkStatus() {
         viewModelScope.launch(dispatchers.IO) {
             connectivityObserver.observe().distinctUntilChanged().collect{ statusNet ->
                 connectionStatus = statusNet
@@ -92,7 +103,7 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    private fun initNews(){
+    private fun initNews() {
         initNewsJob = viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
             when(val response = getNews()){
@@ -139,7 +150,7 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    private fun loadMoreNews(){
+    private fun loadMoreNews() {
         viewModelScope.launch(dispatchers.IO) {
             if (!paginationInfo.isLoading) pagination.loadNextItems()
         }
@@ -149,6 +160,57 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch(dispatchers.IO) {
             getRealTimeNews().collect{ news ->
                 _uiState.update { it.copy(realTimeNews = it.realTimeNews + news) }
+            }
+        }
+    }
+
+    private fun showOrHideFilters(isToShow: Boolean? = null) {
+        if (uiState.value.isLoading) return
+        _uiState.update { it.copy(isToShowFilters = isToShow ?: !it.isToShowFilters) }
+    }
+
+    private fun changeSort(newSort: SortType) {
+        if (uiState.value.sortBy == newSort) return
+        _uiState.update { it.copy(sortBy = newSort) }
+    }
+
+    private fun changeSymbols(symbolToChange: SubInfoSymbols) {
+        val symbolsSubscribed = uiState.value.symbols.filter { it.isSubscribed }
+        val totalSizeSubscribed = if (symbolsSubscribed.contains(symbolToChange))
+            symbolsSubscribed.size - 1
+        else symbolsSubscribed.size
+
+        val needToSubscribeAll = totalSizeSubscribed == 0 || symbolToChange.name == ALL_SYMBOLS
+
+        val newListSymbols = uiState.value.symbols.map { item ->
+            when {
+                item.name == ALL_SYMBOLS -> item.copy(isSubscribed = needToSubscribeAll)
+                item.symbol == symbolToChange.symbol -> item.copy(isSubscribed = !item.isSubscribed)
+                needToSubscribeAll -> item.copy(isSubscribed = false)
+                else -> item.copy()
+            }
+        }
+        _uiState.update { it.copy(symbols = newListSymbols) }
+    }
+
+    private fun changeDate(dateInMillis: Long?, dateMomentType: DateMomentType){
+        val date = dateInMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate() }
+        when(dateMomentType){
+            DateMomentType.End -> {
+                _uiState.update {
+                    it.copy(
+                        endDateSort = date,
+                        startSelectableDates = SelectableDatesImp(limitDate = date, dateMomentType = DateMomentType.Start),
+                    )
+                }
+            }
+            DateMomentType.Start -> {
+                _uiState.update {
+                    it.copy(
+                        startDateSort = date,
+                        endSelectableDates = SelectableDatesImp(limitDate = date, dateMomentType = DateMomentType.End),
+                    )
+                }
             }
         }
     }

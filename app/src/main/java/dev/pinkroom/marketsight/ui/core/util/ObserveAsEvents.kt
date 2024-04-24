@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.ui.core.components
+package dev.pinkroom.marketsight.ui.core.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

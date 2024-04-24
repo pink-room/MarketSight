@@ -1,5 +1,6 @@
 package dev.pinkroom.marketsight.ui.core.navigation
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -11,8 +12,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import dev.pinkroom.marketsight.ui.core.components.ObserveAsEvents
 import dev.pinkroom.marketsight.ui.core.navigation.Args.SYMBOL_ID
+import dev.pinkroom.marketsight.ui.core.util.ObserveAsEvents
 import dev.pinkroom.marketsight.ui.detail_screen.DetailScreen
 import dev.pinkroom.marketsight.ui.home_screen.HomeScreen
 import dev.pinkroom.marketsight.ui.home_screen.HomeViewModel
@@ -20,6 +21,7 @@ import dev.pinkroom.marketsight.ui.news_screen.NewsAction
 import dev.pinkroom.marketsight.ui.news_screen.NewsScreen
 import dev.pinkroom.marketsight.ui.news_screen.NewsViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationAppHost(
     modifier: Modifier = Modifier,
@@ -58,9 +60,16 @@ fun NavigationAppHost(
                 mainNews = uiState.mainNews,
                 realTimeNews = uiState.realTimeNews,
                 symbols = uiState.symbols,
+                sortBy = uiState.sortBy,
+                sortItems = uiState.sort,
+                endDate = uiState.endDateSort,
+                startDate = uiState.startDateSort,
+                startSelectableDates = uiState.startSelectableDates,
+                endSelectableDates = uiState.endSelectableDates,
                 isLoading = uiState.isLoading,
                 isLoadingMoreNews = uiState.isLoadingMoreItems,
                 isRefreshing = uiState.isRefreshing,
+                isToShowFilters = uiState.isToShowFilters,
                 errorMessage = uiState.errorMessage,
                 onEvent = viewModel::onEvent
             )

@@ -18,7 +18,7 @@ class Dimensions(
     val headlineSmall: TextUnit = 24.sp,
     val titleLarge: TextUnit = 22.sp,
     val titleMedium: TextUnit = 19.sp,
-    val titleSmall: TextUnit = 14.sp,
+    val titleSmall: TextUnit = 16.sp,
     val bodyLarge: TextUnit = 16.sp,
     val bodyMedium: TextUnit = 14.sp,
     val bodySmall: TextUnit = 12.sp,
@@ -34,6 +34,7 @@ class Dimensions(
     val xLargePadding: Dp = 32.dp,
 
     // Icon
+    val smallIconSize: Dp = 16.dp,
     val normalIconSize: Dp = 24.dp,
     val largeIconSize: Dp = 38.dp,
 
@@ -41,6 +42,9 @@ class Dimensions(
     val lowElevation: Dp = 2.dp,
     val normalElevation: Dp = 9.dp,
     val largeElevation: Dp = 12.dp,
+
+    // Border Width
+    val smallWidth: Dp = 1.5.dp,
 
     // Shape
     val smallShape: Dp = 10.dp,
@@ -61,7 +65,8 @@ class Dimensions(
     val menuHeight: Dp = 100.dp,
     val liveNewsCardWidth: Dp = 270.dp,
     val liveNewsCardHeight: Dp = 100.dp,
-    val emptyContentMaxHeight: Float = 0.95f
+    val emptyContentMaxHeight: Float = 0.95f,
+    val bottomSheetHeight: Float = 0.45f,
 )
 
 val dimens: Dimensions
