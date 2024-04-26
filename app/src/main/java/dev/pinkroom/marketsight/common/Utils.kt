@@ -8,6 +8,7 @@ import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -39,12 +40,17 @@ fun LocalDate.toEpochMillis(zoneOffset: ZoneOffset = ZoneOffset.UTC, endOfTheDay
     val time = if (endOfTheDay) atTime(23,59) else atStartOfDay()
     return time.atOffset(zoneOffset).toInstant().toEpochMilli()
 }
+
 fun LocalDate.toReadableDate(): String {
     val formatter = DateTimeFormatter
         .ofLocalizedDate(FormatStyle.SHORT)
         .withLocale(Locale.getDefault())
     return format(formatter)
 }
+
+fun LocalDateTime.formatToStandardIso(): String = format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
+
+fun LocalDate.atEndOfTheDay() = atTime(23,59,59).atOffset(ZoneOffset.UTC).toLocalDateTime()
 
 sealed class ActionAlpaca(val action: String) {
     data object Subscribe: ActionAlpaca(action = "subscribe")
@@ -115,17 +121,17 @@ val popularSymbols = listOf(
     ),
     SubInfoSymbols(
         name = "Bitcoin",
-        symbol = "BTC/USD",
+        symbol = "BTC",
         isSubscribed = false,
     ),
     SubInfoSymbols(
         name = "Ethereum",
-        symbol = "ETH/USD",
+        symbol = "ETH",
         isSubscribed = false,
     ),
     SubInfoSymbols(
         name = "Shiba",
-        symbol = "SHIB/USD",
+        symbol = "SHIB",
         isSubscribed = false,
     ),
 )

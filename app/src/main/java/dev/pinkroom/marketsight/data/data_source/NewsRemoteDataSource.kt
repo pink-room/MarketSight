@@ -8,6 +8,7 @@ import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaService
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
+import dev.pinkroom.marketsight.common.formatToStandardIso
 import dev.pinkroom.marketsight.common.toObject
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsService
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.take
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 class NewsRemoteDataSource @Inject constructor(
@@ -73,13 +75,17 @@ class NewsRemoteDataSource @Inject constructor(
         symbols: List<String>? = null,
         limit: Int? = Constants.LIMIT_NEWS,
         pageToken: String?,
-        sort: SortType? = null
+        sort: SortType? = null,
+        startDate: LocalDateTime? = null,
+        endDate: LocalDateTime? = null,
     ): NewsResponseDto {
         return alpacaNewsApi.getNews(
             symbols = symbols?.joinToString(","),
             perPage = limit,
             pageToken = pageToken,
             sort = sort?.type,
+            startDate = startDate?.formatToStandardIso(),
+            endDate = endDate?.formatToStandardIso(),
         )
     }
 }

@@ -1,8 +1,8 @@
 package dev.pinkroom.marketsight.ui.core.navigation
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -18,18 +18,21 @@ import dev.pinkroom.marketsight.ui.detail_screen.DetailScreen
 import dev.pinkroom.marketsight.ui.home_screen.HomeScreen
 import dev.pinkroom.marketsight.ui.home_screen.HomeViewModel
 import dev.pinkroom.marketsight.ui.news_screen.NewsAction
+import dev.pinkroom.marketsight.ui.news_screen.NewsEvent
 import dev.pinkroom.marketsight.ui.news_screen.NewsScreen
 import dev.pinkroom.marketsight.ui.news_screen.NewsViewModel
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationAppHost(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     startDestination: Route,
-    onShowSnackBar: (message: String, duration: SnackbarDuration) -> Unit,
+    onShowSnackBar: suspend (message: String, duration: SnackbarDuration, action: String?) -> Boolean,
 ){
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     NavHost(
         navController = navController,
         startDestination = startDestination.route,
@@ -50,7 +53,16 @@ fun NavigationAppHost(
             ObserveAsEvents(viewModel.action){ action ->
                 when(action){
                     is NewsAction.ShowSnackBar -> {
-                        onShowSnackBar(context.getString(action.message), action.duration)
+                        scope.launch {
+                            val result = onShowSnackBar(
+                                context.getString(action.message),
+                                action.duration,
+                                action.actionMessage?.let { msg -> context.getString(msg) },
+                            )
+                            if (result && action.actionMessage != null){
+                                viewModel.onEvent(NewsEvent.RetryRealTimeNewsSubscribe)
+                            }
+                        }
                     }
                 }
             }
@@ -59,13 +71,7 @@ fun NavigationAppHost(
                 news = uiState.news,
                 mainNews = uiState.mainNews,
                 realTimeNews = uiState.realTimeNews,
-                symbols = uiState.symbols,
-                sortBy = uiState.sortBy,
-                sortItems = uiState.sort,
-                endDate = uiState.endDateSort,
-                startDate = uiState.startDateSort,
-                startSelectableDates = uiState.startSelectableDates,
-                endSelectableDates = uiState.endSelectableDates,
+                filters = uiState.filters,
                 isLoading = uiState.isLoading,
                 isLoadingMoreNews = uiState.isLoadingMoreItems,
                 isRefreshing = uiState.isRefreshing,

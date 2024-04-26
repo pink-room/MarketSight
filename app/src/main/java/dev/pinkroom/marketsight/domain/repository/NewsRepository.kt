@@ -7,6 +7,7 @@ import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDateTime
 
 interface NewsRepository {
     fun getRealTimeNews(): Flow<List<NewsInfo>>
@@ -20,5 +21,7 @@ interface NewsRepository {
         limit: Int? = LIMIT_NEWS,
         pageToken: String? = null,
         sort: SortType? = SortType.DESC,
+        startDate: LocalDateTime? = null,
+        endDate: LocalDateTime? = null,
     ): Resource<NewsResponse>
 }

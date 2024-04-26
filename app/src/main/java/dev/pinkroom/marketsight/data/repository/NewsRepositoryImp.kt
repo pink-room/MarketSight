@@ -12,7 +12,8 @@ import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.last
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 class NewsRepositoryImp @Inject constructor(
@@ -33,17 +34,21 @@ class NewsRepositoryImp @Inject constructor(
         val message = MessageAlpacaService(action = actionAlpaca.action, news = symbols)
         newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = message).collect{ response ->
             when(response){
-                is Resource.Error -> emit(Resource.Error(data = symbols))
+                is Resource.Error -> {
+                    emit(Resource.Error(data = symbols))
+                }
                 is Resource.Success -> emit(Resource.Success(data = response.data.news ?: symbols))
             }
         }
-    }.flowOn(dispatchers.IO).single()
+    }.flowOn(dispatchers.IO).last()
 
     override suspend fun getNews(
         symbols: List<String>?,
         limit: Int?,
         pageToken: String?,
-        sort: SortType?
+        sort: SortType?,
+        startDate: LocalDateTime?,
+        endDate: LocalDateTime?,
     ): Resource<NewsResponse> {
         return try {
             val response = newsRemoteDataSource.getNews(
@@ -51,6 +56,8 @@ class NewsRepositoryImp @Inject constructor(
                 limit = limit,
                 pageToken = pageToken,
                 sort = sort,
+                startDate = startDate,
+                endDate = endDate,
             )
             Resource.Success(data = response.toNewsResponse())
         } catch (e: Exception){

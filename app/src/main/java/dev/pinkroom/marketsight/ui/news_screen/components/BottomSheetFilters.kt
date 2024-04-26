@@ -1,10 +1,14 @@
 package dev.pinkroom.marketsight.ui.news_screen.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,9 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.DateMomentType
 import dev.pinkroom.marketsight.common.SortType
@@ -31,10 +37,12 @@ import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import dev.pinkroom.marketsight.ui.core.components.ButtonFilter
 import dev.pinkroom.marketsight.ui.core.components.DatePickerComponent
 import dev.pinkroom.marketsight.ui.core.components.DefaultSectionFilter
+import dev.pinkroom.marketsight.ui.core.theme.Blue
 import dev.pinkroom.marketsight.ui.core.theme.dimens
+import dev.pinkroom.marketsight.ui.core.util.SelectableDatesImp
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun BottomSheetFilters(
     modifier: Modifier = Modifier,
@@ -48,8 +56,8 @@ fun BottomSheetFilters(
     onSortClick: (sort: SortType) -> Unit,
     onSymbolClick: (symbol: SubInfoSymbols) -> Unit,
     changeDate: (dateInMillis: Long?, dateMomentType: DateMomentType) -> Unit,
-    startSelectableDates: SelectableDates,
-    endSelectableDates: SelectableDates,
+    onClearAll: () -> Unit,
+    onApply: () -> Unit,
     sheetState: SheetState,
 ){
     AnimatedVisibility(visible = isVisible) {
@@ -65,14 +73,15 @@ fun BottomSheetFilters(
                     bottom = dimens.normalPadding,
                 )
             ) {
-                item {
-                    Text(
+                stickyHeader {
+                    HeaderBottomSheetFilters(
                         modifier = Modifier
+                            .background(color = MaterialTheme.colorScheme.background)
                             .fillMaxWidth()
-                            .padding(horizontal = dimens.horizontalPadding),
-                        text = stringResource(id = R.string.filters_news),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                            .padding(horizontal = dimens.horizontalPadding)
+                            .padding(bottom = dimens.smallPadding),
+                        onApply = onApply,
+                        onClearAll = onClearAll,
                     )
                 }
                 item {
@@ -80,8 +89,8 @@ fun BottomSheetFilters(
                         startDate = startDate,
                         endDate = endDate,
                         changeDate = changeDate,
-                        startSelectableDates = startSelectableDates,
-                        endSelectableDates = endSelectableDates,
+                        startSelectableDates = SelectableDatesImp(dateMomentType = DateMomentType.Start, limitDate = endDate),
+                        endSelectableDates = SelectableDatesImp(dateMomentType = DateMomentType.End, limitDate = startDate),
                     )
                 }
                 item {
@@ -103,6 +112,42 @@ fun BottomSheetFilters(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun HeaderBottomSheetFilters(
+    modifier: Modifier = Modifier,
+    onClearAll: () -> Unit,
+    onApply: () -> Unit,
+){
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+    ) {
+        Text(
+            modifier = Modifier
+                .clickable(
+                    onClick = onClearAll,
+                ),
+            text = stringResource(id = R.string.clear_all)
+        )
+        Text(
+            text = stringResource(id = R.string.filters_news),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            modifier = Modifier
+                .clickable(
+                    onClick = onApply,
+                ),
+            text = stringResource(id = R.string.apply),
+            textAlign = TextAlign.End,
+            color = Blue,
+        )
     }
 }
 

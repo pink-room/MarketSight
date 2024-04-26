@@ -1,5 +1,6 @@
 package dev.pinkroom.marketsight.ui.news_screen
 
+import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,17 +11,18 @@ import dev.pinkroom.marketsight.common.DateMomentType
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
+import dev.pinkroom.marketsight.common.atEndOfTheDay
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Available
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver.Status.Unavailable
 import dev.pinkroom.marketsight.common.paginator.DefaultPagination
 import dev.pinkroom.marketsight.domain.model.common.PaginationInfo
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
+import dev.pinkroom.marketsight.domain.model.news.NewsFilters
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNews
-import dev.pinkroom.marketsight.ui.core.util.SelectableDatesImp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +57,14 @@ class NewsViewModel @Inject constructor(
             _uiState.update { it.copy(isLoadingMoreItems = isLoading) }
         },
         onRequest = { nextPage ->
-            getNews(pageToken = nextPage)
+            val filters = uiState.value.filters
+            getNews(
+                pageToken = nextPage,
+                sortType = filters.sortBy,
+                symbols = filters.getSubscribedSymbols(),
+                startDate = filters.startDateSort?.atStartOfDay(),
+                endDate = filters.endDateSort?.atEndOfTheDay(),
+            )
         },
         getNextKey = {
             it.nextPageToken
@@ -74,6 +83,7 @@ class NewsViewModel @Inject constructor(
 
     private var initNewsJob: Job? = null
     private var connectionStatus = Unavailable
+    private var previousFilters: NewsFilters = uiState.value.filters
 
     init {
         observeNetworkStatus()
@@ -84,8 +94,12 @@ class NewsViewModel @Inject constructor(
     fun onEvent(event: NewsEvent) {
         when(event) {
             NewsEvent.RetryNews -> retryToGetNews()
+            NewsEvent.RetryRealTimeNewsSubscribe -> updateFiltersRealTimeNews(newFilters = previousFilters)
             NewsEvent.RefreshNews -> refreshNews()
             NewsEvent.LoadMoreNews -> loadMoreNews()
+            NewsEvent.ApplyFilters -> applyFilters()
+            NewsEvent.ClearAllFilters -> clearAllFilters()
+            NewsEvent.RevertFilters -> revertFilters()
             is NewsEvent.ShowOrHideFilters -> showOrHideFilters(isToShow = event.isToShow)
             is NewsEvent.ChangeSort -> changeSort(newSort = event.sort)
             is NewsEvent.ChangeSymbol -> changeSymbols(symbolToChange = event.symbolToChange)
@@ -106,7 +120,15 @@ class NewsViewModel @Inject constructor(
     private fun initNews() {
         initNewsJob = viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
-            when(val response = getNews()){
+            paginationInfo = paginationInfo.copy(endReached = false)
+            val filters = uiState.value.filters
+            val response = getNews(
+                sortType = filters.sortBy,
+                symbols = filters.getSubscribedSymbols(),
+                startDate = filters.startDateSort?.atStartOfDay(),
+                endDate = filters.endDateSort?.atEndOfTheDay(),
+            )
+            when(response){
                 is Resource.Success -> {
                     val allNews = response.data.news
                     val maxNumberNews = if (allNews.size >= MAX_ITEMS_CAROUSEL) MAX_ITEMS_CAROUSEL else allNews.size
@@ -152,7 +174,7 @@ class NewsViewModel @Inject constructor(
 
     private fun loadMoreNews() {
         viewModelScope.launch(dispatchers.IO) {
-            if (!paginationInfo.isLoading) pagination.loadNextItems()
+            if (!paginationInfo.isLoading && !paginationInfo.endReached) pagination.loadNextItems()
         }
     }
 
@@ -170,19 +192,19 @@ class NewsViewModel @Inject constructor(
     }
 
     private fun changeSort(newSort: SortType) {
-        if (uiState.value.sortBy == newSort) return
-        _uiState.update { it.copy(sortBy = newSort) }
+        if (uiState.value.filters.sortBy == newSort) return
+        _uiState.update { it.copy(filters = it.filters.copy(sortBy = newSort)) }
     }
 
     private fun changeSymbols(symbolToChange: SubInfoSymbols) {
-        val symbolsSubscribed = uiState.value.symbols.filter { it.isSubscribed }
+        val symbolsSubscribed = uiState.value.filters.symbols.filter { it.isSubscribed }
         val totalSizeSubscribed = if (symbolsSubscribed.contains(symbolToChange))
             symbolsSubscribed.size - 1
         else symbolsSubscribed.size
 
         val needToSubscribeAll = totalSizeSubscribed == 0 || symbolToChange.name == ALL_SYMBOLS
 
-        val newListSymbols = uiState.value.symbols.map { item ->
+        val newListSymbols = uiState.value.filters.symbols.map { item ->
             when {
                 item.name == ALL_SYMBOLS -> item.copy(isSubscribed = needToSubscribeAll)
                 item.symbol == symbolToChange.symbol -> item.copy(isSubscribed = !item.isSubscribed)
@@ -190,26 +212,59 @@ class NewsViewModel @Inject constructor(
                 else -> item.copy()
             }
         }
-        _uiState.update { it.copy(symbols = newListSymbols) }
+        _uiState.update { it.copy(filters = it.filters.copy(symbols = newListSymbols)) }
     }
 
-    private fun changeDate(dateInMillis: Long?, dateMomentType: DateMomentType){
+    private fun changeDate(dateInMillis: Long?, dateMomentType: DateMomentType) {
         val date = dateInMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate() }
         when(dateMomentType){
             DateMomentType.End -> {
-                _uiState.update {
-                    it.copy(
-                        endDateSort = date,
-                        startSelectableDates = SelectableDatesImp(limitDate = date, dateMomentType = DateMomentType.Start),
-                    )
-                }
+                _uiState.update { it.copy(filters = it.filters.copy(endDateSort = date)) }
             }
             DateMomentType.Start -> {
-                _uiState.update {
-                    it.copy(
-                        startDateSort = date,
-                        endSelectableDates = SelectableDatesImp(limitDate = date, dateMomentType = DateMomentType.End),
-                    )
+                _uiState.update { it.copy(filters = it.filters.copy(startDateSort = date)) }
+            }
+        }
+    }
+
+    private fun applyFilters() {
+        _uiState.update { it.copy(isToShowFilters = false) }
+        if (previousFilters != uiState.value.filters)
+            updateNewsWithNewFilters(newFilters = uiState.value.filters)
+    }
+
+    private fun clearAllFilters() {
+        val baseFilters = NewsFilters()
+        if (previousFilters != baseFilters) updateNewsWithNewFilters(newFilters = baseFilters)
+        _uiState.update { it.copy(filters = baseFilters, isToShowFilters = false) }
+    }
+
+    private fun revertFilters() = _uiState.update { it.copy(filters = previousFilters, isToShowFilters = false) }
+
+    private fun updateNewsWithNewFilters(newFilters: NewsFilters){
+        initNews()
+        if (previousFilters.symbols != newFilters.symbols) updateFiltersRealTimeNews(newFilters)
+        previousFilters = newFilters
+    }
+
+    private fun updateFiltersRealTimeNews(newFilters: NewsFilters){
+        viewModelScope.launch(dispatchers.IO) {
+            _uiState.update { it.copy(realTimeNews = emptyList()) }
+            changeFilterNews(
+                subscribeSymbols = newFilters.symbols.filter { it.isSubscribed }.map { it.symbol },
+                unsubscribeSymbols = newFilters.symbols.filter { !it.isSubscribed }.map { it.symbol }
+            ).collect{ response ->
+                when(response){
+                    is Resource.Success -> Unit
+                    is Resource.Error -> {
+                        _action.send(
+                            NewsAction.ShowSnackBar(
+                                message = R.string.error_subscription_real_time_news,
+                                duration = SnackbarDuration.Indefinite,
+                                actionMessage = R.string.retry,
+                            )
+                        )
+                    }
                 }
             }
         }

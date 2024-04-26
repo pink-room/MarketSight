@@ -6,7 +6,7 @@ class DefaultPagination<Key, T>(
     private val initialKey: Key?,
     private inline val onLoadUpdated: (Boolean) -> Unit,
     private inline val onRequest: suspend (nextKey: Key?) -> Resource<T>,
-    private inline val getNextKey: suspend (T) -> Key,
+    private inline val getNextKey: suspend (T) -> Key?,
     private inline val onError: suspend (message: String?) -> Unit,
     private inline val onSuccess: suspend (data: T, newKey: Key?) -> Unit
 ): Pagination<Key, T> {

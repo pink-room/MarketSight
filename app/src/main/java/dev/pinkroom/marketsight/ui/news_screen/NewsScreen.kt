@@ -10,27 +10,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.Constants.BUFFER_LIST
-import dev.pinkroom.marketsight.common.DateMomentType
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import dev.pinkroom.marketsight.domain.model.news.ImageSize
 import dev.pinkroom.marketsight.domain.model.news.ImagesNews
+import dev.pinkroom.marketsight.domain.model.news.NewsFilters
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.ui.core.components.PullToRefreshLazyColumn
 import dev.pinkroom.marketsight.ui.core.theme.dimens
-import dev.pinkroom.marketsight.ui.core.util.SelectableDatesImp
 import dev.pinkroom.marketsight.ui.core.util.reachedBottom
 import dev.pinkroom.marketsight.ui.news_screen.components.AllNews
 import dev.pinkroom.marketsight.ui.news_screen.components.BottomSheetFilters
@@ -38,7 +38,8 @@ import dev.pinkroom.marketsight.ui.news_screen.components.EmptyNewsList
 import dev.pinkroom.marketsight.ui.news_screen.components.HeaderListNews
 import dev.pinkroom.marketsight.ui.news_screen.components.MainNews
 import dev.pinkroom.marketsight.ui.news_screen.components.RealTimeNews
-import java.time.LocalDate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -48,13 +49,7 @@ fun NewsScreen(
     mainNews: List<NewsInfo>,
     news: List<NewsInfo>,
     realTimeNews: List<NewsInfo>,
-    symbols: List<SubInfoSymbols>,
-    sortBy: SortType,
-    sortItems: List<SortType>,
-    startDate: LocalDate? = null,
-    endDate: LocalDate? = null,
-    startSelectableDates: SelectableDates,
-    endSelectableDates: SelectableDates,
+    filters: NewsFilters,
     isLoading: Boolean,
     isLoadingMoreNews: Boolean,
     isRefreshing: Boolean,
@@ -63,6 +58,7 @@ fun NewsScreen(
     onEvent: (event: NewsEvent) -> Unit,
 ){
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val sheetState = rememberModalBottomSheetState()
 
@@ -158,25 +154,31 @@ fun NewsScreen(
             .fillMaxHeight(dimens.bottomSheetHeight),
         isVisible = isToShowFilters,
         onDismiss = {
-            onEvent(NewsEvent.ShowOrHideFilters(isToShow = false))
+            onEvent(NewsEvent.RevertFilters)
         },
         sheetState = sheetState,
-        sortFilters = sortItems,
-        selectedSort = sortBy,
+        sortFilters = filters.sort,
+        selectedSort = filters.sortBy,
         onSortClick = {
             onEvent(NewsEvent.ChangeSort(sort = it))
         },
-        symbols = symbols,
+        symbols = filters.symbols,
         onSymbolClick = {
             onEvent(NewsEvent.ChangeSymbol(symbolToChange = it))
         },
-        startDate = startDate,
-        endDate = endDate,
+        startDate = filters.startDateSort,
+        endDate = filters.endDateSort,
         changeDate = { dateInMillis, dateMomentType ->
             onEvent(NewsEvent.ChangeDate(newDateInMillis = dateInMillis, dateMomentType = dateMomentType))
         },
-        startSelectableDates = startSelectableDates,
-        endSelectableDates = endSelectableDates,
+        onClearAll = {
+            sheetState.close(scope)
+            onEvent(NewsEvent.ClearAllFilters)
+        },
+        onApply = {
+            sheetState.close(scope)
+            onEvent(NewsEvent.ApplyFilters)
+        },
     )
 }
 
@@ -186,6 +188,8 @@ fun Context.navigateToNews(newsInfo: NewsInfo){
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+fun SheetState.close(scope: CoroutineScope) = scope.launch { hide() }
+
 @Preview(
     showBackground = true,
     showSystemUi = true,
@@ -291,23 +295,23 @@ fun NewsScreenPreview(){
                 headline = "Market Clubhouse Morning Memo - April 11th, 2024 (Trade Strategy For SPY, QQQ, AAPL, MSFT, NVDA, GOOGL, META, And TSLA)",
             ),
         ),
-        symbols = listOf(
-            SubInfoSymbols(
-                name = "TESLA", symbol = "TSLA",
+        filters = NewsFilters(
+            symbols = listOf(
+                SubInfoSymbols(
+                    name = "TESLA", symbol = "TSLA",
+                ),
+                SubInfoSymbols(
+                    name = "APPLE", symbol = "AAPL",
+                ),
             ),
-            SubInfoSymbols(
-                name = "APPLE", symbol = "AAPL",
-            ),
+            sort = listOf(),
+            sortBy = SortType.DESC,
         ),
         isLoading = false,
         isLoadingMoreNews = false,
         errorMessage = R.string.get_news_error_message,
         isRefreshing = false,
         isToShowFilters = false,
-        sortItems = listOf(),
-        sortBy = SortType.DESC,
         onEvent = {},
-        startSelectableDates = SelectableDatesImp(dateMomentType = DateMomentType.Start),
-        endSelectableDates = SelectableDatesImp(dateMomentType = DateMomentType.End),
     )
 }

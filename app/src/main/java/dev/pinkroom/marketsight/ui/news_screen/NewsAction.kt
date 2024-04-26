@@ -7,5 +7,6 @@ sealed class NewsAction{
     data class ShowSnackBar(
         @StringRes val message: Int,
         val duration: SnackbarDuration = SnackbarDuration.Short,
+        @StringRes val actionMessage: Int? = null,
     ): NewsAction()
 }

@@ -14,7 +14,7 @@ class SelectableDatesImp(
     override fun isSelectableDate(utcTimeMillis: Long): Boolean {
         val currentTimeInMillis = System.currentTimeMillis()
         val limitInMillis = when(dateMomentType){
-            DateMomentType.End -> limitDate?.toEpochMillis(endOfTheDay = true) ?: utcTimeMillis
+            DateMomentType.End -> limitDate?.toEpochMillis(endOfTheDay = false) ?: utcTimeMillis
             DateMomentType.Start -> limitDate?.toEpochMillis(endOfTheDay = true) ?: currentTimeInMillis
         }
         return if (dateMomentType == DateMomentType.Start) utcTimeMillis <= limitInMillis

@@ -11,5 +11,7 @@ interface AlpacaNewsApi {
         @Query("limit") perPage: Int? = null,
         @Query("page_token") pageToken: String? = null,
         @Query("sort") sort: String? = null,
+        @Query("start") startDate: String? = null,
+        @Query("end") endDate: String? = null,
     ): NewsResponseDto
 }
