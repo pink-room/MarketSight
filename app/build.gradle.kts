@@ -126,6 +126,7 @@ dependencies {
     testImplementation(libs.coroutine.test)
     testImplementation(libs.assertk)
     testImplementation(libs.faker)
+    testImplementation(libs.turbine)
 
     // END-TO-END TEST
     androidTestImplementation(libs.androidx.junit)

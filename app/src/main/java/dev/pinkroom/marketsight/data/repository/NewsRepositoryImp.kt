@@ -27,7 +27,7 @@ class NewsRepositoryImp @Inject constructor(
         }
     }.flowOn(dispatchers.IO)
 
-    override suspend fun changeFilterNews(
+    override suspend fun changeFilterRealTimeNews(
         symbols: List<String>,
         actionAlpaca: ActionAlpaca,
     ): Resource<List<String>> = flow {

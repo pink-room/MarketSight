@@ -17,7 +17,7 @@
         tools:targetApi="34"
         android:name=".MarketSightApp">
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".presentation.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.MarketSight.Splash">
             <intent-filter>

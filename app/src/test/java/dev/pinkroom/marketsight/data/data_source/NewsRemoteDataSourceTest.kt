@@ -59,17 +59,23 @@ class NewsRemoteDataSourceTest {
     )
 
     @Test
-    fun `Given params, when init subscribe news with all topics, then sendMessage is called with correct params`() = runTest {
+    fun `When call on getRealTimeNews twice, then in just in 1 time need to subscribe symbols`() = runTest {
         // GIVEN
-        mockStartAlpacaServiceWithSuccess()
-        val symbols = listOf("*")
+        val listNews = newsFactory.buildList()
+        mockNewsServiceWithOpenConnection()
+        mockNewsServiceWithSuccess(newsList = listNews)
 
         // WHEN
-        alpacaRemoteDataSource.subscribeNews(symbols = symbols).firstOrNull()
+        var response = alpacaRemoteDataSource.getRealTimeNews().first()
+        assertThat(response).isNotEmpty()
+        response = alpacaRemoteDataSource.getRealTimeNews().first()
+        assertThat(response).isNotEmpty()
 
         // THEN
-        val expectedMessageArgs = MessageAlpacaService(action = ActionAlpaca.Subscribe.action, news = symbols)
-        verify { alpacaNewsService.sendMessage(message = expectedMessageArgs) }
+        val expectedMessageToSubscribe = MessageAlpacaService(
+            action = ActionAlpaca.Subscribe.action, news = listOf("*"),
+        )
+        verify(exactly = 1) { alpacaNewsService.sendMessage(expectedMessageToSubscribe) }
     }
 
     @Test
@@ -181,6 +187,12 @@ class NewsRemoteDataSourceTest {
         )
     }
 
+    private fun mockNewsServiceWithOpenConnection(){
+        every { alpacaNewsService.observeOnConnectionEvent() }.returns(
+            flow { emit(WebSocket.Event.OnConnectionOpened(webSocket = Any())) }
+        )
+    }
+
     private fun mockNewsServiceWithSuccess(newsList: List<NewsMessageDto>) {
         every { alpacaNewsService.observeResponse() }.returns(
             flow {
@@ -204,16 +216,6 @@ class NewsRemoteDataSourceTest {
                         msg = "Not authenticated"
                     )
                 )))
-            }
-        )
-    }
-
-    private fun mockStartAlpacaServiceWithSuccess() {
-        every { alpacaNewsService.sendMessage(any()) }.returns(Unit)
-
-        every { alpacaNewsService.observeOnConnectionEvent() }.returns(
-            flow {
-                emit(WebSocket.Event.OnConnectionOpened(webSocket = Any()))
             }
         )
     }

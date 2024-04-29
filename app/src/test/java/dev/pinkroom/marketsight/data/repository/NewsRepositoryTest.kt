@@ -5,7 +5,6 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isTrue
 import com.github.javafaker.Faker
-import com.tinder.scarlet.WebSocket
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
@@ -46,18 +45,6 @@ class NewsRepositoryTest{
         newsRemoteDataSource = newsRemoteDataSource,
         dispatchers = dispatchers,
     )
-
-    @Test
-    fun `Given params, when init subscribe news, then subscribeNews is called with correct params and emit values`() = runTest {
-        // GIVEN
-        mockSubscribeNewsWithSuccess()
-
-        // WHEN
-        val response = newsRepository.subscribeNews().first()
-
-        // THEN
-        assertThat(response is Resource.Success).isTrue()
-    }
 
     @Test
     fun `When receive message on getRealTimeNews, then emit NewsInfo class`() = runTest {
@@ -138,7 +125,7 @@ class NewsRepositoryTest{
         mockMessageSubscriptionServiceWithSuccess(messageToSend)
 
         // WHEN
-        val response = newsRepository.changeFilterNews(symbols = messageToSend.news!!, actionAlpaca = ActionAlpaca.Subscribe)
+        val response = newsRepository.changeFilterRealTimeNews(symbols = messageToSend.news!!, actionAlpaca = ActionAlpaca.Subscribe)
 
         // THEN
         verify { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = messageToSend) }
@@ -154,7 +141,7 @@ class NewsRepositoryTest{
         mockMessageSubscriptionServiceWithError()
 
         // WHEN
-        val response = newsRepository.changeFilterNews(symbols = messageToSend.news!!, actionAlpaca = ActionAlpaca.Subscribe)
+        val response = newsRepository.changeFilterRealTimeNews(symbols = messageToSend.news!!, actionAlpaca = ActionAlpaca.Subscribe)
 
         // THEN
         verify { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = messageToSend) }
@@ -197,14 +184,6 @@ class NewsRepositoryTest{
         every { newsRemoteDataSource.getRealTimeNews() }.returns(
             flow {
                 emit(newsList)
-            }
-        )
-    }
-
-    private fun mockSubscribeNewsWithSuccess(){
-        every { newsRemoteDataSource.subscribeNews(any()) }.returns(
-            flow {
-                emit(Resource.Success(data = WebSocket.Event.OnConnectionOpened(webSocket = Any())))
             }
         )
     }

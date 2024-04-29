@@ -20,6 +20,7 @@ mockkVersion = "1.13.10"
 coroutineVersion = "1.8.0"
 assertkVersion = "0.28.0"
 fakerVersion = "1.0.2"
+turbineVersion = "1.1.0"
 coilVersion = "2.6.0"
 pagingVersion = "3.2.1"
 
@@ -86,6 +87,9 @@ assertk = { group = "com.willowtreeapps.assertk", name = "assertk", version.ref 
 # MOCKK
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockkVersion" }
 mockk-agent = { group = "io.mockk", name = "mockk-agent", version.ref = "mockkVersion" }
+
+# TURBINE
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbineVersion"}
 
 # END-TO-END TEST
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

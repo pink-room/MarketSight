@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 interface NewsRepository {
     fun getRealTimeNews(): Flow<List<NewsInfo>>
-    suspend fun changeFilterNews(
+    suspend fun changeFilterRealTimeNews(
         symbols: List<String>,
         actionAlpaca: ActionAlpaca,
     ): Resource<List<String>>
