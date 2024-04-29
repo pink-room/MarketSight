@@ -121,17 +121,17 @@ val popularSymbols = listOf(
     ),
     SubInfoSymbols(
         name = "Bitcoin",
-        symbol = "BTC",
+        symbol = "BTCUSD",
         isSubscribed = false,
     ),
     SubInfoSymbols(
         name = "Ethereum",
-        symbol = "ETH",
+        symbol = "ETHUSD",
         isSubscribed = false,
     ),
     SubInfoSymbols(
         name = "Shiba",
-        symbol = "SHIB",
+        symbol = "SHIBUSD",
         isSubscribed = false,
     ),
 )
