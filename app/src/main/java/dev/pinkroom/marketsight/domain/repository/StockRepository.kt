@@ -14,4 +14,6 @@ interface StockRepository {
         endDate: String,
         sort: SortType? = SortType.ASC,
     ): Resource<List<BarAsset>>
+
+    //fun getRealTimeTrades(): Flow<List<NewsInfo>>
 }

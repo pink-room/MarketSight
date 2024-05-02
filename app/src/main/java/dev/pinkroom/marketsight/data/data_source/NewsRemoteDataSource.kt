@@ -10,9 +10,9 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.common.formatToStandardIso
 import dev.pinkroom.marketsight.common.toObject
-import dev.pinkroom.marketsight.data.remote.AlpacaDataApi
+import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaService
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.NewsResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class NewsRemoteDataSource @Inject constructor(
     private val gson: Gson,
     private val alpacaService: AlpacaService,
-    private val alpacaDataApi: AlpacaDataApi,
+    private val alpacaNewsApi: AlpacaNewsApi,
     private val dispatchers: DispatcherProvider,
 ) {
     private var isNewsSubscribed: Boolean = false
@@ -79,7 +79,7 @@ class NewsRemoteDataSource @Inject constructor(
         startDate: LocalDateTime? = null,
         endDate: LocalDateTime? = null,
     ): NewsResponseDto {
-        return alpacaDataApi.getNews(
+        return alpacaNewsApi.getNews(
             symbols = symbols?.joinToString(","),
             perPage = limit,
             pageToken = pageToken,

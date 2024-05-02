@@ -1,15 +1,15 @@
 package dev.pinkroom.marketsight.data.mapper
 
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.BarAssetDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.BarsCryptoResponseDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.BarsStockResponseDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.ImagesNewsDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.NewsDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.NewsResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.BarAssetDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_crypto_api.BarsCryptoResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.ImagesNewsDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_paper_api.AssetDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_stock_api.BarsStockResponseDto
 import dev.pinkroom.marketsight.domain.model.assets.Asset
 import dev.pinkroom.marketsight.domain.model.common.ErrorMessage
 import dev.pinkroom.marketsight.domain.model.common.SubscriptionMessage

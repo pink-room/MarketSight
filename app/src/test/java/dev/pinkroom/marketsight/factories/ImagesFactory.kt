@@ -1,7 +1,7 @@
 package dev.pinkroom.marketsight.factories
 
 import com.github.javafaker.Faker
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.ImagesNewsDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.ImagesNewsDto
 import kotlin.random.Random
 
 class ImagesFactory: BaseFactory<ImagesNewsDto> {

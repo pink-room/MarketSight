@@ -22,9 +22,11 @@ import dev.pinkroom.marketsight.common.addLoggingInterceptor
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
 import dev.pinkroom.marketsight.common.connection_network.NetworkConnectivityObserver
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
-import dev.pinkroom.marketsight.data.remote.AlpacaDataApi
+import dev.pinkroom.marketsight.data.remote.AlpacaCryptoApi
+import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaPaperApi
 import dev.pinkroom.marketsight.data.remote.AlpacaService
+import dev.pinkroom.marketsight.data.remote.AlpacaStockApi
 import dev.pinkroom.marketsight.data.repository.NewsRepositoryImp
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import okhttp3.OkHttpClient
@@ -42,6 +44,9 @@ object AppModule {
     private const val ALPACA_STREAM_URL_NEWS = BuildConfig.ALPACA_STREAM_URL + "v1beta1/news"
     private const val ALPACA_STREAM_URL_STOCK = BuildConfig.ALPACA_STREAM_URL + "v2/iex"
     private const val ALPACA_STREAM_URL_CRYPTO = BuildConfig.ALPACA_STREAM_URL + "v1beta3/crypto/us"
+    private const val ALPACA_API_URL_NEWS = BuildConfig.ALPACA_DATA_URL + "v1beta1/"
+    private const val ALPACA_API_URL_STOCK = BuildConfig.ALPACA_DATA_URL + "v2/stocks/"
+    private const val ALPACA_API_URL_CRYPTO = BuildConfig.ALPACA_DATA_URL + "v1beta3/crypto/us/"
     private const val API_TIMEOUT_WS = 30L
     private const val API_TIMEOUT_API = 10L
     private const val OK_HTTP_WS = "okHttpWS"
@@ -96,9 +101,31 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlpacaNewsApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaDataApi {
+    fun provideAlpacaNewsApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaNewsApi {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.ALPACA_DATA_URL)
+            .baseUrl(ALPACA_API_URL_NEWS)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlpacaStockApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaStockApi {
+        return Retrofit.Builder()
+            .baseUrl(ALPACA_API_URL_STOCK)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlpacaCryptoApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaCryptoApi {
+        return Retrofit.Builder()
+            .baseUrl(ALPACA_API_URL_CRYPTO)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()
@@ -163,10 +190,10 @@ object AppModule {
     fun provideNewsRemoteDataSource(
         gson: Gson,
         dispatcherProvider: DispatcherProvider,
-        alpacaDataApi: AlpacaDataApi,
+        alpacaNewsApi: AlpacaNewsApi,
         @Named(ALPACA_NEWS_SERVICE) alpacaService: AlpacaService,
     ): NewsRemoteDataSource {
-        return NewsRemoteDataSource(gson = gson, alpacaService = alpacaService, alpacaDataApi = alpacaDataApi, dispatchers = dispatcherProvider)
+        return NewsRemoteDataSource(gson = gson, alpacaService = alpacaService, alpacaNewsApi = alpacaNewsApi, dispatchers = dispatcherProvider)
     }
 
     @Provides

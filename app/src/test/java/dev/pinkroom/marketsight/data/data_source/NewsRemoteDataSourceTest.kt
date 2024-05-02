@@ -12,9 +12,9 @@ import com.tinder.scarlet.WebSocket
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
-import dev.pinkroom.marketsight.data.remote.AlpacaDataApi
+import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaService
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.NewsResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
@@ -49,12 +49,12 @@ class NewsRemoteDataSourceTest {
     private val newsFactory = NewsFactory()
     private val newsDtoFactory = NewsDtoFactory()
     private val alpacaService = mockk<AlpacaService>(relaxed = true, relaxUnitFun = true)
-    private val alpacaDataApi = mockk<AlpacaDataApi>()
+    private val alpacaNewsApi = mockk<AlpacaNewsApi>()
     private val dispatchers = TestDispatcherProvider()
     private val alpacaRemoteDataSource = NewsRemoteDataSource(
         gson = gson,
         alpacaService = alpacaService,
-        alpacaDataApi = alpacaDataApi,
+        alpacaNewsApi = alpacaNewsApi,
         dispatchers = dispatchers,
     )
 
@@ -136,7 +136,7 @@ class NewsRemoteDataSourceTest {
 
         // THEN
         coVerify {
-            alpacaDataApi.getNews(
+            alpacaNewsApi.getNews(
                 symbols = symbols.joinToString(","),
                 perPage = limit,
                 pageToken = pageToken,
@@ -174,7 +174,7 @@ class NewsRemoteDataSourceTest {
     }
 
     private fun mockNewsResponseApiWithSuccess(limit: Int) {
-        coEvery { alpacaDataApi.getNews(
+        coEvery { alpacaNewsApi.getNews(
             symbols = any(),
             perPage = any(),
             pageToken = any(),
