@@ -1,7 +1,12 @@
 package dev.pinkroom.marketsight.data.mapper
 
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.BarAssetDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_crypto_api.BarsCryptoResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.QuoteAssetDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.QuotesResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.TradeAssetDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.TradesResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_crypto_api.QuotesCryptoResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_crypto_api.TradesCryptoResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.ImagesNewsDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
@@ -9,15 +14,18 @@ import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorM
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_paper_api.AssetDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_stock_api.BarsStockResponseDto
 import dev.pinkroom.marketsight.domain.model.assets.Asset
+import dev.pinkroom.marketsight.domain.model.bars_asset.BarAsset
 import dev.pinkroom.marketsight.domain.model.common.ErrorMessage
 import dev.pinkroom.marketsight.domain.model.common.SubscriptionMessage
-import dev.pinkroom.marketsight.domain.model.historical_bars.BarAsset
 import dev.pinkroom.marketsight.domain.model.news.ImageSize
 import dev.pinkroom.marketsight.domain.model.news.ImagesNews
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
+import dev.pinkroom.marketsight.domain.model.quotes_asset.QuoteAsset
+import dev.pinkroom.marketsight.domain.model.quotes_asset.QuotesResponse
+import dev.pinkroom.marketsight.domain.model.trades_asset.TradeAsset
+import dev.pinkroom.marketsight.domain.model.trades_asset.TradesResponse
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -104,6 +112,35 @@ fun BarAssetDto.toBarAsset() = BarAsset(
     volumeWeightedAvgPrice = volumeWeightedAvgPrice,
 )
 
-fun BarsStockResponseDto.toListBarAsset() = bars.map { it.toBarAsset() }
+fun QuotesResponseDto.toQuotesResponse() = QuotesResponse(
+    quotes = quotes.map { it.toQuoteAsset() },
+    pageToken = pageToken,
+)
 
-fun BarsCryptoResponseDto.toListBarAsset() = bars.entries.first().value.map { it.toBarAsset() }
+fun QuoteAssetDto.toQuoteAsset() = QuoteAsset(
+    id = tradeId,
+    bidPrice = bidPrice,
+    askPrice = askPrice,
+    timeStamp = timeStamp.toLocalDateTime(),
+)
+
+fun QuotesCryptoResponseDto.toQuotesResponseDto() = QuotesResponseDto(
+    quotes = quotes.entries.first().value,
+    pageToken = pageToken,
+)
+
+fun TradesResponseDto.toTradesResponse() = TradesResponse(
+    trades = trades.map { it.toTradeAsset() },
+    pageToken = pageToken,
+)
+
+fun TradeAssetDto.toTradeAsset() = TradeAsset(
+    id = tradeId,
+    tradePrice = tradePrice,
+    timeStamp = timeStamp.toLocalDateTime(),
+)
+
+fun TradesCryptoResponseDto.toTradesResponseDto() = TradesResponseDto(
+    trades = trades.entries.first().value,
+    pageToken = pageToken,
+)

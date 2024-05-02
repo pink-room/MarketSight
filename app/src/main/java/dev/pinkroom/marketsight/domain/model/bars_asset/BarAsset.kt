@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.domain.model.historical_bars
+package dev.pinkroom.marketsight.domain.model.bars_asset
 
 import java.time.LocalDateTime
 

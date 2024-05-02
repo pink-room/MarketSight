@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.domain.model.historical_bars
+package dev.pinkroom.marketsight.domain.model.bars_asset
 
 sealed class TimeFrame(val frameValue: String){
     data class Minutes(val value: Int): TimeFrame(frameValue = "${value}T"){
