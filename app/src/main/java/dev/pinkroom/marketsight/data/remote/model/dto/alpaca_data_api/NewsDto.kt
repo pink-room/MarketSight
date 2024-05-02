@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api
+package dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api
 
 import com.google.gson.annotations.SerializedName
 

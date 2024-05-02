@@ -30,11 +30,13 @@ android {
 
         val alpacaStreamUrl = properties.getProperty("ALPACA_STREAM_URL") ?: ""
         val alpacaDataUrl = properties.getProperty("ALPACA_DATA_URL") ?: ""
+        val alpacaPaperUrl = properties.getProperty("ALPACA_PAPER_URL") ?: ""
         val alpacaApiId = properties.getProperty("ALPACA_API_ID") ?: ""
         val alpacaApiSecret = properties.getProperty("ALPACA_API_SECRET") ?: ""
 
         buildConfigField(type = "String", name = "ALPACA_STREAM_URL", value = alpacaStreamUrl)
         buildConfigField(type = "String", name = "ALPACA_DATA_URL", value = alpacaDataUrl)
+        buildConfigField(type = "String", name = "ALPACA_PAPER_URL", value = alpacaPaperUrl)
         buildConfigField(type = "String", name = "ALPACA_API_ID", value = alpacaApiId)
         buildConfigField(type = "String", name = "ALPACA_API_SECRET", value = alpacaApiSecret)
     }

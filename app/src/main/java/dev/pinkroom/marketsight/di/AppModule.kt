@@ -22,8 +22,9 @@ import dev.pinkroom.marketsight.common.addLoggingInterceptor
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
 import dev.pinkroom.marketsight.common.connection_network.NetworkConnectivityObserver
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
-import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
-import dev.pinkroom.marketsight.data.remote.AlpacaNewsService
+import dev.pinkroom.marketsight.data.remote.AlpacaDataApi
+import dev.pinkroom.marketsight.data.remote.AlpacaPaperApi
+import dev.pinkroom.marketsight.data.remote.AlpacaService
 import dev.pinkroom.marketsight.data.repository.NewsRepositoryImp
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import okhttp3.OkHttpClient
@@ -39,10 +40,15 @@ import javax.inject.Singleton
 object AppModule {
 
     private const val ALPACA_STREAM_URL_NEWS = BuildConfig.ALPACA_STREAM_URL + "v1beta1/news"
+    private const val ALPACA_STREAM_URL_STOCK = BuildConfig.ALPACA_STREAM_URL + "v2/iex"
+    private const val ALPACA_STREAM_URL_CRYPTO = BuildConfig.ALPACA_STREAM_URL + "v1beta3/crypto/us"
     private const val API_TIMEOUT_WS = 30L
     private const val API_TIMEOUT_API = 10L
     private const val OK_HTTP_WS = "okHttpWS"
     private const val OK_HTTP_API = "okHttpAPI"
+    private const val ALPACA_NEWS_SERVICE = "alpacaNewsService"
+    private const val ALPACA_STOCK_SERVICE = "alpacaStockService"
+    private const val ALPACA_CRYPTO_SERVICE = "alpacaCryptoService"
 
     @Provides
     @Singleton
@@ -74,9 +80,10 @@ object AppModule {
 
     @Provides
     @Singleton
+    @Named(ALPACA_NEWS_SERVICE)
     fun provideAlpacaNewsService(
         @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: Lifecycle
-    ): AlpacaNewsService {
+    ): AlpacaService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_NEWS))
             .addMessageAdapterFactory(GsonMessageAdapter.Factory())
@@ -84,14 +91,57 @@ object AppModule {
             //.lifecycle(lifecycle)
             .build()
 
-        return scarlet.create(AlpacaNewsService::class.java)
+        return scarlet.create(AlpacaService::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideAlpacaNewsApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaNewsApi {
+    fun provideAlpacaNewsApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaDataApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.ALPACA_DATA_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create()
+    }
+
+    @Provides
+    @Singleton
+    @Named(ALPACA_STOCK_SERVICE)
+    fun provideAlpacaStockService(
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: Lifecycle
+    ): AlpacaService {
+        val scarlet = Scarlet.Builder()
+            .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_STOCK))
+            .addMessageAdapterFactory(GsonMessageAdapter.Factory())
+            .addStreamAdapterFactory(FlowStreamAdapterFactory())
+            //.lifecycle(lifecycle)
+            .build()
+
+        return scarlet.create(AlpacaService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @Named(ALPACA_CRYPTO_SERVICE)
+    fun provideAlpacaCryptoService(
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: Lifecycle
+    ): AlpacaService {
+        val scarlet = Scarlet.Builder()
+            .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_CRYPTO))
+            .addMessageAdapterFactory(GsonMessageAdapter.Factory())
+            .addStreamAdapterFactory(FlowStreamAdapterFactory())
+            //.lifecycle(lifecycle)
+            .build()
+
+        return scarlet.create(AlpacaService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlpacaPaperApi(@Named(OK_HTTP_API) okHttpClient: OkHttpClient): AlpacaPaperApi {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.ALPACA_PAPER_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()
@@ -106,6 +156,17 @@ object AppModule {
     @Singleton
     fun provideDispatchers(): DispatcherProvider {
         return DefaultDispatchers()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsRemoteDataSource(
+        gson: Gson,
+        dispatcherProvider: DispatcherProvider,
+        alpacaDataApi: AlpacaDataApi,
+        @Named(ALPACA_NEWS_SERVICE) alpacaService: AlpacaService,
+    ): NewsRemoteDataSource {
+        return NewsRemoteDataSource(gson = gson, alpacaService = alpacaService, alpacaDataApi = alpacaDataApi, dispatchers = dispatcherProvider)
     }
 
     @Provides

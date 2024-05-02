@@ -10,9 +10,9 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.common.formatToStandardIso
 import dev.pinkroom.marketsight.common.toObject
-import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
-import dev.pinkroom.marketsight.data.remote.AlpacaNewsService
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
+import dev.pinkroom.marketsight.data.remote.AlpacaDataApi
+import dev.pinkroom.marketsight.data.remote.AlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
@@ -25,19 +25,19 @@ import javax.inject.Inject
 
 class NewsRemoteDataSource @Inject constructor(
     private val gson: Gson,
-    private val alpacaNewsService: AlpacaNewsService,
-    private val alpacaNewsApi: AlpacaNewsApi,
+    private val alpacaService: AlpacaService,
+    private val alpacaDataApi: AlpacaDataApi,
     private val dispatchers: DispatcherProvider,
 ) {
     private var isNewsSubscribed: Boolean = false
 
     private suspend fun subscribeNews(symbols: List<String> = listOf("*")){
-        alpacaNewsService.observeOnConnectionEvent()
+        alpacaService.observeOnConnectionEvent()
             .filter { it is WebSocket.Event.OnConnectionOpened<*> }
             .take(1)
             .collect{
                 isNewsSubscribed = true
-                alpacaNewsService.sendMessage(
+                alpacaService.sendMessage(
                     message = MessageAlpacaService(
                         action = ActionAlpaca.Subscribe.action, news = symbols,
                     )
@@ -47,7 +47,7 @@ class NewsRemoteDataSource @Inject constructor(
 
     fun getRealTimeNews() = flow {
         if (!isNewsSubscribed) subscribeNews()
-        alpacaNewsService.observeResponse().collect{ data ->
+        alpacaService.observeResponse().collect{ data ->
             val listNews = mutableListOf<NewsMessageDto>()
             data.forEach {
                 gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.News)?.let { news ->
@@ -59,8 +59,8 @@ class NewsRemoteDataSource @Inject constructor(
     }.flowOn(dispatchers.IO)
 
     fun sendSubscribeMessageToAlpacaService(message: MessageAlpacaService) = flow<Resource<SubscriptionMessageDto>> {
-        alpacaNewsService.sendMessage(message = message)
-        alpacaNewsService.observeResponse().collect { data ->
+        alpacaService.sendMessage(message = message)
+        alpacaService.observeResponse().collect { data ->
             data.forEach {
                 gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.Subscription)?.let { sub ->
                     emit(Resource.Success(sub))
@@ -79,7 +79,7 @@ class NewsRemoteDataSource @Inject constructor(
         startDate: LocalDateTime? = null,
         endDate: LocalDateTime? = null,
     ): NewsResponseDto {
-        return alpacaNewsApi.getNews(
+        return alpacaDataApi.getNews(
             symbols = symbols?.joinToString(","),
             perPage = limit,
             pageToken = pageToken,

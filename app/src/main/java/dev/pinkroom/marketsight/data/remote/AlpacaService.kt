@@ -6,7 +6,7 @@ import com.tinder.scarlet.ws.Send
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
 import kotlinx.coroutines.flow.Flow
 
-interface AlpacaNewsService {
+interface AlpacaService {
     @Receive
     fun observeOnConnectionEvent(): Flow<WebSocket.Event>
 

@@ -12,9 +12,9 @@ import com.tinder.scarlet.WebSocket
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
-import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
-import dev.pinkroom.marketsight.data.remote.AlpacaNewsService
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
+import dev.pinkroom.marketsight.data.remote.AlpacaDataApi
+import dev.pinkroom.marketsight.data.remote.AlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
@@ -48,13 +48,13 @@ class NewsRemoteDataSourceTest {
     private val faker = Faker()
     private val newsFactory = NewsFactory()
     private val newsDtoFactory = NewsDtoFactory()
-    private val alpacaNewsService = mockk<AlpacaNewsService>(relaxed = true, relaxUnitFun = true)
-    private val alpacaNewsApi = mockk<AlpacaNewsApi>()
+    private val alpacaService = mockk<AlpacaService>(relaxed = true, relaxUnitFun = true)
+    private val alpacaDataApi = mockk<AlpacaDataApi>()
     private val dispatchers = TestDispatcherProvider()
     private val alpacaRemoteDataSource = NewsRemoteDataSource(
         gson = gson,
-        alpacaNewsService = alpacaNewsService,
-        alpacaNewsApi = alpacaNewsApi,
+        alpacaService = alpacaService,
+        alpacaDataApi = alpacaDataApi,
         dispatchers = dispatchers,
     )
 
@@ -75,7 +75,7 @@ class NewsRemoteDataSourceTest {
         val expectedMessageToSubscribe = MessageAlpacaService(
             action = ActionAlpaca.Subscribe.action, news = listOf("*"),
         )
-        verify(exactly = 1) { alpacaNewsService.sendMessage(expectedMessageToSubscribe) }
+        verify(exactly = 1) { alpacaService.sendMessage(expectedMessageToSubscribe) }
     }
 
     @Test
@@ -88,7 +88,7 @@ class NewsRemoteDataSourceTest {
         val response = alpacaRemoteDataSource.sendSubscribeMessageToAlpacaService(message = messageToSend).first()
 
         // THEN
-        verify { alpacaNewsService.sendMessage(message = messageToSend) }
+        verify { alpacaService.sendMessage(message = messageToSend) }
         assertThat(response is Resource.Success).isTrue()
         val data = response as Resource.Success
         assertThat(data.data.news).isEqualTo(messageToSend.news)
@@ -106,7 +106,7 @@ class NewsRemoteDataSourceTest {
         val response = alpacaRemoteDataSource.getRealTimeNews().toList()
 
         // THEN
-        verify { alpacaNewsService.observeResponse() }
+        verify { alpacaService.observeResponse() }
         val allIdsSent = listNews.map { it.id }
         assertThat(response).isNotEmpty()
         response.forEach { newsReturned ->
@@ -136,7 +136,7 @@ class NewsRemoteDataSourceTest {
 
         // THEN
         coVerify {
-            alpacaNewsApi.getNews(
+            alpacaDataApi.getNews(
                 symbols = symbols.joinToString(","),
                 perPage = limit,
                 pageToken = pageToken,
@@ -155,7 +155,7 @@ class NewsRemoteDataSourceTest {
         val response = alpacaRemoteDataSource.getRealTimeNews().firstOrNull()
 
         // THEN
-        verify { alpacaNewsService.observeResponse() }
+        verify { alpacaService.observeResponse() }
         assertThat(response).isNull()
     }
 
@@ -169,12 +169,12 @@ class NewsRemoteDataSourceTest {
         val response = alpacaRemoteDataSource.sendSubscribeMessageToAlpacaService(messageToSend).first()
 
         // THEN
-        verify { alpacaNewsService.observeResponse() }
+        verify { alpacaService.observeResponse() }
         assertThat(response is Resource.Error).isTrue()
     }
 
     private fun mockNewsResponseApiWithSuccess(limit: Int) {
-        coEvery { alpacaNewsApi.getNews(
+        coEvery { alpacaDataApi.getNews(
             symbols = any(),
             perPage = any(),
             pageToken = any(),
@@ -188,13 +188,13 @@ class NewsRemoteDataSourceTest {
     }
 
     private fun mockNewsServiceWithOpenConnection(){
-        every { alpacaNewsService.observeOnConnectionEvent() }.returns(
+        every { alpacaService.observeOnConnectionEvent() }.returns(
             flow { emit(WebSocket.Event.OnConnectionOpened(webSocket = Any())) }
         )
     }
 
     private fun mockNewsServiceWithSuccess(newsList: List<NewsMessageDto>) {
-        every { alpacaNewsService.observeResponse() }.returns(
+        every { alpacaService.observeResponse() }.returns(
             flow {
                 emit(listOf(gson.toJsonTree(newsList.first())))
                 delay(3000) // Simulate WS API
@@ -207,7 +207,7 @@ class NewsRemoteDataSourceTest {
     }
 
     private fun mockNewsServiceWithMessageNotExpected() {
-        every { alpacaNewsService.observeResponse() }.returns(
+        every { alpacaService.observeResponse() }.returns(
             flow {
                 emit(listOf(gson.toJsonTree(
                     ErrorMessageDto(
@@ -228,8 +228,8 @@ class NewsRemoteDataSourceTest {
             trades = messageAlpacaService.trades,
         )
 
-        every { alpacaNewsService.sendMessage(any()) } returns(Unit)
-        every { alpacaNewsService.observeResponse() }.returns(
+        every { alpacaService.sendMessage(any()) } returns(Unit)
+        every { alpacaService.observeResponse() }.returns(
             flow {
                 emit(listOf(gson.toJsonTree(returnedMessageService)))
             }
@@ -242,8 +242,8 @@ class NewsRemoteDataSourceTest {
             msg = "Not Found",
             code = 404,
         )
-        every { alpacaNewsService.sendMessage(any()) } returns(Unit)
-        every { alpacaNewsService.observeResponse() }.returns(
+        every { alpacaService.sendMessage(any()) } returns(Unit)
+        every { alpacaService.observeResponse() }.returns(
             flow {
                 emit(listOf(gson.toJsonTree(errorMessage)))
             }

@@ -10,7 +10,7 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
 import dev.pinkroom.marketsight.data.mapper.toNewsInfo
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_data_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
