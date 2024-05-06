@@ -134,13 +134,14 @@ fun QuoteAssetDto.toQuoteAsset() = QuoteAsset(
     id = tradeId,
     bidPrice = bidPrice,
     askPrice = askPrice,
-    timeStamp = timeStamp.toLocalDateTimeWithNanoSecond(),
+    timeStamp = requestDate.toLocalDateTimeWithNanoSecond(),
     symbol = symbol,
 )
 
 fun QuotesCryptoResponseDto.toQuotesResponseDto() = QuotesResponseDto(
     quotes = quotes.entries.first().value,
     pageToken = pageToken,
+    symbol = quotes.entries.first().key,
 )
 
 fun TradesResponseDto.toTradesResponse() = TradesResponse(
@@ -151,11 +152,12 @@ fun TradesResponseDto.toTradesResponse() = TradesResponse(
 fun TradeAssetDto.toTradeAsset() = TradeAsset(
     id = tradeId,
     tradePrice = tradePrice,
-    timeStamp = timeStamp.toLocalDateTimeWithNanoSecond(),
+    timeStamp = dateTransaction.toLocalDateTimeWithNanoSecond(),
     symbol = symbol,
 )
 
 fun TradesCryptoResponseDto.toTradesResponseDto() = TradesResponseDto(
     trades = trades.entries.first().value,
     pageToken = pageToken,
+    symbol = trades.entries.first().key,
 )
