@@ -7,4 +7,5 @@ data class QuoteAssetDto(
     @SerializedName("bp") val bidPrice: Double,
     @SerializedName("ap") val askPrice: Double,
     @SerializedName("t") val timeStamp: String,
+    @SerializedName("S") val symbol: String? = null,
 )

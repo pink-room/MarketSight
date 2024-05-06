@@ -6,4 +6,5 @@ data class TradeAssetDto(
     @SerializedName("i") val tradeId: Long,
     @SerializedName("p") val tradePrice: Double,
     @SerializedName("t") val timeStamp: String,
+    @SerializedName("S") val symbol: String? = null,
 )

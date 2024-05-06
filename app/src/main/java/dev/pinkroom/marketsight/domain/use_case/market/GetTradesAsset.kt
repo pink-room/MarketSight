@@ -1,4 +1,4 @@
-package dev.pinkroom.marketsight.domain.use_case.assets
+package dev.pinkroom.marketsight.domain.use_case.market
 
 import dev.pinkroom.marketsight.common.Constants
 import dev.pinkroom.marketsight.common.SortType
@@ -7,7 +7,7 @@ import dev.pinkroom.marketsight.domain.repository.AssetsRepository
 import java.time.LocalDateTime
 import javax.inject.Inject
 
-class GetTradesAssets @Inject constructor(
+class GetTradesAsset @Inject constructor(
     private val assetsRepository: AssetsRepository,
 ){
     suspend operator fun invoke(

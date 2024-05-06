@@ -11,4 +11,5 @@ data class BarAssetDto(
     @SerializedName("t") val timestamp: String,
     @SerializedName("v") val barVolume: Double,
     @SerializedName("vw") val volumeWeightedAvgPrice: Double,
+    @SerializedName("S") val symbol: String? = null,
 )

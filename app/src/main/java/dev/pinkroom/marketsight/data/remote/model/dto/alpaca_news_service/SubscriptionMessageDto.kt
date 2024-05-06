@@ -7,4 +7,5 @@ data class SubscriptionMessageDto(
     val news: List<String>? = null,
     val quotes: List<String>? = null,
     val trades: List<String>? = null,
+    val bars: List<String>? = null,
 )

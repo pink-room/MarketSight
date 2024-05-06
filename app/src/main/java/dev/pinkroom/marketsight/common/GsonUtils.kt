@@ -13,12 +13,10 @@ fun <T> Gson.toObject(value: Any, helperIdentifier: HelperIdentifierMessagesAlpa
     } else null
 }
 
-fun Gson.verifyIfIsError(jsonValue: String): ErrorMessageDto? {
+fun Gson.verifyIfIsError(value: Any): ErrorMessageDto? {
     val helperIdentifier = HelperIdentifierMessagesAlpacaService.Error
-    fromJson(jsonValue, Array<Any>::class.java).toList().forEach { data ->
-        toObject(value = data, helperIdentifier = helperIdentifier)?.let {
-            return it
-        }
+    toObject(value = value, helperIdentifier = helperIdentifier)?.let {
+        return it
     }
     return null
 }

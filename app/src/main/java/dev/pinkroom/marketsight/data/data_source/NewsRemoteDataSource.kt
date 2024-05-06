@@ -46,7 +46,9 @@ class NewsRemoteDataSource @Inject constructor(
     }
 
     fun getRealTimeNews() = flow {
-        if (!isNewsSubscribed) subscribeNews()
+        if (!isNewsSubscribed){
+            subscribeNews()
+        }
         alpacaService.observeResponse().collect{ data ->
             val listNews = mutableListOf<NewsMessageDto>()
             data.forEach {

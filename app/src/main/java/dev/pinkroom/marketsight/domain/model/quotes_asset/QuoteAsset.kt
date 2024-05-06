@@ -7,4 +7,5 @@ data class QuoteAsset(
     val bidPrice: Double,
     val askPrice: Double,
     val timeStamp: LocalDateTime,
+    val symbol: String? = null,
 )

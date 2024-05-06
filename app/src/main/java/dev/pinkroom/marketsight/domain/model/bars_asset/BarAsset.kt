@@ -11,4 +11,5 @@ data class BarAsset(
     val timestamp: LocalDateTime,
     val barVolume: Double,
     val volumeWeightedAvgPrice: Double,
+    val symbol: String? = null,
 )

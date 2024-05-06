@@ -21,13 +21,17 @@ import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
 import dev.pinkroom.marketsight.common.addLoggingInterceptor
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
 import dev.pinkroom.marketsight.common.connection_network.NetworkConnectivityObserver
+import dev.pinkroom.marketsight.data.data_source.AssetsRemoteDataSource
+import dev.pinkroom.marketsight.data.data_source.MarketRemoteDataSource
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
 import dev.pinkroom.marketsight.data.remote.AlpacaCryptoApi
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaPaperApi
 import dev.pinkroom.marketsight.data.remote.AlpacaService
 import dev.pinkroom.marketsight.data.remote.AlpacaStockApi
+import dev.pinkroom.marketsight.data.repository.AssetsRepositoryImp
 import dev.pinkroom.marketsight.data.repository.NewsRepositoryImp
+import dev.pinkroom.marketsight.domain.repository.AssetsRepository
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -198,8 +202,41 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideMarketRemoteDataSource(
+        gson: Gson,
+        dispatcherProvider: DispatcherProvider,
+        alpacaCryptoApi: AlpacaCryptoApi,
+        alpacaStockApi: AlpacaStockApi,
+        @Named(ALPACA_STOCK_SERVICE) alpacaServiceStock: AlpacaService,
+        @Named(ALPACA_CRYPTO_SERVICE) alpacaServiceCrypto: AlpacaService,
+    ): MarketRemoteDataSource {
+        return MarketRemoteDataSource(
+            alpacaServiceCrypto = alpacaServiceCrypto,
+            alpacaServiceStock = alpacaServiceStock,
+            dispatchers = dispatcherProvider,
+            alpacaCryptoApi = alpacaCryptoApi,
+            alpacaStockApi = alpacaStockApi,
+            gson = gson,
+        )
+    }
+
+    @Provides
+    @Singleton
     fun provideNewsRepository(newsRemoteDataSource: NewsRemoteDataSource, dispatcherProvider: DispatcherProvider): NewsRepository {
         return NewsRepositoryImp(newsRemoteDataSource = newsRemoteDataSource, dispatchers = dispatcherProvider)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAssetsRepository(
+        marketRemoteDataSource: MarketRemoteDataSource,
+        assetsRemoteDataSource: AssetsRemoteDataSource,
+        dispatcherProvider: DispatcherProvider,
+    ): AssetsRepository {
+        return AssetsRepositoryImp(
+            marketRemoteDataSource = marketRemoteDataSource,
+            assetsRemoteDataSource = assetsRemoteDataSource, dispatchers = dispatcherProvider,
+        )
     }
 
     @Provides

@@ -58,7 +58,19 @@ fun SubscriptionMessageDto.toSubscriptionMessage() = SubscriptionMessage(
 
 fun String.toLocalDateTime(): LocalDateTime {
     val parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-    val date = LocalDateTime.parse(this, parser)
+    val date = try {
+        LocalDateTime.parse(this, parser)
+    } catch (e: Exception) { LocalDateTime.now() }
+    return date.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
+}
+
+fun String.toLocalDateTimeWithNanoSecond(): LocalDateTime {
+    val max = this.count().coerceAtMost(22)
+    val formatStringDate = this.subSequence(0,max)
+    val parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SS", Locale.getDefault())
+    val date = try {
+        LocalDateTime.parse(formatStringDate, parser)
+    } catch (e: Exception) { LocalDateTime.now() }
     return date.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
 }
 
@@ -108,8 +120,9 @@ fun BarAssetDto.toBarAsset() = BarAsset(
     barVolume = barVolume,
     lowPrice = lowPrice,
     tradeCountInBar = tradeCountInBar,
-    timestamp = timestamp.toLocalDateTime(),
+    timestamp = timestamp.toLocalDateTimeWithNanoSecond(),
     volumeWeightedAvgPrice = volumeWeightedAvgPrice,
+    symbol = symbol,
 )
 
 fun QuotesResponseDto.toQuotesResponse() = QuotesResponse(
@@ -121,7 +134,8 @@ fun QuoteAssetDto.toQuoteAsset() = QuoteAsset(
     id = tradeId,
     bidPrice = bidPrice,
     askPrice = askPrice,
-    timeStamp = timeStamp.toLocalDateTime(),
+    timeStamp = timeStamp.toLocalDateTimeWithNanoSecond(),
+    symbol = symbol,
 )
 
 fun QuotesCryptoResponseDto.toQuotesResponseDto() = QuotesResponseDto(
@@ -137,7 +151,8 @@ fun TradesResponseDto.toTradesResponse() = TradesResponse(
 fun TradeAssetDto.toTradeAsset() = TradeAsset(
     id = tradeId,
     tradePrice = tradePrice,
-    timeStamp = timeStamp.toLocalDateTime(),
+    timeStamp = timeStamp.toLocalDateTimeWithNanoSecond(),
+    symbol = symbol,
 )
 
 fun TradesCryptoResponseDto.toTradesResponseDto() = TradesResponseDto(
