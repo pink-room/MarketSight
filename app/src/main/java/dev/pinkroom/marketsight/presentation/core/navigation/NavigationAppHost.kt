@@ -42,7 +42,15 @@ fun NavigationAppHost(
             route = Route.HomeScreen.route,
         ) {
             val viewModel = hiltViewModel<HomeViewModel>()
-            HomeScreen()
+            val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+
+            HomeScreen(
+                isLoading = uiState.isLoading,
+                placeHolder = uiState.placeHolder,
+                searchInput = uiState.searchInput,
+                filters = uiState.filters,
+                onEvent = viewModel::onEvent
+            )
         }
         composable(
             route = Route.NewsScreen.route,

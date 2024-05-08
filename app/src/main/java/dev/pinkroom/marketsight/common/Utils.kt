@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import dev.pinkroom.marketsight.BuildConfig
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.Constants.ALL_SYMBOLS
+import dev.pinkroom.marketsight.domain.model.assets.AssetFilter
+import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -50,7 +52,7 @@ fun LocalDate.toReadableDate(): String {
 
 fun LocalDateTime.formatToStandardIso(): String = format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
 
-fun LocalDate.atEndOfTheDay() = atTime(23,59,59).atOffset(ZoneOffset.UTC).toLocalDateTime()
+fun LocalDate.atEndOfTheDay(): LocalDateTime = atTime(23,59,59).atOffset(ZoneOffset.UTC).toLocalDateTime()
 
 sealed class ActionAlpaca(val action: String) {
     data object Subscribe: ActionAlpaca(action = "subscribe")
@@ -66,6 +68,21 @@ sealed interface DateMomentType{
     data object Start: DateMomentType
     data object End: DateMomentType
 }
+
+val assetFilters = listOf(
+    AssetFilter(
+        typeAsset = TypeAsset.Stock,
+        isSelected = true,
+        stringId = R.string.stock,
+        placeHolder = R.string.place_holder_stock,
+    ),
+    AssetFilter(
+        typeAsset = TypeAsset.Crypto,
+        isSelected = false,
+        stringId = R.string.crypto,
+        placeHolder = R.string.place_holder_crypto,
+    ),
+)
 
 val popularSymbols = listOf(
     SubInfoSymbols(

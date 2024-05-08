@@ -23,7 +23,9 @@ import dev.pinkroom.marketsight.presentation.core.theme.dimens
 
 @Composable
 fun ButtonFilter(
+    modifier: Modifier = Modifier,
     isSelected: Boolean,
+    showLeadingIcon: Boolean = true,
     text: String,
     onClick: () -> Unit,
 ){
@@ -31,6 +33,7 @@ fun ButtonFilter(
     val colorContent = if (isSelected) Blue else MaterialTheme.colorScheme.onBackground
     val colorBorder = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.onBackground
     Button(
+        modifier = modifier,
         shape = RoundedCornerShape(dimens.smallShape),
         border = BorderStroke(
             width = dimens.smallWidth, color = colorBorder,
@@ -47,7 +50,7 @@ fun ButtonFilter(
             horizontalArrangement = Arrangement.spacedBy(dimens.xSmallPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (isSelected)
+            if (isSelected && showLeadingIcon)
                 Icon(
                     modifier = Modifier
                         .size(dimens.smallIconSize),

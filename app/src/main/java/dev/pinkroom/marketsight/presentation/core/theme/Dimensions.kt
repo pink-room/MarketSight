@@ -65,6 +65,9 @@ class Dimensions(
     val menuHeight: Dp = 100.dp,
     val liveNewsCardWidth: Dp = 270.dp,
     val liveNewsCardHeight: Dp = 100.dp,
+    val searchInputHeight: Dp = 60.dp,
+    val filterAssetCardWidth: Dp = 90.dp,
+    val filterAssetCardHeight: Dp = 40.dp,
     val emptyContentMaxHeight: Float = 0.95f,
     val bottomSheetHeight: Float = 0.45f,
 )
