@@ -29,29 +29,33 @@ fun SearchInput(
     value: String,
     placeHolder: String,
     isLoading: Boolean,
+    isEnabled: Boolean,
     onChangeInput: (String) -> Unit,
     closeInput: () -> Unit,
 ){
+    val colorPlaceHolder = when(isEnabled) {
+        true -> if (isSystemInDarkTheme()) GrayAthens else Gray
+        false -> Gray
+    }
     if (!isLoading)
         OutlinedTextField(
             modifier = modifier,
             value = value,
             onValueChange = onChangeInput,
+            enabled = isEnabled,
             singleLine = true,
             shape = CircleShape,
             leadingIcon = {
-                val colorIcon = if (isSystemInDarkTheme()) GrayAthens else Gray
                 Icon(
                     painter = painterResource(id = R.drawable.icon_search),
                     contentDescription = null,
-                    tint = colorIcon,
+                    tint = colorPlaceHolder,
                 )
             },
             placeholder = {
-                val colorText = if (isSystemInDarkTheme()) GrayAthens else Gray
                 Text(
                     text = placeHolder,
-                    color = colorText,
+                    color = colorPlaceHolder,
                 )
             },
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -65,6 +69,7 @@ fun SearchInput(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.primary,
                 focusedContainerColor = MaterialTheme.colorScheme.primary,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
                 focusedBorderColor = MaterialTheme.colorScheme.onPrimary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.background,
                 cursorColor = MaterialTheme.colorScheme.onPrimary,

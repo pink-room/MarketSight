@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import dev.pinkroom.marketsight.presentation.core.navigation.Args.SYMBOL_ID
 import dev.pinkroom.marketsight.presentation.core.util.ObserveAsEvents
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailScreen
+import dev.pinkroom.marketsight.presentation.detail_screen.DetailViewModel
 import dev.pinkroom.marketsight.presentation.home_screen.HomeScreen
 import dev.pinkroom.marketsight.presentation.home_screen.HomeViewModel
 import dev.pinkroom.marketsight.presentation.news_screen.NewsAction
@@ -49,7 +50,13 @@ fun NavigationAppHost(
                 placeHolder = uiState.placeHolder,
                 searchInput = uiState.searchInput,
                 filters = uiState.filters,
-                onEvent = viewModel::onEvent
+                assets = uiState.assets,
+                isEmptyOnSearch = uiState.isEmptyOnSearch,
+                hasError = uiState.hasError,
+                onEvent = viewModel::onEvent,
+                navigateToAssetDetailScreen = {
+                    navController.navigate(Route.DetailScreen.withSymbol(it.symbol))
+                }
             )
         }
         composable(
@@ -96,6 +103,7 @@ fun NavigationAppHost(
                 },
             )
         ) {
+            val viewModel = hiltViewModel<DetailViewModel>()
             DetailScreen()
         }
     }

@@ -28,4 +28,6 @@
     <string name="place_holder_crypto">Search Crypto</string>
     <string name="stock">Stock</string>
     <string name="crypto">Crypto</string>
+    <string name="empty_assets">There are no assets for the search performed.</string>
+    <string name="error_on_getting_assets">An error occurred, try again.</string>
 </resources>
