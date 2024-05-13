@@ -43,7 +43,9 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun changeSearchInput(newInput: String) {
-        val newList = selectedFilter.getAssets().filter { it.name.lowercase().startsWith(newInput.lowercase()) || it.symbol.startsWith(newInput.uppercase()) }
+        val newList = selectedFilter.getAssets().filter {
+            it.name.lowercase().startsWith(newInput.lowercase()) || it.symbol.startsWith(newInput.uppercase())
+        }
         _uiState.update { it.copy(searchInput = newInput, assets = newList, isEmptyOnSearch = newList.isEmpty()) }
     }
 
