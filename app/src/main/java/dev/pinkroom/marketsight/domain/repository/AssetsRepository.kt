@@ -22,6 +22,10 @@ interface AssetsRepository {
         typeAsset: TypeAsset
     ): Resource<List<Asset>>
 
+    suspend fun getAssetById(
+        id: String
+    ): Resource<Asset>
+
     suspend fun getBars(
         symbol: String,
         typeAsset: TypeAsset,

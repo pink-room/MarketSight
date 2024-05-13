@@ -30,4 +30,10 @@
     <string name="crypto">Crypto</string>
     <string name="empty_assets">There are no assets for the search performed.</string>
     <string name="error_on_getting_assets">An error occurred, try again.</string>
+    <string name="hour">H</string>
+    <string name="day">D</string>
+    <string name="month">M</string>
+    <string name="year">Y</string>
+    <string name="error_on_getting_bars">Something went wrong while trying to get the bars, please try again.</string>
+    <string name="overview">Overview</string>
 </resources>

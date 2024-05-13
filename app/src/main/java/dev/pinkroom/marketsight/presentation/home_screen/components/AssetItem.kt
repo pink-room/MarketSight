@@ -19,8 +19,11 @@ import dev.pinkroom.marketsight.presentation.core.theme.dimens
 fun AssetItem(
     modifier: Modifier = Modifier,
     asset: Asset,
-    onAssetClick: (Asset) -> Unit,
+    onAssetClick: ((Asset) -> Unit)? = null,
 ){
+    val modifierItem = if (onAssetClick != null) Modifier
+        .clickable { onAssetClick(asset) }
+    else Modifier
     Card(
         modifier = modifier
             .fillMaxWidth(),
@@ -29,11 +32,8 @@ fun AssetItem(
         ),
     ) {
         Column(
-            modifier = Modifier
+            modifier = modifierItem
                 .fillMaxWidth()
-                .clickable {
-                    onAssetClick(asset)
-                }
                 .padding(vertical = dimens.normalPadding, horizontal = dimens.normalPadding)
         ) {
             Text(

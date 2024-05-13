@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import dev.pinkroom.marketsight.presentation.core.navigation.Args.SYMBOL_ID
 import dev.pinkroom.marketsight.presentation.core.util.ObserveAsEvents
+import dev.pinkroom.marketsight.presentation.detail_screen.DetailAction
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailScreen
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailViewModel
 import dev.pinkroom.marketsight.presentation.home_screen.HomeScreen
@@ -55,7 +56,7 @@ fun NavigationAppHost(
                 hasError = uiState.hasError,
                 onEvent = viewModel::onEvent,
                 navigateToAssetDetailScreen = {
-                    navController.navigate(Route.DetailScreen.withSymbol(it.symbol))
+                    navController.navigate(Route.DetailScreen.withId(it.id))
                 }
             )
         }
@@ -104,7 +105,19 @@ fun NavigationAppHost(
             )
         ) {
             val viewModel = hiltViewModel<DetailViewModel>()
-            DetailScreen()
+            val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+
+            ObserveAsEvents(viewModel.action){ action ->
+                when(action){
+                    DetailAction.NavigateToHomeEmptyId -> navController.popBackStack()
+                }
+            }
+
+            DetailScreen(
+                asset = uiState.asset,
+                statusMainInfo = uiState.statusMainInfo,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

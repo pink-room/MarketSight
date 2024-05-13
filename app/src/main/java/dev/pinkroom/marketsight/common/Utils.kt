@@ -6,6 +6,9 @@ import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.Constants.ALL_SYMBOLS
 import dev.pinkroom.marketsight.domain.model.assets.AssetFilter
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
+import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
+import dev.pinkroom.marketsight.domain.model.bars_asset.TimeFrame
+import dev.pinkroom.marketsight.domain.model.common.DateTimeUnit
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -81,6 +84,45 @@ val assetFilters = listOf(
         isSelected = false,
         stringId = R.string.crypto,
         placeHolder = R.string.place_holder_crypto,
+    ),
+)
+
+val historicalBarFilters = listOf(
+    FilterHistoricalBar(
+        value = 24,
+        timeFrameIntervalValues = TimeFrame.Minutes(value = 15),
+        timeFrameString = R.string.hour,
+        dateTimeUnit = DateTimeUnit.Hour,
+    ),
+    FilterHistoricalBar(
+        value = 7,
+        timeFrameIntervalValues = TimeFrame.Hour(value = 1),
+        timeFrameString = R.string.day,
+        dateTimeUnit = DateTimeUnit.Day,
+    ),
+    FilterHistoricalBar(
+        value = 1,
+        timeFrameIntervalValues = TimeFrame.Day,
+        timeFrameString = R.string.month,
+        dateTimeUnit = DateTimeUnit.Month,
+    ),
+    FilterHistoricalBar(
+        value = 3,
+        timeFrameIntervalValues = TimeFrame.Week,
+        timeFrameString = R.string.month,
+        dateTimeUnit = DateTimeUnit.Month,
+    ),
+    FilterHistoricalBar(
+        value = 1,
+        timeFrameIntervalValues = TimeFrame.Month(value = 1),
+        timeFrameString = R.string.year,
+        dateTimeUnit = DateTimeUnit.Year,
+    ),
+    FilterHistoricalBar(
+        value = 20,
+        timeFrameIntervalValues = TimeFrame.Month(value = 3),
+        timeFrameString = R.string.year,
+        dateTimeUnit = DateTimeUnit.Year,
     ),
 )
 

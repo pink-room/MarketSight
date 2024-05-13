@@ -44,6 +44,16 @@ class AssetsRepositoryImp @Inject constructor(
         }
     }
 
+    override suspend fun getAssetById(id: String): Resource<Asset> {
+        return try {
+            val response = assetsRemoteDataSource.getAssetById(id = id)
+            Resource.Success(data = response.toAsset())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(message = e.message ?: "Something Went Wrong on Getting Asset with ID: $id")
+        }
+    }
+
     override suspend fun getBars(
         symbol: String,
         typeAsset: TypeAsset,

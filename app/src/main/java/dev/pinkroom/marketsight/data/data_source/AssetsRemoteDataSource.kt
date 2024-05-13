@@ -11,4 +11,8 @@ class AssetsRemoteDataSource @Inject constructor(
     suspend fun getAllAssets(typeAsset: TypeAsset): List<AssetDto> {
         return alpacaPaperApi.getAssets(typeAsset = typeAsset.value)
     }
+
+    suspend fun getAssetById(id: String): AssetDto {
+        return alpacaPaperApi.getAssetById(id = id)
+    }
 }
