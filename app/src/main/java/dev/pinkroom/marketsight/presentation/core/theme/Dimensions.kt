@@ -71,6 +71,7 @@ class Dimensions(
     val assetCardHeight: Dp = 90.dp,
     val emptyContentMaxHeight: Float = 0.95f,
     val bottomSheetHeight: Float = 0.45f,
+    val spacingItemChart: Dp = 10.dp
 )
 
 val dimens: Dimensions

@@ -6,12 +6,15 @@ import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.Constants.ALL_SYMBOLS
 import dev.pinkroom.marketsight.domain.model.assets.AssetFilter
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
+import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
+import dev.pinkroom.marketsight.domain.model.bars_asset.BarAsset
 import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
 import dev.pinkroom.marketsight.domain.model.bars_asset.TimeFrame
 import dev.pinkroom.marketsight.domain.model.common.DateTimeUnit
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -56,6 +59,8 @@ fun LocalDate.toReadableDate(): String {
 fun LocalDateTime.formatToStandardIso(): String = format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
 
 fun LocalDate.atEndOfTheDay(): LocalDateTime = atTime(23,59,59).atOffset(ZoneOffset.UTC).toLocalDateTime()
+
+fun Double.formatToString() = DecimalFormat("#.#").format(this)
 
 sealed class ActionAlpaca(val action: String) {
     data object Subscribe: ActionAlpaca(action = "subscribe")
@@ -194,3 +199,79 @@ val popularSymbols = listOf(
         isSubscribed = false,
     ),
 )
+
+fun mockChartData(): AssetChartInfo {
+    val barsAsset = listOf(
+        BarAsset(
+            closingPrice = 429.29,
+            timestamp = LocalDateTime.of(2020,7,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 705.64,
+            timestamp = LocalDateTime.of(2020,10,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 668.01,
+            timestamp = LocalDateTime.of(2021,1,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 679.83,
+            timestamp = LocalDateTime.of(2021,4,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 775.01,
+            timestamp = LocalDateTime.of(2021,7,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 1056.86,
+            timestamp = LocalDateTime.of(2021,10,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 1077.77,
+            timestamp = LocalDateTime.of(2022,1,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 674.5,
+            timestamp = LocalDateTime.of(2022,4,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 265.11,
+            timestamp = LocalDateTime.of(2022,7,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 123.22,
+            timestamp = LocalDateTime.of(2022,10,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 207.41,
+            timestamp = LocalDateTime.of(2023,1,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 261.73,
+            timestamp = LocalDateTime.of(2023,4,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 250.22,
+            timestamp = LocalDateTime.of(2023,7,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 248.46,
+            timestamp = LocalDateTime.of(2023,10,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 275.72,
+            timestamp = LocalDateTime.of(2024,1,1,4,0,0),
+        ),
+        BarAsset(
+            closingPrice = 371.92,
+            timestamp = LocalDateTime.of(2024,4,1,4,0,0),
+        ),
+    )
+    val maxValue = barsAsset.maxOfOrNull { it.closingPrice }!!
+    val minValue = barsAsset.minOfOrNull { it.closingPrice }!!
+    return AssetChartInfo(
+        upperValue = maxValue,
+        lowerValue = minValue,
+        barsInfo = barsAsset,
+    )
+}

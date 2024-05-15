@@ -78,10 +78,13 @@ class DetailViewModel @Inject constructor(
             )
             when(response) {
                 is Resource.Success -> {
+                    val maxValue = response.data.maxOfOrNull { it.closingPrice } ?: 0.0
+                    val minValue = response.data.minOfOrNull { it.closingPrice } ?: 0.0
+
                     _uiState.update {
                         it.copy(
                             statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = false, errorMessage = null),
-                            bars = response.data,
+                            assetCharInfo = it.assetCharInfo.copy(upperValue = maxValue, lowerValue = minValue, barsInfo = response.data),
                         )
                     }
                 }
