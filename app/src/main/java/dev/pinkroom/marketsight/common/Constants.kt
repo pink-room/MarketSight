@@ -9,6 +9,7 @@ object Constants {
     const val LIMIT_NEWS = 20
     const val DEFAULT_LIMIT_ASSET = 1000
     const val BUFFER_LIST = 5
+    const val LIMIT_Y_INFO_CHART = 5
 
     // TEXT
     const val ALL_SYMBOLS = "All"

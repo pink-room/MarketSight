@@ -24,13 +24,13 @@ class Dimensions(
     val bodySmall: TextUnit = 12.sp,
     val labelLarge: TextUnit = 14.sp,
     val labelMedium: TextUnit = 12.sp,
-    val labelSmall: TextUnit = 11.sp,
+    val labelSmall: TextUnit = 10.sp,
 
     // Padding
     val xSmallPadding: Dp = 4.dp,
     val smallPadding: Dp = 8.dp,
     val normalPadding: Dp = 16.dp,
-    val largePadding: Dp = 24.dp,
+    val largePadding: Dp = 20.dp,
     val xLargePadding: Dp = 32.dp,
 
     // Icon
@@ -56,6 +56,12 @@ class Dimensions(
     val contentTopPadding: Dp = 10.dp,
     val contentBottomPadding: Dp = 40.dp,
 
+    // Chart
+    val spacingStartChartXAxis: Dp = 135.dp,
+    val spacingTopChartYAxis: Dp = 100.dp,
+    val widthBoxInfoChart: Dp = 300.dp,
+    val heightBoxInfoChart: Dp = 80.dp,
+
     // Others
     val menuBottomPadding: Dp = 15.dp,
     val imageSizeMainNews: ImageSize = ImageSize.Small,
@@ -71,7 +77,7 @@ class Dimensions(
     val assetCardHeight: Dp = 90.dp,
     val emptyContentMaxHeight: Float = 0.95f,
     val bottomSheetHeight: Float = 0.45f,
-    val spacingItemChart: Dp = 10.dp
+    val heightChart: Dp = 380.dp,
 )
 
 val dimens: Dimensions

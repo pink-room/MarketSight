@@ -171,11 +171,10 @@ fun SortSection(
             itemsSort.forEach { sort ->
                 ButtonFilter(
                     isSelected = sort == selectedSort,
-                    text = stringResource(id = sort.stringId),
-                    onClick = {
-                        onSortClick(sort)
-                    }
-                )
+                    text = stringResource(id = sort.stringId)
+                ) {
+                    onSortClick(sort)
+                }
             }
         }
     }
@@ -201,11 +200,10 @@ fun SymbolsSubscribedSection(
             symbols.forEach { symbol ->
                 ButtonFilter(
                     isSelected = symbol.isSubscribed,
-                    text = symbol.name,
-                    onClick = {
-                        onSymbolClick(symbol)
-                    }
-                )
+                    text = symbol.name
+                ) {
+                    onSymbolClick(symbol)
+                }
             }
         }
     }
@@ -245,18 +243,16 @@ fun DateRangePickerSection(
         ) {
             ButtonFilter(
                 isSelected = false,
-                text = startDateText,
-                onClick = {
-                    isToShowStartDatePicker = true
-                }
-            )
+                text = startDateText
+            ) {
+                isToShowStartDatePicker = true
+            }
             ButtonFilter(
                 isSelected = false,
-                text = endDateText,
-                onClick = {
-                    isToShowEndDatePicker = true
-                }
-            )
+                text = endDateText
+            ) {
+                isToShowEndDatePicker = true
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package dev.pinkroom.marketsight.presentation.core.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.presentation.core.theme.BabyBlue
 import dev.pinkroom.marketsight.presentation.core.theme.Blue
@@ -27,6 +30,9 @@ fun ButtonFilter(
     isSelected: Boolean,
     showLeadingIcon: Boolean = true,
     text: String,
+    borderWidth: Dp = dimens.smallWidth,
+    contentPadding: PaddingValues = PaddingValues(vertical = dimens.smallPadding, horizontal = dimens.normalPadding),
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall,
     onClick: () -> Unit,
 ){
     val colorBackground = if (isSelected) BabyBlue.copy(alpha = 0.4f) else Color.Transparent
@@ -36,8 +42,9 @@ fun ButtonFilter(
         modifier = modifier,
         shape = RoundedCornerShape(dimens.smallShape),
         border = BorderStroke(
-            width = dimens.smallWidth, color = colorBorder,
+            width = borderWidth, color = colorBorder,
         ),
+        contentPadding = contentPadding,
         colors = ButtonDefaults.buttonColors(
             containerColor = colorBackground,
             contentColor = colorContent,
@@ -57,10 +64,9 @@ fun ButtonFilter(
                     painter = painterResource(id = R.drawable.icon_check),
                     contentDescription = null,
                 )
-
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodySmall,
+                style = textStyle,
             )
         }
     }

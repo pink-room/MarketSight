@@ -116,7 +116,12 @@ fun NavigationAppHost(
             DetailScreen(
                 asset = uiState.asset,
                 statusMainInfo = uiState.statusMainInfo,
-                onBack = { navController.popBackStack() }
+                statusHistoricalBars = uiState.statusHistoricalBars,
+                assetChartInfo = uiState.assetCharInfo,
+                selectedFilterChart = uiState.selectedFilter,
+                filtersAssetChart = uiState.filtersHistoricalBar,
+                onBack = { navController.popBackStack() },
+                onEvent = viewModel::onEvent,
             )
         }
     }

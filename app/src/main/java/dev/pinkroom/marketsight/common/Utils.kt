@@ -56,11 +56,18 @@ fun LocalDate.toReadableDate(): String {
     return format(formatter)
 }
 
+fun LocalDateTime.toReadableDate(): String {
+    val formatter = DateTimeFormatter
+        .ofLocalizedDateTime(FormatStyle.SHORT)
+        .withLocale(Locale.getDefault())
+    return format(formatter)
+}
+
 fun LocalDateTime.formatToStandardIso(): String = format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
 
 fun LocalDate.atEndOfTheDay(): LocalDateTime = atTime(23,59,59).atOffset(ZoneOffset.UTC).toLocalDateTime()
 
-fun Double.formatToString() = DecimalFormat("#.#").format(this)
+fun Double.formatToString(): String = DecimalFormat("#.##").format(this)
 
 sealed class ActionAlpaca(val action: String) {
     data object Subscribe: ActionAlpaca(action = "subscribe")
@@ -95,13 +102,13 @@ val assetFilters = listOf(
 val historicalBarFilters = listOf(
     FilterHistoricalBar(
         value = 24,
-        timeFrameIntervalValues = TimeFrame.Minutes(value = 15),
+        timeFrameIntervalValues = TimeFrame.Minutes(value = 5),
         timeFrameString = R.string.hour,
         dateTimeUnit = DateTimeUnit.Hour,
     ),
     FilterHistoricalBar(
         value = 7,
-        timeFrameIntervalValues = TimeFrame.Hour(value = 1),
+        timeFrameIntervalValues = TimeFrame.Minutes(value = 30),
         timeFrameString = R.string.day,
         dateTimeUnit = DateTimeUnit.Day,
     ),
@@ -125,9 +132,9 @@ val historicalBarFilters = listOf(
     ),
     FilterHistoricalBar(
         value = 20,
-        timeFrameIntervalValues = TimeFrame.Month(value = 3),
-        timeFrameString = R.string.year,
-        dateTimeUnit = DateTimeUnit.Year,
+        timeFrameIntervalValues = TimeFrame.Month(value = 1),
+        timeFrameString = R.string.all,
+        dateTimeUnit = DateTimeUnit.All,
     ),
 )
 
@@ -202,7 +209,7 @@ val popularSymbols = listOf(
 
 fun mockChartData(): AssetChartInfo {
     val barsAsset = listOf(
-        BarAsset(
+        /*BarAsset(
             closingPrice = 429.29,
             timestamp = LocalDateTime.of(2020,7,1,4,0,0),
         ),
@@ -236,9 +243,9 @@ fun mockChartData(): AssetChartInfo {
         ),
         BarAsset(
             closingPrice = 265.11,
-            timestamp = LocalDateTime.of(2022,7,1,4,0,0),
-        ),
-        BarAsset(
+            timestamp = LocalDateTime.of(2023,7,1,4,0,0),
+        ),*/
+        /*BarAsset(
             closingPrice = 123.22,
             timestamp = LocalDateTime.of(2022,10,1,4,0,0),
         ),
@@ -265,7 +272,22 @@ fun mockChartData(): AssetChartInfo {
         BarAsset(
             closingPrice = 371.92,
             timestamp = LocalDateTime.of(2024,4,1,4,0,0),
-        ),
+        ),*/
+        /*BarAsset(closingPrice = 261.73, timestamp = LocalDateTime.of(2023, 6, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 267.53, timestamp = LocalDateTime.of(2023, 7, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 258.06, timestamp = LocalDateTime.of(2023, 8, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 250.22, timestamp = LocalDateTime.of(2023, 9, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 200.88, timestamp = LocalDateTime.of(2023, 10, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 239.79, timestamp = LocalDateTime.of(2023, 11, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 248.46, timestamp = LocalDateTime.of(2023, 12, 1, 5, 0, 0)),
+        BarAsset(closingPrice = 187.24, timestamp = LocalDateTime.of(2024, 1, 1, 5, 0, 0)),
+        BarAsset(closingPrice = 201.81, timestamp = LocalDateTime.of(2024, 2, 1, 5, 0, 0)),
+        BarAsset(closingPrice = 175.72, timestamp = LocalDateTime.of(2024, 3, 1, 5, 0, 0)),
+        BarAsset(closingPrice = 183.34, timestamp = LocalDateTime.of(2024, 4, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 174.86, timestamp = LocalDateTime.of(2024, 5, 1, 4, 0, 0))*/
+        BarAsset(closingPrice = 297.53, timestamp = LocalDateTime.of(2023, 7, 1, 4, 0, 0)),
+        BarAsset(closingPrice = 297.53, timestamp = LocalDateTime.of(2023, 7, 2, 4, 0, 0)),
+        BarAsset(closingPrice = 298.53, timestamp = LocalDateTime.of(2024, 7, 2, 4, 0, 0)),
     )
     val maxValue = barsAsset.maxOfOrNull { it.closingPrice }!!
     val minValue = barsAsset.minOfOrNull { it.closingPrice }!!

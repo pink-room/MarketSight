@@ -67,7 +67,8 @@ fun String.toLocalDateTime(): LocalDateTime {
 fun String.toLocalDateTimeWithNanoSecond(): LocalDateTime {
     val max = this.count().coerceAtMost(22)
     val formatStringDate = this.subSequence(0,max)
-    val parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SS", Locale.getDefault())
+    val patternToUse = if (max<21) "yyyy-MM-dd'T'HH:mm:ss'Z'" else "yyyy-MM-dd'T'HH:mm:ss.SS"
+    val parser = DateTimeFormatter.ofPattern(patternToUse, Locale.getDefault())
     val date = try {
         LocalDateTime.parse(formatStringDate, parser)
     } catch (e: Exception) { LocalDateTime.now() }

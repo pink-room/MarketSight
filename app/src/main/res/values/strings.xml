@@ -36,4 +36,5 @@
     <string name="year">Y</string>
     <string name="error_on_getting_bars">Something went wrong while trying to get the bars, please try again.</string>
     <string name="overview">Overview</string>
+    <string name="not_available_data_chart">No data available.</string>
 </resources>

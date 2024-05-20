@@ -7,6 +7,7 @@ import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.di.DetailScreenArgModule.SymbolId
+import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
 import dev.pinkroom.marketsight.domain.use_case.assets.GetAssetById
 import dev.pinkroom.marketsight.domain.use_case.market.GetBarsAsset
 import kotlinx.coroutines.channels.Channel
@@ -35,6 +36,12 @@ class DetailViewModel @Inject constructor(
 
     init {
         validateArgs()
+    }
+
+    fun onEvent(event: DetailEvent) {
+        when(event) {
+            is DetailEvent.ChangeFilterAssetChart -> changeFilterAssetChart(newFilter = event.newFilter)
+        }
     }
 
     private fun validateArgs() {
@@ -68,11 +75,13 @@ class DetailViewModel @Inject constructor(
 
     private fun getHistoricalBarsInfo() {
         viewModelScope.launch(dispatchers.IO) {
+            _uiState.update { it.copy(statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = true, errorMessage = null)) }
             val asset = uiState.value.asset
             val selectedFilter = uiState.value.selectedFilter
             val response = getBarsAsset(
                 symbol = asset.symbol,
                 typeAsset = asset.getTypeAsset(),
+                timeFrame = selectedFilter.timeFrameIntervalValues,
                 startDate = selectedFilter.getStarLocalDateTime(),
                 endDate = selectedFilter.getEndLocalDateTime(),
             )
@@ -95,5 +104,10 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private fun changeFilterAssetChart(newFilter: FilterHistoricalBar) {
+        if (newFilter == uiState.value.selectedFilter) return
+        _uiState.update { it.copy(selectedFilter = newFilter) }
+        getHistoricalBarsInfo()
+    }
 
 }

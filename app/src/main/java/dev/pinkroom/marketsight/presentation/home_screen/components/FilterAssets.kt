@@ -38,11 +38,10 @@ fun FilterAssets(
                     modifier = Modifier
                         .padding(horizontal = dimens.smallPadding),
                     isSelected = filter.isSelected,
-                    text = stringResource(id = filter.stringId),
-                    onClick = {
-                        onFilterClick(filter)
-                    }
-                )
+                    text = stringResource(id = filter.stringId)
+                ) {
+                    onFilterClick(filter)
+                }
             }
         else
             (0 until 2).forEach{ _ ->

@@ -21,5 +21,10 @@ data class FilterHistoricalBar(
         }
     }
 
-    fun getEndLocalDateTime() = LocalDateTime.now()
+    fun getEndLocalDateTime(): LocalDateTime = LocalDateTime.now()
+
+    fun getValueTimeFrame() = when(dateTimeUnit) {
+        DateTimeUnit.All -> ""
+        else -> value.toString()
+    }
 }
