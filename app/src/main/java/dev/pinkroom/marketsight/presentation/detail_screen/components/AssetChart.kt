@@ -3,7 +3,6 @@ package dev.pinkroom.marketsight.presentation.detail_screen.components
 import android.graphics.Paint
 import android.graphics.Paint.Align
 import android.graphics.PointF
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -64,11 +63,11 @@ fun AssetChart(
     graphColor: Color = Green,
     colorText: Color,
     isLoading: Boolean,
+    infoToShow: (Double?) -> Unit,
 ) {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    val textSizeX = dimens.labelMedium
-    val textSizeY = dimens.labelSmall
+    val textSizeSmall = dimens.labelSmall
     val spacingStartChartXAxis = dimens.spacingStartChartXAxis.value
     val spacingTopChartYAxis = dimens.spacingTopChartYAxis.value
     val colorPrimary = MaterialTheme.colorScheme.primary
@@ -77,19 +76,27 @@ fun AssetChart(
     val widthBoxInfo = dimens.widthBoxInfoChart.value
     val cornerRadius = dimens.normalShape.value
     val screenWidth = configuration.screenWidthDp.dp
+    val heightBoxCurrentPrice = dimens.heightBoxCurrentPrice.value
 
     val textPaintY = remember(density) {
         Paint().apply {
             color = colorText.toArgb()
-            textAlign = Align.LEFT
-            textSize = density.run { textSizeX.toPx() }
+            textAlign = Align.RIGHT
+            textSize = density.run { textSizeSmall.toPx() }
         }
     }
     val textPaintInfoDate = remember(density) {
         Paint().apply {
             color = colorPrimary.toArgb()
             textAlign = Align.CENTER
-            textSize = density.run { textSizeY.toPx() }
+            textSize = density.run { textSizeSmall.toPx() }
+        }
+    }
+    val textPaintInfoCurrentPrice = remember(density) {
+        Paint().apply {
+            color = colorPrimary.toArgb()
+            textAlign = Align.CENTER
+            textSize = density.run { textSizeSmall.toPx() }
         }
     }
 
@@ -117,27 +124,27 @@ fun AssetChart(
             modifier = modifier
                 .pointerInput(key1 = Unit) {
                     detectDragGestures(
-                        onDragStart = { touch ->
+                        onDragStart = { _ ->
                             isUserPressing = true
-                            Log.d("Tag", "Start of the interaction is $touch")
                         },
                         onDrag = { change, _ ->
                             closestPoint = findClosestPoint(points = coordinates, targetX = change.position.x)
-                            Log.d("Tag", "Close Point ${closestPoint?.info}")
+                            infoToShow(closestPoint?.closingPrice)
                         },
                         onDragEnd = {
                             isUserPressing = false
-                            Log.d("Tag","END")
+                            infoToShow(null)
                         },
                         onDragCancel = {
                             isUserPressing = false
-                            Log.d("Tag","Canceled")
+                            infoToShow(null)
                         },
                     )
                 },
         ) {
             val widthX = size.width - spacingStartChartXAxis
             val yAxisHeight = size.height
+            val spaceBetweenYAndGraph = 10f
 
             /** Calculate coordinates of path */
             coordinates = calculateCoordinatesPoints(
@@ -154,6 +161,8 @@ fun AssetChart(
                 yAxisHeight = yAxisHeight,
                 yAxisSpaceTop = spacingTopChartYAxis,
                 textPaintY = textPaintY,
+                spaceStart = spacingStartChartXAxis,
+                spaceBetweenYAndGraph = spaceBetweenYAndGraph,
             )
 
             /** Drawing the path */
@@ -161,6 +170,16 @@ fun AssetChart(
                 coordinates = coordinates,
                 graphColor = graphColor,
                 heightAxisY = yAxisHeight,
+            )
+
+            /** Drawing the line of current Price */
+            drawCurrentLinePrice(
+                lastPoint = coordinates.last(),
+                spaceStart = spacingStartChartXAxis,
+                textPaint = textPaintInfoCurrentPrice,
+                spaceBetweenYAndGraph = spaceBetweenYAndGraph,
+                color = colorOnPrimary,
+                heightBoxCurrentPrice = heightBoxCurrentPrice,
             )
 
             /** Drawing the line of closest point to user pointer input */
@@ -227,11 +246,57 @@ private fun calculateCoordinatesPoints(
         coordinates.add(
             CoordinatePointChart(
                 coordinates = PointF(x1, y1),
-                info = info,
+                closingPrice = info.closingPrice,
+                timestamp = info.timestamp,
             )
         )
     }
     return coordinates.toList()
+}
+
+private fun DrawScope.drawCurrentLinePrice(
+    lastPoint: CoordinatePointChart,
+    spaceStart: Float,
+    textPaint: Paint,
+    spaceBetweenYAndGraph: Float,
+    heightBoxCurrentPrice: Float,
+    color: Color,
+) {
+    val widthStroke = 3f
+    val cornerRadius = 12f
+    val width = size.width
+    val coordinatesLastPoint = lastPoint.coordinates
+
+    val lineCurrentPrice = Path().apply {
+        reset()
+        moveTo(x = spaceStart, y = coordinatesLastPoint.y)
+        lineTo(x = width, y = coordinatesLastPoint.y)
+    }
+
+    drawPath(
+        path = lineCurrentPrice,
+        color = color,
+        style = Stroke(
+            width = widthStroke,
+            cap = StrokeCap.Square,
+        )
+    )
+
+    drawRoundRect(
+        color = color,
+        size = Size(width = spaceStart-spaceBetweenYAndGraph, height = heightBoxCurrentPrice),
+        topLeft = Offset(x = 0f, y = coordinatesLastPoint.y - heightBoxCurrentPrice/2),
+        cornerRadius = CornerRadius(x = cornerRadius),
+    )
+
+    drawContext.canvas.nativeCanvas.apply {
+        drawText(
+            lastPoint.closingPrice.formatToString(),
+            (spaceStart-spaceBetweenYAndGraph)/2,
+            coordinatesLastPoint.y + textPaint.textSize/3,
+            textPaint,
+        )
+    }
 }
 
 private fun DrawScope.drawInfoRelatedToPointerInput(
@@ -294,7 +359,7 @@ private fun DrawScope.drawInfoRelatedToPointerInput(
 
         drawContext.canvas.nativeCanvas.apply {
             drawText(
-                closestPoint.info.timestamp.toReadableDate(),
+                closestPoint.timestamp.toReadableDate(),
                 startXBoxCoordinate,
                 heightBox/2 + textPaint.textSize/3,
                 textPaint,
@@ -308,11 +373,14 @@ private fun DrawScope.drawYAxisInfo(
     yAxisHeight: Float,
     yAxisSpaceTop: Float,
     textPaintY: Paint,
+    spaceStart: Float,
+    spaceBetweenYAndGraph: Float,
 ) {
     val infoYAxis = mutableListOf<String>()
     val maxItemsY = minOf((chartInfo.barsInfo.size-1), LIMIT_Y_INFO_CHART)
     val yAxisSpace = (yAxisHeight - yAxisSpaceTop) / maxItemsY
     val priceStep = (chartInfo.upperValue - chartInfo.lowerValue) / maxItemsY.toFloat()
+
     (0 .. maxItemsY).forEach { i ->
         val info = (chartInfo.lowerValue + priceStep * i).formatToString()
         if (!infoYAxis.contains(info)) {
@@ -321,7 +389,7 @@ private fun DrawScope.drawYAxisInfo(
             drawContext.canvas.nativeCanvas.apply {
                 drawText(
                     info,
-                    0f,
+                    spaceStart - spaceBetweenYAndGraph,
                     y + textPaintY.textSize/3,
                     textPaintY
                 )
@@ -401,5 +469,6 @@ fun AssetCharPreview() {
         chartInfo = mockChartData(),
         isLoading = false,
         colorText = MaterialTheme.colorScheme.onBackground,
+        infoToShow = {},
     )
 }

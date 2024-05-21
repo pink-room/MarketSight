@@ -65,6 +65,9 @@ fun DetailScreen(
                 graphColor = Green,
                 colorText = MaterialTheme.colorScheme.onBackground,
                 isLoading = statusHistoricalBars.isLoading,
+                infoToShow = {
+                    onEvent(DetailEvent.ChangeActualPriceToShow(priceToShow = it))
+                }
             )
             FiltersAssetChart(
                 modifier = Modifier

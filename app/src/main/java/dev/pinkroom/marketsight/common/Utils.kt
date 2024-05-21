@@ -14,7 +14,6 @@ import dev.pinkroom.marketsight.domain.model.common.DateTimeUnit
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -67,7 +66,11 @@ fun LocalDateTime.formatToStandardIso(): String = format(DateTimeFormatter.ofPat
 
 fun LocalDate.atEndOfTheDay(): LocalDateTime = atTime(23,59,59).atOffset(ZoneOffset.UTC).toLocalDateTime()
 
-fun Double.formatToString(): String = DecimalFormat("#.##").format(this)
+fun Double.formatToString(): String = if (toString().replace(".", "").length >= 7) {
+    toLong().toString() // Convert to Long to drop decimal part
+} else {
+    String.format("%.2f", this)
+}
 
 sealed class ActionAlpaca(val action: String) {
     data object Subscribe: ActionAlpaca(action = "subscribe")
@@ -287,7 +290,7 @@ fun mockChartData(): AssetChartInfo {
         BarAsset(closingPrice = 174.86, timestamp = LocalDateTime.of(2024, 5, 1, 4, 0, 0))*/
         BarAsset(closingPrice = 297.53, timestamp = LocalDateTime.of(2023, 7, 1, 4, 0, 0)),
         BarAsset(closingPrice = 297.53, timestamp = LocalDateTime.of(2023, 7, 2, 4, 0, 0)),
-        BarAsset(closingPrice = 298.53, timestamp = LocalDateTime.of(2024, 7, 2, 4, 0, 0)),
+        BarAsset(closingPrice = 222298.53, timestamp = LocalDateTime.of(2024, 7, 2, 4, 0, 0)),
     )
     val maxValue = barsAsset.maxOfOrNull { it.closingPrice }!!
     val minValue = barsAsset.minOfOrNull { it.closingPrice }!!

@@ -41,6 +41,7 @@ class DetailViewModel @Inject constructor(
     fun onEvent(event: DetailEvent) {
         when(event) {
             is DetailEvent.ChangeFilterAssetChart -> changeFilterAssetChart(newFilter = event.newFilter)
+            is DetailEvent.ChangeActualPriceToShow -> {}
         }
     }
 

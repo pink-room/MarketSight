@@ -78,6 +78,7 @@ class Dimensions(
     val emptyContentMaxHeight: Float = 0.95f,
     val bottomSheetHeight: Float = 0.45f,
     val heightChart: Dp = 380.dp,
+    val heightBoxCurrentPrice: Dp = 50.dp,
 )
 
 val dimens: Dimensions
