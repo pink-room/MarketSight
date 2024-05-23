@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import dev.pinkroom.marketsight.presentation.core.navigation.Args.SYMBOL_ID
 import dev.pinkroom.marketsight.presentation.core.util.ObserveAsEvents
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailAction
+import dev.pinkroom.marketsight.presentation.detail_screen.DetailEvent
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailScreen
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailViewModel
 import dev.pinkroom.marketsight.presentation.home_screen.HomeScreen
@@ -110,11 +111,24 @@ fun NavigationAppHost(
             ObserveAsEvents(viewModel.action){ action ->
                 when(action){
                     DetailAction.NavigateToHomeEmptyId -> navController.popBackStack()
+                    is DetailAction.ShowSnackBar -> {
+                        scope.launch {
+                            val result = onShowSnackBar(
+                                context.getString(action.message),
+                                action.duration,
+                                action.actionMessage?.let { msg -> context.getString(msg) },
+                            )
+                            if (result && action.actionMessage != null){
+                                viewModel.onEvent(DetailEvent.RetryToSubscribeRealTimeAsset)
+                            }
+                        }
+                    }
                 }
             }
 
             DetailScreen(
                 asset = uiState.asset,
+                valueAsset = uiState.currentPriceInfo,
                 statusMainInfo = uiState.statusMainInfo,
                 statusHistoricalBars = uiState.statusHistoricalBars,
                 assetChartInfo = uiState.assetCharInfo,

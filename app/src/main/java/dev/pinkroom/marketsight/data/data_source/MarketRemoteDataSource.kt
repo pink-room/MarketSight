@@ -20,8 +20,6 @@ import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.TradesResponseD
 import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
 import dev.pinkroom.marketsight.domain.model.bars_asset.TimeFrame
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import java.time.LocalDateTime
@@ -63,6 +61,12 @@ class MarketRemoteDataSource @Inject constructor(
                 timeFrame = timeFrame?.frameValue,
             ).bars.entries.first().value
     }
+
+    suspend fun getLatestBar(
+        symbol: String,
+        typeAsset: TypeAsset,
+    ) = if (typeAsset is TypeAsset.Stock) alpacaStockApi.getLatestBarStock(symbol = symbol).bar
+    else alpacaCryptoApi.getLatestBarCrypto(symbol = symbol).bars.entries.first().value
 
     fun getRealTimeBars(
         typeAsset: TypeAsset,
@@ -157,11 +161,14 @@ class MarketRemoteDataSource @Inject constructor(
         serviceToUse.sendMessage(message = message)
         serviceToUse.observeResponse().collect { data ->
             data.forEach {
-                gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.Subscription)?.let { sub ->
+                gson.toObject(
+                    value = it,
+                    helperIdentifier = HelperIdentifierMessagesAlpacaService.Subscription
+                )?.let { sub ->
                     emit(sub)
-                    currentCoroutineContext().cancel()
+                    return@collect
                 } ?: run {
-                    if (gson.verifyIfIsError(it) != null){
+                    if (gson.verifyIfIsError(it) != null) {
                         throw Exception("Error on Subscription")
                     }
                 }

@@ -66,10 +66,10 @@ fun LocalDateTime.formatToStandardIso(): String = format(DateTimeFormatter.ofPat
 
 fun LocalDate.atEndOfTheDay(): LocalDateTime = atTime(23,59,59).atOffset(ZoneOffset.UTC).toLocalDateTime()
 
-fun Double.formatToString(): String = if (toString().replace(".", "").length >= 7) {
-    toLong().toString() // Convert to Long to drop decimal part
-} else {
-    String.format("%.2f", this)
+fun Double.formatToString(limitMaxDigit: Boolean = true): String {
+    val value = String.format("%.2f", this)
+    return if (value.length >= 7 && limitMaxDigit) toLong().toString()
+    else value
 }
 
 sealed class ActionAlpaca(val action: String) {
@@ -123,13 +123,13 @@ val historicalBarFilters = listOf(
     ),
     FilterHistoricalBar(
         value = 3,
-        timeFrameIntervalValues = TimeFrame.Week,
+        timeFrameIntervalValues = TimeFrame.Day,
         timeFrameString = R.string.month,
         dateTimeUnit = DateTimeUnit.Month,
     ),
     FilterHistoricalBar(
         value = 1,
-        timeFrameIntervalValues = TimeFrame.Month(value = 1),
+        timeFrameIntervalValues = TimeFrame.Week,
         timeFrameString = R.string.year,
         dateTimeUnit = DateTimeUnit.Year,
     ),

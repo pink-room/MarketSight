@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.domain.model.assets.Asset
+import dev.pinkroom.marketsight.domain.model.bars_asset.CurrentPriceInfo
 import dev.pinkroom.marketsight.presentation.core.theme.dimens
 import dev.pinkroom.marketsight.presentation.core.theme.shimmerEffect
 import dev.pinkroom.marketsight.presentation.home_screen.components.AssetItem
@@ -31,6 +32,8 @@ fun HeaderDetail(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     asset: Asset,
+    valueAsset: CurrentPriceInfo,
+    hasError: Boolean,
     onBack: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -67,9 +70,10 @@ fun HeaderDetail(
                     .clip(RoundedCornerShape(dimens.normalShape))
                     .shimmerEffect(),
             )
-        else
+        else if (!hasError)
             AssetItem(
                 asset = asset,
+                value = valueAsset,
             )
     }
 }

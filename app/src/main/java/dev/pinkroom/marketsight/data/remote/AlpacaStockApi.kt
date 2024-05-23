@@ -2,6 +2,7 @@ package dev.pinkroom.marketsight.data.remote
 
 import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_ASSET
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.BarsResponseDto
+import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.LatestBarResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.QuotesResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.TradesResponseDto
 import dev.pinkroom.marketsight.domain.model.bars_asset.TimeFrame
@@ -20,6 +21,12 @@ interface AlpacaStockApi {
         @Query("feed") feed: String? = "iex",
         @Query("sort") sort: String? = null,
     ): BarsResponseDto
+
+    @GET("{symbol}/bars/latest")
+    suspend fun getLatestBarStock(
+        @Path("symbol") symbol: String,
+        @Query("feed") feed: String? = "iex",
+    ): LatestBarResponseDto
 
     @GET("{symbol}/trades")
     suspend fun getHistoricalTradesStock(

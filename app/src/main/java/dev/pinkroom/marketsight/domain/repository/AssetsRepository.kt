@@ -36,6 +36,11 @@ interface AssetsRepository {
         sort: SortType? = SortType.ASC,
     ): Resource<List<BarAsset>>
 
+    suspend fun getLatestBar(
+        symbol: String,
+        typeAsset: TypeAsset,
+    ): Resource<BarAsset>
+
     suspend fun getTrades(
         symbol: String,
         typeAsset: TypeAsset,

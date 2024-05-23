@@ -2,9 +2,8 @@ package dev.pinkroom.marketsight.di
 
 import android.content.Context
 import com.google.gson.Gson
-import com.tinder.scarlet.Lifecycle
 import com.tinder.scarlet.Scarlet
-import com.tinder.scarlet.lifecycle.android.AndroidLifecycle
+import com.tinder.scarlet.lifecycle.LifecycleRegistry
 import com.tinder.scarlet.messageadapter.gson.GsonMessageAdapter
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import dagger.Module
@@ -13,10 +12,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.pinkroom.marketsight.BuildConfig
-import dev.pinkroom.marketsight.MarketSightApp
 import dev.pinkroom.marketsight.common.DefaultDispatchers
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.FlowStreamAdapterFactory
+import dev.pinkroom.marketsight.common.WebSocketLifecycle
 import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
 import dev.pinkroom.marketsight.common.addLoggingInterceptor
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
@@ -83,15 +82,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideLifeCycle(@ApplicationContext context: Context): Lifecycle = AndroidLifecycle.ofApplicationForeground(
-        context as MarketSightApp
-    )
+    fun provideWebSocketLifecycle() = WebSocketLifecycle(LifecycleRegistry())
 
     @Provides
     @Singleton
     @Named(ALPACA_NEWS_SERVICE)
     fun provideAlpacaNewsService(
-        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: Lifecycle
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: WebSocketLifecycle
     ): AlpacaService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_NEWS))
@@ -140,13 +137,14 @@ object AppModule {
     @Singleton
     @Named(ALPACA_STOCK_SERVICE)
     fun provideAlpacaStockService(
-        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: Lifecycle
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient,
+        lifecycle: WebSocketLifecycle
     ): AlpacaService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_STOCK))
             .addMessageAdapterFactory(GsonMessageAdapter.Factory())
             .addStreamAdapterFactory(FlowStreamAdapterFactory())
-            //.lifecycle(lifecycle)
+            .lifecycle(lifecycle)
             .build()
 
         return scarlet.create(AlpacaService::class.java)
@@ -156,7 +154,7 @@ object AppModule {
     @Singleton
     @Named(ALPACA_CRYPTO_SERVICE)
     fun provideAlpacaCryptoService(
-        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: Lifecycle
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: WebSocketLifecycle
     ): AlpacaService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_CRYPTO))

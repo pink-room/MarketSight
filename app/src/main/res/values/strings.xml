@@ -24,6 +24,7 @@
     <string name="clear_all">Clear All</string>
     <string name="apply">Apply</string>
     <string name="error_subscription_real_time_news">An error occurred when trying to get news in real time.</string>
+    <string name="error_subscription_real_time_asset">An error occurred when trying to get asset in real time.</string>
     <string name="place_holder_stock">Search Stock</string>
     <string name="place_holder_crypto">Search Crypto</string>
     <string name="stock">Stock</string>

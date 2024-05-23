@@ -13,6 +13,7 @@ import dev.pinkroom.marketsight.common.historicalBarFilters
 import dev.pinkroom.marketsight.common.mockChartData
 import dev.pinkroom.marketsight.domain.model.assets.Asset
 import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
+import dev.pinkroom.marketsight.domain.model.bars_asset.CurrentPriceInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
 import dev.pinkroom.marketsight.domain.model.bars_asset.TimeFrame
 import dev.pinkroom.marketsight.domain.model.common.DateTimeUnit
@@ -21,6 +22,7 @@ import dev.pinkroom.marketsight.presentation.core.components.PullToRefreshLazyCo
 import dev.pinkroom.marketsight.presentation.core.theme.Green
 import dev.pinkroom.marketsight.presentation.core.theme.dimens
 import dev.pinkroom.marketsight.presentation.detail_screen.components.AssetChart
+import dev.pinkroom.marketsight.presentation.detail_screen.components.ErrorOnGetAsset
 import dev.pinkroom.marketsight.presentation.detail_screen.components.FiltersAssetChart
 import dev.pinkroom.marketsight.presentation.detail_screen.components.HeaderDetail
 
@@ -30,6 +32,7 @@ fun DetailScreen(
     statusMainInfo: StatusUiRequest,
     statusHistoricalBars: StatusUiRequest,
     asset: Asset,
+    valueAsset: CurrentPriceInfo,
     assetChartInfo: AssetChartInfo,
     selectedFilterChart: FilterHistoricalBar,
     filtersAssetChart: List<FilterHistoricalBar>,
@@ -50,35 +53,52 @@ fun DetailScreen(
                     .fillMaxWidth()
                     .padding(horizontal = dimens.horizontalPadding),
                 isLoading = statusMainInfo.isLoading,
+                hasError = statusMainInfo.errorMessage != null,
                 asset = asset,
                 onBack = onBack,
+                valueAsset = valueAsset,
             )
-        }
-        item {
-            AssetChart(
+            ErrorOnGetAsset(
                 modifier = Modifier
-                    .padding(horizontal = dimens.horizontalPadding)
-                    .padding(bottom = dimens.largePadding)
-                    .fillMaxWidth()
-                    .height(dimens.heightChart),
-                chartInfo = assetChartInfo,
-                graphColor = Green,
-                colorText = MaterialTheme.colorScheme.onBackground,
-                isLoading = statusHistoricalBars.isLoading,
-                infoToShow = {
-                    onEvent(DetailEvent.ChangeActualPriceToShow(priceToShow = it))
+                    .fillParentMaxHeight(0.85f)
+                    .fillParentMaxWidth(),
+                statusUiRequest = statusMainInfo,
+                onRetry = {
+                    onEvent(DetailEvent.RetryToGetAssetInfo)
                 }
             )
-            FiltersAssetChart(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimens.horizontalPadding),
-                selectedFilter = selectedFilterChart,
-                filters = filtersAssetChart,
-                onChangeFilterAssetChart = {
-                    onEvent(DetailEvent.ChangeFilterAssetChart(newFilter = it))
-                },
-            )
+        }
+        if (statusMainInfo.errorMessage == null){
+            item {
+                AssetChart(
+                    modifier = Modifier
+                        .padding(horizontal = dimens.horizontalPadding)
+                        .padding(vertical = dimens.normalPadding)
+                        .fillMaxWidth()
+                        .height(dimens.heightChart),
+                    chartInfo = assetChartInfo,
+                    graphColor = Green,
+                    colorText = MaterialTheme.colorScheme.onBackground,
+                    isLoading = statusHistoricalBars.isLoading,
+                    errorMessage = statusHistoricalBars.errorMessage,
+                    infoToShow = { value, previousValue ->
+                        onEvent(DetailEvent.ChangeActualPriceToShow(priceToShow = value, valueToCompare = previousValue))
+                    },
+                    onRetry = {
+                        onEvent(DetailEvent.RetryToGetHistoricalBars)
+                    },
+                )
+                FiltersAssetChart(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimens.horizontalPadding),
+                    selectedFilter = selectedFilterChart,
+                    filters = filtersAssetChart,
+                    onChangeFilterAssetChart = {
+                        onEvent(DetailEvent.ChangeFilterAssetChart(newFilter = it))
+                    },
+                )
+            }
         }
     }
 }
@@ -90,8 +110,8 @@ fun DetailScreen(
 @Composable
 fun DetailScreenPreview() {
     DetailScreen(
-        statusMainInfo = StatusUiRequest(isLoading = false),
-        statusHistoricalBars = StatusUiRequest(isLoading = false),
+        statusMainInfo = StatusUiRequest(isLoading = false, errorMessage = null),
+        statusHistoricalBars = StatusUiRequest(isLoading = true),
         asset = Asset(
             id = "",
             symbol = "TSLA",
@@ -108,6 +128,7 @@ fun DetailScreenPreview() {
             timeFrameString = R.string.year,
             dateTimeUnit = DateTimeUnit.Year,
         ),
+        valueAsset = CurrentPriceInfo(),
         filtersAssetChart = historicalBarFilters,
     )
 }

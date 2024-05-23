@@ -53,6 +53,7 @@ fun SubscriptionMessageDto.toSubscriptionMessage() = SubscriptionMessage(
     news = this.news,
     quotes = this.quotes,
     trades = this.trades,
+    bars = this.bars,
 )
 
 

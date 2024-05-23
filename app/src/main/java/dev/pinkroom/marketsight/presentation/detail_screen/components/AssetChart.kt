@@ -3,16 +3,22 @@ package dev.pinkroom.marketsight.presentation.detail_screen.components
 import android.graphics.Paint
 import android.graphics.Paint.Align
 import android.graphics.PointF
+import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -42,12 +48,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.Constants.LIMIT_Y_INFO_CHART
 import dev.pinkroom.marketsight.common.formatToString
-import dev.pinkroom.marketsight.common.mockChartData
 import dev.pinkroom.marketsight.common.toReadableDate
 import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.CoordinatePointChart
@@ -63,7 +69,9 @@ fun AssetChart(
     graphColor: Color = Green,
     colorText: Color,
     isLoading: Boolean,
-    infoToShow: (Double?) -> Unit,
+    @StringRes errorMessage: Int?,
+    infoToShow: (value: Double?, previousValue: Double?) -> Unit,
+    onRetry: () -> Unit,
 ) {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
@@ -104,6 +112,10 @@ fun AssetChart(
         mutableStateOf(listOf<CoordinatePointChart>())
     }
 
+    var isUserDragging by remember {
+        mutableStateOf(false)
+    }
+
     var isUserPressing by remember {
         mutableStateOf(false)
     }
@@ -125,20 +137,34 @@ fun AssetChart(
                 .pointerInput(key1 = Unit) {
                     detectDragGestures(
                         onDragStart = { _ ->
-                            isUserPressing = true
+                            isUserDragging = true
                         },
                         onDrag = { change, _ ->
                             closestPoint = findClosestPoint(points = coordinates, targetX = change.position.x)
-                            infoToShow(closestPoint?.closingPrice)
+                            val pointBefore = pointBefore(point = closestPoint, points = coordinates)
+                            infoToShow(closestPoint?.closingPrice, pointBefore?.closingPrice)
                         },
                         onDragEnd = {
-                            isUserPressing = false
-                            infoToShow(null)
+                            isUserDragging = false
+                            infoToShow(null, null)
                         },
                         onDragCancel = {
-                            isUserPressing = false
-                            infoToShow(null)
+                            isUserDragging = false
+                            infoToShow(null, null)
                         },
+                    )
+                }
+                .pointerInput(key1 = Unit) {
+                    detectTapGestures(
+                        onPress = { offset ->
+                            isUserPressing = true
+                            closestPoint = findClosestPoint(points = coordinates, targetX = offset.x)
+                            val pointBefore = pointBefore(point = closestPoint, points = coordinates)
+                            infoToShow(closestPoint?.closingPrice, pointBefore?.closingPrice)
+                            tryAwaitRelease()
+                            isUserPressing = false
+                            if (!isUserDragging) infoToShow(null, null)
+                        }
                     )
                 },
         ) {
@@ -185,7 +211,7 @@ fun AssetChart(
             /** Drawing the line of closest point to user pointer input */
             drawInfoRelatedToPointerInput(
                 closestPoint = closestPoint,
-                isPressed = isUserPressing,
+                isPressed = isUserPressing || isUserDragging,
                 textPaint = textPaintInfoDate,
                 height = size.height,
                 heightBox = heightBoxInfo,
@@ -198,6 +224,7 @@ fun AssetChart(
             )
         }
     } else {
+        val stringToShow = errorMessage ?: R.string.not_available_data_chart
         Card(
             modifier = modifier
                 .fillMaxSize(),
@@ -206,15 +233,31 @@ fun AssetChart(
             ),
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = dimens.normalPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = stringResource(id = R.string.not_available_data_chart),
+                    text = stringResource(id = stringToShow),
                     style = MaterialTheme.typography.bodyLarge,
                     fontStyle = FontStyle.Italic,
+                    textAlign = TextAlign.Center,
                 )
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(dimens.smallPadding))
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.retry)
+                        )
+                    }
+                }
             }
         }
     }
@@ -223,6 +266,13 @@ fun AssetChart(
 private fun findClosestPoint(points: List<CoordinatePointChart>, targetX: Float): CoordinatePointChart? {
     if (points.isEmpty()) return null
     return points.minByOrNull { abs(it.coordinates.x - targetX) }
+}
+
+private fun pointBefore(point: CoordinatePointChart?, points: List<CoordinatePointChart>): CoordinatePointChart? {
+    if (point == null) return null
+    val indexPoint = points.indexOf(point)
+    val pointBefore = points.getOrNull(indexPoint-1)
+    return pointBefore ?: point
 }
 
 private fun calculateCoordinatesPoints(
@@ -290,6 +340,7 @@ private fun DrawScope.drawCurrentLinePrice(
     )
 
     drawContext.canvas.nativeCanvas.apply {
+        Log.d("TESTE", lastPoint.closingPrice.toString())
         drawText(
             lastPoint.closingPrice.formatToString(),
             (spaceStart-spaceBetweenYAndGraph)/2,
@@ -466,9 +517,13 @@ fun AssetCharPreview() {
             .fillMaxWidth()
             .padding(horizontal = dimens.horizontalPadding, vertical = 20.dp)
             .height(380.dp),
-        chartInfo = mockChartData(),
+        chartInfo = AssetChartInfo(),//mockChartData(),
         isLoading = false,
+        errorMessage = null,
         colorText = MaterialTheme.colorScheme.onBackground,
-        infoToShow = {},
+        infoToShow = { _, _ ->
+
+        },
+        onRetry = {},
     )
 }

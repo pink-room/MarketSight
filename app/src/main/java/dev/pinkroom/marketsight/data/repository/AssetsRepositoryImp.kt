@@ -24,6 +24,8 @@ import dev.pinkroom.marketsight.domain.repository.AssetsRepository
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.take
+import retrofit2.HttpException
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -77,6 +79,24 @@ class AssetsRepositoryImp @Inject constructor(
             e.printStackTrace()
             Resource.Error(message = e.message ?: "Something Went Wrong on Get Historical bars")
         }
+    }
+
+    override suspend fun getLatestBar(
+        symbol: String,
+        typeAsset: TypeAsset,
+    ) = try {
+        val response = marketRemoteDataSource.getLatestBar(
+            symbol = symbol,
+            typeAsset = typeAsset,
+        )
+        Resource.Success(data = response.toBarAsset())
+    } catch (e: HttpException) {
+        e.printStackTrace()
+        if (e.code() == 404) Resource.Success(data = BarAsset())
+        else Resource.Error(message = e.message ?: "Something Went Wrong on Get Latest bar")
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Resource.Error(message = e.message ?: "Something Went Wrong on Get Latest bar")
     }
 
     override suspend fun getTrades(
@@ -166,7 +186,7 @@ class AssetsRepositoryImp @Inject constructor(
         return try {
             val response = marketRemoteDataSource.subscribeUnsubscribeRealTimeFinancialData(
                 action = action, typeAsset = typeAsset, symbol = symbol,
-            ).single()
+            ).take(1).single()
             Resource.Success(data = response.toSubscriptionMessage())
         } catch (e: Exception) {
             e.printStackTrace()
