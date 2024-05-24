@@ -68,7 +68,7 @@ fun AssetItem(
                     Text(
                         modifier = Modifier,
                         textAlign = TextAlign.End,
-                        text = "${value.price.formatToString(limitMaxDigit = false)}${value.fiatCurrency}",
+                        text = "${value.price}${value.fiatCurrency}",
                         style = MaterialTheme.typography.titleLarge
                     )
                     value.percentage?.let {

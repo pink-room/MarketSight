@@ -1,6 +1,7 @@
 package dev.pinkroom.marketsight.data.remote
 
 import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_ASSET
+import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_QUOTES_ASSET
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.BarsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.LatestBarResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.QuotesResponseDto
@@ -42,7 +43,7 @@ interface AlpacaStockApi {
     @GET("{symbol}/quotes")
     suspend fun getHistoricalQuotesStock(
         @Path("symbol") symbol: String,
-        @Query("limit") limit: Int? = DEFAULT_LIMIT_ASSET,
+        @Query("limit") limit: Int? = DEFAULT_LIMIT_QUOTES_ASSET,
         @Query("start") startDate: String? = null,
         @Query("end") endDate: String? = null,
         @Query("feed") feed: String? = "iex",

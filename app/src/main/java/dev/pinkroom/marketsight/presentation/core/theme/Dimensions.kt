@@ -61,6 +61,7 @@ class Dimensions(
     val spacingTopChartYAxis: Dp = 100.dp,
     val widthBoxInfoChart: Dp = 300.dp,
     val heightBoxInfoChart: Dp = 80.dp,
+    val widthBtnFilterChart: Dp = 60.dp,
 
     // Others
     val menuBottomPadding: Dp = 15.dp,
@@ -79,6 +80,7 @@ class Dimensions(
     val bottomSheetHeight: Float = 0.45f,
     val heightChart: Dp = 380.dp,
     val heightBoxCurrentPrice: Dp = 50.dp,
+    val maxHeightQuoteInfo: Dp = 200.dp,
 )
 
 val dimens: Dimensions

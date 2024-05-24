@@ -114,7 +114,7 @@ class MarketRemoteDataSource @Inject constructor(
     suspend fun getQuotes(
         symbol: String,
         typeAsset: TypeAsset,
-        limit: Int? = Constants.DEFAULT_LIMIT_ASSET,
+        limit: Int? = Constants.DEFAULT_LIMIT_QUOTES_ASSET,
         startDate: LocalDateTime? = null,
         endDate: LocalDateTime? = null,
         sort: SortType? = SortType.ASC,

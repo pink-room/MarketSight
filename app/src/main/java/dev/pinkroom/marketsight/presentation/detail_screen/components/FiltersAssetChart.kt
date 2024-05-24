@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,11 +30,12 @@ fun FiltersAssetChart(
         filters.forEach { filter ->
             ButtonFilter(
                 modifier = Modifier
+                    .width(dimens.widthBtnFilterChart)
                     .padding(horizontal = dimens.xSmallPadding),
                 isSelected = filter == selectedFilter,
                 text = "${filter.getValueTimeFrame()}${stringResource(id = filter.timeFrameString)}",
                 borderWidth = dimens.smallWidth,
-                contentPadding = PaddingValues(horizontal = 0.dp, vertical = dimens.xSmallPadding),
+                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                 textStyle = MaterialTheme.typography.labelSmall,
                 showLeadingIcon = false,
                 onClick = { onChangeFilterAssetChart(filter) },

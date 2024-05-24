@@ -8,4 +8,5 @@ sealed class DetailEvent {
     data object RetryToGetAssetInfo: DetailEvent()
     data object RetryToGetHistoricalBars: DetailEvent()
     data object RetryToSubscribeRealTimeAsset: DetailEvent()
+    data object RetryToGetQuotesAsset: DetailEvent()
 }

@@ -22,7 +22,7 @@ assertkVersion = "0.28.0"
 fakerVersion = "1.0.2"
 turbineVersion = "1.1.0"
 coilVersion = "2.6.0"
-pagingVersion = "3.2.1"
+pagingVersion = "3.3.0"
 
 [libraries]
 

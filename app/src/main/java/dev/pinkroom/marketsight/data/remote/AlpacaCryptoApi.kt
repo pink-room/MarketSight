@@ -27,7 +27,7 @@ interface AlpacaCryptoApi {
 
     @GET("trades")
     suspend fun getHistoricalTradesCrypto(
-        @Query("symbol") symbol: String,
+        @Query("symbols") symbol: String,
         @Query("limit") limit: Int? = DEFAULT_LIMIT_ASSET,
         @Query("start") startDate: String? = null,
         @Query("end") endDate: String? = null,
@@ -37,7 +37,7 @@ interface AlpacaCryptoApi {
 
     @GET("quotes")
     suspend fun getHistoricalQuotesCrypto(
-        @Query("symbol") symbol: String,
+        @Query("symbols") symbol: String,
         @Query("limit") limit: Int? = DEFAULT_LIMIT_ASSET,
         @Query("start") startDate: String? = null,
         @Query("end") endDate: String? = null,

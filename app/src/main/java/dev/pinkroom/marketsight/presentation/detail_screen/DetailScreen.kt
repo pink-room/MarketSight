@@ -18,13 +18,16 @@ import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
 import dev.pinkroom.marketsight.domain.model.bars_asset.TimeFrame
 import dev.pinkroom.marketsight.domain.model.common.DateTimeUnit
 import dev.pinkroom.marketsight.domain.model.common.StatusUiRequest
+import dev.pinkroom.marketsight.domain.model.quotes_asset.QuoteAsset
+import dev.pinkroom.marketsight.domain.model.trades_asset.TradeAsset
 import dev.pinkroom.marketsight.presentation.core.components.PullToRefreshLazyColumn
 import dev.pinkroom.marketsight.presentation.core.theme.Green
 import dev.pinkroom.marketsight.presentation.core.theme.dimens
 import dev.pinkroom.marketsight.presentation.detail_screen.components.AssetChart
-import dev.pinkroom.marketsight.presentation.detail_screen.components.ErrorOnGetAsset
+import dev.pinkroom.marketsight.presentation.detail_screen.components.ErrorOnGetInfoRelatedToAsset
 import dev.pinkroom.marketsight.presentation.detail_screen.components.FiltersAssetChart
 import dev.pinkroom.marketsight.presentation.detail_screen.components.HeaderDetail
+import dev.pinkroom.marketsight.presentation.detail_screen.components.QuoteInfo
 
 @Composable
 fun DetailScreen(
@@ -36,6 +39,10 @@ fun DetailScreen(
     assetChartInfo: AssetChartInfo,
     selectedFilterChart: FilterHistoricalBar,
     filtersAssetChart: List<FilterHistoricalBar>,
+    statusQuote: StatusUiRequest,
+    quotes: List<QuoteAsset>,
+    statusTrade: StatusUiRequest,
+    trades: List<TradeAsset>,
     onBack: () -> Unit,
     onEvent: (event: DetailEvent) -> Unit,
 ){
@@ -58,7 +65,7 @@ fun DetailScreen(
                 onBack = onBack,
                 valueAsset = valueAsset,
             )
-            ErrorOnGetAsset(
+            ErrorOnGetInfoRelatedToAsset(
                 modifier = Modifier
                     .fillParentMaxHeight(0.85f)
                     .fillParentMaxWidth(),
@@ -99,6 +106,20 @@ fun DetailScreen(
                     },
                 )
             }
+            item {
+                QuoteInfo(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    statusQuote = statusQuote,
+                    quotes = quotes,
+                    onRetry = {
+                        onEvent(DetailEvent.RetryToGetQuotesAsset)
+                    }
+                )
+            }
+            item {
+
+            }
         }
     }
 }
@@ -130,5 +151,13 @@ fun DetailScreenPreview() {
         ),
         valueAsset = CurrentPriceInfo(),
         filtersAssetChart = historicalBarFilters,
+        statusQuote = StatusUiRequest(
+            isLoading = false, errorMessage = null,
+        ),
+        quotes = emptyList(),
+        statusTrade = StatusUiRequest(
+            isLoading = false, errorMessage = null,
+        ),
+        trades = emptyList(),
     )
 }

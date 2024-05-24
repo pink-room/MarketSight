@@ -8,6 +8,7 @@ object Constants {
     const val MAX_ITEMS_CAROUSEL = 5
     const val LIMIT_NEWS = 20
     const val DEFAULT_LIMIT_ASSET = 1000
+    const val DEFAULT_LIMIT_QUOTES_ASSET = 30
     const val BUFFER_LIST = 5
     const val LIMIT_Y_INFO_CHART = 5
 

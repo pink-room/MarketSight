@@ -132,8 +132,12 @@ fun NavigationAppHost(
                 statusMainInfo = uiState.statusMainInfo,
                 statusHistoricalBars = uiState.statusHistoricalBars,
                 assetChartInfo = uiState.assetCharInfo,
-                selectedFilterChart = uiState.selectedFilter,
+                selectedFilterChart = uiState.selectedFilterHistorical,
                 filtersAssetChart = uiState.filtersHistoricalBar,
+                trades = uiState.latestTrades,
+                statusTrade = uiState.statusTrades,
+                quotes = uiState.latestQuotes,
+                statusQuote = uiState.statusQuotes,
                 onBack = { navController.popBackStack() },
                 onEvent = viewModel::onEvent,
             )

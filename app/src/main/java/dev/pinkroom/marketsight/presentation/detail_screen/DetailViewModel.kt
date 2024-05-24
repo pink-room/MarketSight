@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.pinkroom.marketsight.R
+import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_QUOTES_ASSET
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.di.DetailScreenArgModule.SymbolId
@@ -17,8 +18,11 @@ import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
 import dev.pinkroom.marketsight.domain.use_case.assets.GetAssetById
 import dev.pinkroom.marketsight.domain.use_case.market.GetBarsAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetLatestBarAsset
+import dev.pinkroom.marketsight.domain.use_case.market.GetQuotesAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeBarsAsset
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeQuotesAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetStatusServiceAsset
+import dev.pinkroom.marketsight.domain.use_case.market.GetTradesAsset
 import dev.pinkroom.marketsight.domain.use_case.market.SetSubscribeRealTimeAsset
 import dev.pinkroom.marketsight.domain.use_case.market.SetUnsubscribeRealTimeAsset
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +48,9 @@ class DetailViewModel @Inject constructor(
     private val setSubscribeRealTimeAsset: SetSubscribeRealTimeAsset,
     private val setUnsubscribeRealTimeAsset: SetUnsubscribeRealTimeAsset,
     private val getRealTimeBarsAsset: GetRealTimeBarsAsset,
+    private val getQuotesAsset: GetQuotesAsset,
+    private val getRealTimeQuotesAsset: GetRealTimeQuotesAsset,
+    private val getTradesAsset: GetTradesAsset,
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(DetailUiState())
@@ -60,6 +67,7 @@ class DetailViewModel @Inject constructor(
 
     private var jobGetHistoricalBars: Job? = null
     private var jobGetRealTimeBars: Job? = null
+    private var jobGetRealTimeQuotes: Job? = null
 
     init {
         validateArgs()
@@ -76,6 +84,7 @@ class DetailViewModel @Inject constructor(
             DetailEvent.RetryToGetAssetInfo -> retryToGetMainInfoAsset()
             DetailEvent.RetryToGetHistoricalBars -> retryToGetBarsInfo()
             DetailEvent.RetryToSubscribeRealTimeAsset -> subscribeRealTimeAsset()
+            DetailEvent.RetryToGetQuotesAsset -> retryToGetQuotesInfo()
         }
     }
 
@@ -95,10 +104,12 @@ class DetailViewModel @Inject constructor(
                 is Resource.Success -> {
                     asset = response.data
                     _uiState.update { it.copy(asset = response.data) }
+
                     subscribeRealTimeAsset()
                     statusWSService()
                     getLatestValueAsset()
                     getHistoricalBarsInfo()
+                    getQuotesAssetInfo()
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(statusMainInfo = it.statusMainInfo.copy(isLoading = false, errorMessage = R.string.error_on_getting_assets)) }
@@ -131,7 +142,7 @@ class DetailViewModel @Inject constructor(
     private fun getHistoricalBarsInfo() {
         jobGetHistoricalBars = viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = true, errorMessage = null)) }
-            val selectedFilter = uiState.value.selectedFilter
+            val selectedFilter = uiState.value.selectedFilterHistorical
             val response = getBarsAsset(
                 symbol = asset.symbol,
                 typeAsset = asset.getTypeAsset(),
@@ -229,9 +240,41 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private fun getQuotesAssetInfo() {
+        viewModelScope.launch(dispatchers.IO) {
+            val response = getQuotesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
+            when(response) {
+                is Resource.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            statusQuotes = it.statusQuotes.copy(isLoading = false),
+                            latestQuotes = response.data.quotes,
+                        )
+                    }
+                    jobGetRealTimeQuotes?.let { if (it.isActive) it.cancel() }
+                    observeRealTimeQuotes()
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(statusQuotes = it.statusQuotes.copy(isLoading = false, errorMessage = R.string.error_on_getting_quotes)) }
+                }
+            }
+        }
+    }
+
+    private fun observeRealTimeQuotes() {
+        jobGetRealTimeQuotes = viewModelScope.launch(dispatchers.IO) {
+            getRealTimeQuotesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
+                if (!uiState.value.statusQuotes.isLoading) {
+                    val newQuotesList = (response + uiState.value.latestQuotes).take(DEFAULT_LIMIT_QUOTES_ASSET)
+                    _uiState.update { it.copy(latestQuotes = newQuotesList) }
+                }
+            }
+        }
+    }
+
     private fun changeFilterAssetChart(newFilter: FilterHistoricalBar) {
-        if (newFilter == uiState.value.selectedFilter) return
-        _uiState.update { it.copy(selectedFilter = newFilter) }
+        if (newFilter == uiState.value.selectedFilterHistorical) return
+        _uiState.update { it.copy(selectedFilterHistorical = newFilter) }
         jobGetHistoricalBars?.let { if (it.isActive) it.cancel() }
         getHistoricalBarsInfo()
     }
@@ -254,6 +297,11 @@ class DetailViewModel @Inject constructor(
     private fun retryToGetBarsInfo() {
         _uiState.update { it.copy(statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = true, errorMessage = null)) }
         getHistoricalBarsInfo()
+    }
+
+    private fun retryToGetQuotesInfo() {
+        _uiState.update { it.copy(statusQuotes = it.statusQuotes.copy(isLoading = true, errorMessage = null)) }
+        getQuotesAssetInfo()
     }
 
     override fun onCleared() {

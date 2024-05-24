@@ -13,10 +13,10 @@ class GetQuotesAsset @Inject constructor(
     suspend operator fun invoke(
         symbol: String,
         typeAsset: TypeAsset,
-        limit: Int? = Constants.DEFAULT_LIMIT_ASSET,
-        startDate: LocalDateTime,
-        endDate: LocalDateTime,
-        sort: SortType? = SortType.ASC,
+        limit: Int? = Constants.DEFAULT_LIMIT_QUOTES_ASSET,
+        startDate: LocalDateTime = LocalDateTime.now().minusDays(7),
+        endDate: LocalDateTime? = null,
+        sort: SortType? = SortType.DESC,
         pageToken: String? = null,
     ) = assetsRepository.getQuotes(
         typeAsset = typeAsset,

@@ -128,14 +128,15 @@ fun BarAssetDto.toBarAsset() = BarAsset(
 )
 
 fun QuotesResponseDto.toQuotesResponse() = QuotesResponse(
-    quotes = quotes.map { it.toQuoteAsset() },
+    quotes = quotes?.map { it.toQuoteAsset() } ?: emptyList(),
     pageToken = pageToken,
 )
 
 fun QuoteAssetDto.toQuoteAsset() = QuoteAsset(
-    id = tradeId,
     bidPrice = bidPrice,
+    bidSize = bidSize,
     askPrice = askPrice,
+    askSize = askSize,
     timeStamp = requestDate.toLocalDateTimeWithNanoSecond(),
     symbol = symbol,
 )
@@ -152,8 +153,9 @@ fun TradesResponseDto.toTradesResponse() = TradesResponse(
 )
 
 fun TradeAssetDto.toTradeAsset() = TradeAsset(
-    id = tradeId,
+    tradeId = tradeId,
     tradePrice = tradePrice,
+    tradeSize = tradeSize,
     timeStamp = dateTransaction.toLocalDateTimeWithNanoSecond(),
     symbol = symbol,
 )

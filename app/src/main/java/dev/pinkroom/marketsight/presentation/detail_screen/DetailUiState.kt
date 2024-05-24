@@ -6,6 +6,8 @@ import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.CurrentPriceInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
 import dev.pinkroom.marketsight.domain.model.common.StatusUiRequest
+import dev.pinkroom.marketsight.domain.model.quotes_asset.QuoteAsset
+import dev.pinkroom.marketsight.domain.model.trades_asset.TradeAsset
 
 data class DetailUiState(
     val statusMainInfo: StatusUiRequest = StatusUiRequest(),
@@ -15,6 +17,8 @@ data class DetailUiState(
     val asset: Asset = Asset(),
     val currentPriceInfo: CurrentPriceInfo = CurrentPriceInfo(),
     val filtersHistoricalBar: List<FilterHistoricalBar> = historicalBarFilters,
-    val selectedFilter: FilterHistoricalBar = filtersHistoricalBar.first(),
+    val selectedFilterHistorical: FilterHistoricalBar = filtersHistoricalBar.first(),
     val assetCharInfo: AssetChartInfo = AssetChartInfo(),
+    val latestQuotes: List<QuoteAsset> = emptyList(),
+    val latestTrades: List<TradeAsset> = emptyList(),
 )
