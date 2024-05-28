@@ -148,7 +148,7 @@ fun QuotesCryptoResponseDto.toQuotesResponseDto() = QuotesResponseDto(
 )
 
 fun TradesResponseDto.toTradesResponse() = TradesResponse(
-    trades = trades.map { it.toTradeAsset() },
+    trades = trades?.map { it.toTradeAsset() } ?: emptyList(),
     pageToken = pageToken,
 )
 

@@ -2,7 +2,6 @@ package dev.pinkroom.marketsight.presentation.detail_screen.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,28 +17,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import dev.pinkroom.marketsight.R
-import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_QUOTES_ASSET
+import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_TRADES_ASSET
+import dev.pinkroom.marketsight.common.getTimeString
 import dev.pinkroom.marketsight.domain.model.common.StatusUiRequest
-import dev.pinkroom.marketsight.domain.model.quotes_asset.QuoteAsset
-import dev.pinkroom.marketsight.presentation.core.theme.Green
-import dev.pinkroom.marketsight.presentation.core.theme.Red
+import dev.pinkroom.marketsight.domain.model.trades_asset.TradeAsset
 import dev.pinkroom.marketsight.presentation.core.theme.dimens
 import dev.pinkroom.marketsight.presentation.core.theme.shimmerEffect
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun QuoteInfo(
+fun TradeInfo(
     modifier: Modifier = Modifier,
-    statusQuote: StatusUiRequest,
-    quotes: List<QuoteAsset>,
+    statusTrade: StatusUiRequest,
+    trades: List<TradeAsset>,
     onRetry: () -> Unit,
 ) {
-    if (statusQuote.isLoading)
+    if (statusTrade.isLoading)
         Box(
             modifier = Modifier
                 .height(dimens.maxHeightQuoteInfo)
@@ -55,7 +53,7 @@ fun QuoteInfo(
                 )
                 .shimmerEffect()
         )
-    else if (statusQuote.errorMessage != null)
+    else if (statusTrade.errorMessage != null)
         ErrorOnGetInfoRelatedToAsset(
             modifier = Modifier
                 .height(dimens.maxHeightQuoteInfo)
@@ -69,14 +67,14 @@ fun QuoteInfo(
                     color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(dimens.normalShape)
                 ),
-            statusUiRequest = statusQuote,
+            statusUiRequest = statusTrade,
             onRetry = onRetry,
             colorBtn = MaterialTheme.colorScheme.background,
         )
     else
         LazyColumn(
             modifier = modifier
-                .heightIn(max = dimens.sizeQuoteItem*DEFAULT_LIMIT_QUOTES_ASSET)
+                .heightIn(max = dimens.sizeTradeItem * DEFAULT_LIMIT_TRADES_ASSET)
                 .padding(horizontal = dimens.horizontalPadding)
                 .shadow(
                     elevation = dimens.lowElevation,
@@ -89,128 +87,89 @@ fun QuoteInfo(
             contentPadding = PaddingValues(start = dimens.smallPadding, end = dimens.smallPadding, bottom = dimens.smallPadding)
         ) {
             stickyHeader {
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(color = MaterialTheme.colorScheme.primary)
                         .padding(top = dimens.smallPadding),
-                    horizontalArrangement = Arrangement.spacedBy(dimens.smallPadding),
                 ) {
-                    SectionHeaderQuoteInfo(
+                    TradeItem(
                         modifier = Modifier
-                            .weight(1f),
-                        startText = stringResource(id = R.string.size),
-                        endText = stringResource(id = R.string.bid),
-                    )
-                    SectionHeaderQuoteInfo(
-                        modifier = Modifier
-                            .weight(1f),
-                        startText = stringResource(id = R.string.ask),
-                        endText = stringResource(id = R.string.size),
+                            .fillMaxWidth(),
+                        time = stringResource(id = R.string.time).uppercase(),
+                        tradeSize = stringResource(id = R.string.size).uppercase(),
+                        tradePrice = stringResource(id = R.string.price).uppercase(),
+                        header = true,
                     )
                 }
             }
             items(
-                items = quotes,
+                items = trades,
                 key = { it.id }
-            ) { quote ->
-                QuoteItem(
+            ) { trade ->
+                TradeItem(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = dimens.spaceBetweenItemsInfoAsset),
-                    quote = quote,
+                        .padding(vertical = dimens.spaceBetweenItemsInfoAsset)
+                        .fillMaxWidth(),
+                    time = trade.timeStamp.getTimeString(),
+                    tradeSize = trade.tradeSize.toString(),
+                    tradePrice = trade.tradePrice.toString(),
                 )
             }
             item {
-                if(quotes.isEmpty())
-                    Text(
+                if(trades.isEmpty())
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        text = stringResource(id = R.string.not_available_data),
-                        textAlign = TextAlign.Center,
-                    )
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            modifier = Modifier.weight(2f),
+                            text = stringResource(id = R.string.not_available_data),
+                        )
+                    }
             }
         }
 }
 
-
 @Composable
-fun SectionHeaderQuoteInfo(
-    modifier: Modifier,
-    startText: String,
-    endText: String,
+fun TradeItem(
+    modifier: Modifier = Modifier,
+    time: String,
+    tradePrice: String,
+    tradeSize: String,
+    header: Boolean = false,
+    style: TextStyle? = null,
 ) {
+    val fontWeight = if (header) FontWeight.Bold else FontWeight.Normal
+    val textStyle = style ?: if (header) MaterialTheme.typography.labelLarge else MaterialTheme.typography.labelMedium
+
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        TitleHeaderQuoteInfo(
-            text = startText,
-        )
-        TitleHeaderQuoteInfo(
-            text = endText,
-        )
-    }
-}
-
-@Composable
-fun TitleHeaderQuoteInfo(
-    text: String,
-) {
-    Text(
-        text = text.uppercase(),
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Bold,
-    )
-}
-
-@Composable
-fun QuoteItem(
-    modifier: Modifier,
-    quote: QuoteAsset,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(dimens.smallPadding),
-    ) {
-        QuoteInfoBidAskInfo(
-            modifier = Modifier
-                .weight(1f),
-            startText = quote.bidSize.toString(),
-            endText = quote.bidPrice.toString(),
-            colorTextEnd = Green,
-        )
-        QuoteInfoBidAskInfo(
-            modifier = Modifier
-                .weight(1f),
-            startText = quote.askPrice.toString(),
-            endText = quote.askSize.toString(),
-            colorTextStart = Red,
-        )
-    }
-}
-
-@Composable
-fun QuoteInfoBidAskInfo(
-    modifier: Modifier,
-    startText: String,
-    endText: String,
-    colorTextStart: Color? = null,
-    colorTextEnd: Color? = null,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = startText,
-            color = colorTextStart ?: MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier
+                .weight(1f),
+            text = time,
+            fontWeight = fontWeight,
+            style = textStyle,
         )
         Text(
-            text = endText,
-            color = colorTextEnd ?: MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier
+                .weight(1f),
+            text = tradePrice,
+            fontWeight = fontWeight,
+            style = textStyle,
+        )
+        Text(
+            modifier = Modifier
+                .weight(1f),
+            text = tradeSize,
+            fontWeight = fontWeight,
+            style = textStyle,
+            textAlign = TextAlign.End
         )
     }
 }

@@ -14,7 +14,7 @@ class GetQuotesAsset @Inject constructor(
         symbol: String,
         typeAsset: TypeAsset,
         limit: Int? = Constants.DEFAULT_LIMIT_QUOTES_ASSET,
-        startDate: LocalDateTime = LocalDateTime.now().minusDays(7),
+        startDate: LocalDateTime = LocalDateTime.now().minusYears(7),
         endDate: LocalDateTime? = null,
         sort: SortType? = SortType.DESC,
         pageToken: String? = null,

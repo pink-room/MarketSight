@@ -37,7 +37,7 @@
     <string name="year">Y</string>
     <string name="error_on_getting_bars">Something went wrong while trying to get the bars, please try again.</string>
     <string name="overview">Overview</string>
-    <string name="not_available_data_chart">No data available.</string>
+    <string name="not_available_data">No data available.</string>
     <string name="error_on_getting_quotes">An error occurred when trying to get quotes, try again.</string>
     <string name="error_on_getting_trades">An error occurred when trying to get trades, try again.</string>
     <string name="quotes">Quotes</string>
@@ -45,4 +45,6 @@
     <string name="size">Size</string>
     <string name="bid">Bid</string>
     <string name="ask">Ask</string>
+    <string name="price">Price</string>
+    <string name="time">Time</string>
 </resources>

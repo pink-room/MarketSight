@@ -1,7 +1,9 @@
 package dev.pinkroom.marketsight.presentation.detail_screen
 
+import dev.pinkroom.marketsight.common.assetDetailInfoFilters
 import dev.pinkroom.marketsight.common.historicalBarFilters
 import dev.pinkroom.marketsight.domain.model.assets.Asset
+import dev.pinkroom.marketsight.domain.model.assets.FilterAssetDetailInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.CurrentPriceInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
@@ -21,4 +23,6 @@ data class DetailUiState(
     val assetCharInfo: AssetChartInfo = AssetChartInfo(),
     val latestQuotes: List<QuoteAsset> = emptyList(),
     val latestTrades: List<TradeAsset> = emptyList(),
+    val filtersAssetDetailInfo: List<FilterAssetDetailInfo> = assetDetailInfoFilters,
+    val selectedFilterDetailInfo: FilterAssetDetailInfo = filtersAssetDetailInfo.first(),
 )

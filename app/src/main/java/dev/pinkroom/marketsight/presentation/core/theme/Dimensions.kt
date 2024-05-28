@@ -81,6 +81,9 @@ class Dimensions(
     val heightChart: Dp = 380.dp,
     val heightBoxCurrentPrice: Dp = 50.dp,
     val maxHeightQuoteInfo: Dp = 200.dp,
+    val spaceBetweenItemsInfoAsset: Dp = 1.dp,
+    val sizeQuoteItem: Dp = 20.dp,
+    val sizeTradeItem: Dp = 20.dp,
 )
 
 val dimens: Dimensions

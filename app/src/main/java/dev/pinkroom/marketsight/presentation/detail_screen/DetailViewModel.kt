@@ -8,10 +8,12 @@ import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_QUOTES_ASSET
+import dev.pinkroom.marketsight.common.Constants.DEFAULT_LIMIT_TRADES_ASSET
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.di.DetailScreenArgModule.SymbolId
 import dev.pinkroom.marketsight.domain.model.assets.Asset
+import dev.pinkroom.marketsight.domain.model.assets.FilterAssetDetailInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.BarAsset
 import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
@@ -21,6 +23,7 @@ import dev.pinkroom.marketsight.domain.use_case.market.GetLatestBarAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetQuotesAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeBarsAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeQuotesAsset
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeTradesAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetStatusServiceAsset
 import dev.pinkroom.marketsight.domain.use_case.market.GetTradesAsset
 import dev.pinkroom.marketsight.domain.use_case.market.SetSubscribeRealTimeAsset
@@ -51,6 +54,7 @@ class DetailViewModel @Inject constructor(
     private val getQuotesAsset: GetQuotesAsset,
     private val getRealTimeQuotesAsset: GetRealTimeQuotesAsset,
     private val getTradesAsset: GetTradesAsset,
+    private val getRealTimeTradesAsset: GetRealTimeTradesAsset,
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(DetailUiState())
@@ -68,6 +72,7 @@ class DetailViewModel @Inject constructor(
     private var jobGetHistoricalBars: Job? = null
     private var jobGetRealTimeBars: Job? = null
     private var jobGetRealTimeQuotes: Job? = null
+    private var jobGetRealTimeTrades: Job? = null
 
     init {
         validateArgs()
@@ -85,6 +90,8 @@ class DetailViewModel @Inject constructor(
             DetailEvent.RetryToGetHistoricalBars -> retryToGetBarsInfo()
             DetailEvent.RetryToSubscribeRealTimeAsset -> subscribeRealTimeAsset()
             DetailEvent.RetryToGetQuotesAsset -> retryToGetQuotesInfo()
+            DetailEvent.RetryToGetTradesAsset -> retryToGetTradesInfo()
+            is DetailEvent.ChangeFilterAssetDetailInfo -> changeFilterAssetDetailInfo(newFilter = event.newFilter)
         }
     }
 
@@ -110,6 +117,7 @@ class DetailViewModel @Inject constructor(
                     getLatestValueAsset()
                     getHistoricalBarsInfo()
                     getQuotesAssetInfo()
+                    getTradesAssetInfo()
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(statusMainInfo = it.statusMainInfo.copy(isLoading = false, errorMessage = R.string.error_on_getting_assets)) }
@@ -272,6 +280,38 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private fun getTradesAssetInfo() {
+        viewModelScope.launch(dispatchers.IO) {
+            val response = getTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
+            when(response) {
+                is Resource.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            statusTrades = it.statusTrades.copy(isLoading = false),
+                            latestTrades = response.data.trades,
+                        )
+                    }
+                    jobGetRealTimeTrades?.let { if (it.isActive) it.cancel() }
+                    observeRealTimeTrades()
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(statusTrades = it.statusTrades.copy(isLoading = false, errorMessage = R.string.error_on_getting_trades)) }
+                }
+            }
+        }
+    }
+
+    private fun observeRealTimeTrades() {
+        jobGetRealTimeTrades = viewModelScope.launch(dispatchers.IO) {
+            getRealTimeTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
+                if (!uiState.value.statusTrades.isLoading) {
+                    val newTradesList = (response + uiState.value.latestTrades).take(DEFAULT_LIMIT_TRADES_ASSET)
+                    _uiState.update { it.copy(latestTrades = newTradesList) }
+                }
+            }
+        }
+    }
+
     private fun changeFilterAssetChart(newFilter: FilterHistoricalBar) {
         if (newFilter == uiState.value.selectedFilterHistorical) return
         _uiState.update { it.copy(selectedFilterHistorical = newFilter) }
@@ -302,6 +342,15 @@ class DetailViewModel @Inject constructor(
     private fun retryToGetQuotesInfo() {
         _uiState.update { it.copy(statusQuotes = it.statusQuotes.copy(isLoading = true, errorMessage = null)) }
         getQuotesAssetInfo()
+    }
+
+    private fun retryToGetTradesInfo() {
+        _uiState.update { it.copy(statusTrades = it.statusTrades.copy(isLoading = true, errorMessage = null)) }
+        getTradesAssetInfo()
+    }
+
+    private fun changeFilterAssetDetailInfo(newFilter: FilterAssetDetailInfo) {
+        _uiState.update { it.copy(selectedFilterDetailInfo = newFilter) }
     }
 
     override fun onCleared() {

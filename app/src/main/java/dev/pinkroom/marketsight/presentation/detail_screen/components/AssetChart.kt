@@ -224,7 +224,7 @@ fun AssetChart(
             )
         }
     } else {
-        val stringToShow = errorMessage ?: R.string.not_available_data_chart
+        val stringToShow = errorMessage ?: R.string.not_available_data
         Card(
             modifier = modifier
                 .fillMaxSize(),
@@ -468,7 +468,7 @@ private fun DrawScope.drawPathChart(
         path = strokePath,
         color = graphColor,
         style = Stroke(
-            width = 6f,
+            width = 4f,
             cap = StrokeCap.Square,
         )
     )

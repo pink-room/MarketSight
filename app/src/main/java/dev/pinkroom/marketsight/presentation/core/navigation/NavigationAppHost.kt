@@ -138,6 +138,8 @@ fun NavigationAppHost(
                 statusTrade = uiState.statusTrades,
                 quotes = uiState.latestQuotes,
                 statusQuote = uiState.statusQuotes,
+                filtersAssetDetailInfo = uiState.filtersAssetDetailInfo,
+                selectedFilterDetailInfo = uiState.selectedFilterDetailInfo,
                 onBack = { navController.popBackStack() },
                 onEvent = viewModel::onEvent,
             )

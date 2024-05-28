@@ -1,5 +1,15 @@
 package dev.pinkroom.marketsight.presentation.detail_screen
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,9 +19,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dev.pinkroom.marketsight.R
+import dev.pinkroom.marketsight.common.assetDetailInfoFilters
 import dev.pinkroom.marketsight.common.historicalBarFilters
 import dev.pinkroom.marketsight.common.mockChartData
 import dev.pinkroom.marketsight.domain.model.assets.Asset
+import dev.pinkroom.marketsight.domain.model.assets.FilterAssetDetailInfo
+import dev.pinkroom.marketsight.domain.model.assets.TypeAssetDetailFilter
 import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.CurrentPriceInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
@@ -26,8 +39,10 @@ import dev.pinkroom.marketsight.presentation.core.theme.dimens
 import dev.pinkroom.marketsight.presentation.detail_screen.components.AssetChart
 import dev.pinkroom.marketsight.presentation.detail_screen.components.ErrorOnGetInfoRelatedToAsset
 import dev.pinkroom.marketsight.presentation.detail_screen.components.FiltersAssetChart
+import dev.pinkroom.marketsight.presentation.detail_screen.components.FiltersInfoDetailAsset
 import dev.pinkroom.marketsight.presentation.detail_screen.components.HeaderDetail
 import dev.pinkroom.marketsight.presentation.detail_screen.components.QuoteInfo
+import dev.pinkroom.marketsight.presentation.detail_screen.components.TradeInfo
 
 @Composable
 fun DetailScreen(
@@ -43,6 +58,8 @@ fun DetailScreen(
     quotes: List<QuoteAsset>,
     statusTrade: StatusUiRequest,
     trades: List<TradeAsset>,
+    filtersAssetDetailInfo: List<FilterAssetDetailInfo>,
+    selectedFilterDetailInfo: FilterAssetDetailInfo,
     onBack: () -> Unit,
     onEvent: (event: DetailEvent) -> Unit,
 ){
@@ -52,7 +69,8 @@ fun DetailScreen(
         isRefreshing = false,
         onRefresh = {
             // TODO
-        }
+        },
+        contentPadding = PaddingValues(bottom = dimens.smallPadding)
     ) {
         item {
             HeaderDetail(
@@ -107,18 +125,57 @@ fun DetailScreen(
                 )
             }
             item {
-                QuoteInfo(
+                FiltersInfoDetailAsset(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    statusQuote = statusQuote,
-                    quotes = quotes,
-                    onRetry = {
-                        onEvent(DetailEvent.RetryToGetQuotesAsset)
+                        .fillMaxWidth()
+                        .padding(horizontal = dimens.horizontalPadding),
+                    filters = filtersAssetDetailInfo,
+                    selectedFilter = selectedFilterDetailInfo,
+                    onClick = {
+                        onEvent(DetailEvent.ChangeFilterAssetDetailInfo(it))
                     }
                 )
             }
             item {
-
+                AnimatedContent(
+                    targetState = selectedFilterDetailInfo.typeAssetDetailFilter,
+                    transitionSpec = {
+                        fadeIn(
+                            animationSpec = tween(300, easing = EaseIn)
+                        ).togetherWith(
+                            fadeOut(
+                                animationSpec = tween(300, easing = EaseOut)
+                            )
+                        ).using(
+                            SizeTransform(
+                                clip = false,
+                                sizeAnimationSpec = { _, _ ->
+                                    tween(300, easing = EaseInOut)
+                                }
+                            )
+                        )
+                    },
+                    label = "State Detail Info Asset"
+                ) { targetState ->
+                    when (targetState) {
+                        TypeAssetDetailFilter.Quotes -> QuoteInfo(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            statusQuote = statusQuote,
+                            quotes = quotes,
+                            onRetry = {
+                                onEvent(DetailEvent.RetryToGetQuotesAsset)
+                            }
+                        )
+                        TypeAssetDetailFilter.Trades -> TradeInfo(
+                            statusTrade = statusTrade,
+                            trades = trades,
+                            onRetry = {
+                                onEvent(DetailEvent.RetryToGetTradesAsset)
+                            }
+                        )
+                    }
+                }
             }
         }
     }
@@ -159,5 +216,7 @@ fun DetailScreenPreview() {
             isLoading = false, errorMessage = null,
         ),
         trades = emptyList(),
+        filtersAssetDetailInfo = assetDetailInfoFilters,
+        selectedFilterDetailInfo = assetDetailInfoFilters.first()
     )
 }
