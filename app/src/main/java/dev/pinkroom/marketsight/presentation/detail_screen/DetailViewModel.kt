@@ -31,7 +31,6 @@ import dev.pinkroom.marketsight.domain.use_case.market.SetUnsubscribeRealTimeAss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
@@ -153,9 +152,7 @@ class DetailViewModel @Inject constructor(
 
     private fun getHistoricalBarsInfo() {
         jobGetHistoricalBars = viewModelScope.launch(dispatchers.IO) {
-            Log.d("TESTE_P","PEDIDO")
             _uiState.update { it.copy(statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = true, errorMessage = null)) }
-            delay(3000)
             val selectedFilter = uiState.value.selectedFilterHistorical
             val response = getBarsAsset(
                 symbol = asset.symbol,

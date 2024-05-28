@@ -6,7 +6,7 @@ import android.graphics.PointF
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -135,11 +135,11 @@ fun AssetChart(
         Canvas(
             modifier = modifier
                 .pointerInput(key1 = Unit) {
-                    detectDragGestures(
+                    detectHorizontalDragGestures(
                         onDragStart = { _ ->
                             isUserDragging = true
                         },
-                        onDrag = { change, _ ->
+                        onHorizontalDrag = { change, _ ->
                             closestPoint = findClosestPoint(points = coordinates, targetX = change.position.x)
                             val pointBefore = pointBefore(point = closestPoint, points = coordinates)
                             infoToShow(closestPoint?.closingPrice, pointBefore?.closingPrice)
