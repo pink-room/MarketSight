@@ -25,4 +25,5 @@ data class DetailUiState(
     val latestTrades: List<TradeAsset> = emptyList(),
     val filtersAssetDetailInfo: List<FilterAssetDetailInfo> = assetDetailInfoFilters,
     val selectedFilterDetailInfo: FilterAssetDetailInfo = filtersAssetDetailInfo.first(),
+    val isRefreshing: Boolean = false,
 )

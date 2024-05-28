@@ -31,6 +31,7 @@ import dev.pinkroom.marketsight.domain.use_case.market.SetUnsubscribeRealTimeAss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
@@ -73,6 +74,8 @@ class DetailViewModel @Inject constructor(
     private var jobGetRealTimeBars: Job? = null
     private var jobGetRealTimeQuotes: Job? = null
     private var jobGetRealTimeTrades: Job? = null
+    private var jobGetQuotes: Job? = null
+    private var jobGetTrades: Job? = null
 
     init {
         validateArgs()
@@ -86,12 +89,13 @@ class DetailViewModel @Inject constructor(
                 valueToCompare = event.valueToCompare ?: uiState.value.assetCharInfo.barsInfo.first().closingPrice,
                 isPressing = event.priceToShow != null
             )
+            is DetailEvent.ChangeFilterAssetDetailInfo -> changeFilterAssetDetailInfo(newFilter = event.newFilter)
             DetailEvent.RetryToGetAssetInfo -> retryToGetMainInfoAsset()
             DetailEvent.RetryToGetHistoricalBars -> retryToGetBarsInfo()
             DetailEvent.RetryToSubscribeRealTimeAsset -> subscribeRealTimeAsset()
             DetailEvent.RetryToGetQuotesAsset -> retryToGetQuotesInfo()
             DetailEvent.RetryToGetTradesAsset -> retryToGetTradesInfo()
-            is DetailEvent.ChangeFilterAssetDetailInfo -> changeFilterAssetDetailInfo(newFilter = event.newFilter)
+            DetailEvent.Refresh -> refresh()
         }
     }
 
@@ -149,7 +153,9 @@ class DetailViewModel @Inject constructor(
 
     private fun getHistoricalBarsInfo() {
         jobGetHistoricalBars = viewModelScope.launch(dispatchers.IO) {
+            Log.d("TESTE_P","PEDIDO")
             _uiState.update { it.copy(statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = true, errorMessage = null)) }
+            delay(3000)
             val selectedFilter = uiState.value.selectedFilterHistorical
             val response = getBarsAsset(
                 symbol = asset.symbol,
@@ -160,7 +166,8 @@ class DetailViewModel @Inject constructor(
             )
             when(response) {
                 is Resource.Success -> {
-                    updateAssetChartInfo(data = response.data, isToUpdateStatusBars = true)
+                    val bars = if (response.data.size == 1) emptyList() else response.data
+                    updateAssetChartInfo(data = bars, isToUpdateStatusBars = true)
                     jobGetRealTimeBars?.let { if (it.isActive) it.cancel() }
                     observeRealTimeBars()
                 }
@@ -249,7 +256,7 @@ class DetailViewModel @Inject constructor(
     }
 
     private fun getQuotesAssetInfo() {
-        viewModelScope.launch(dispatchers.IO) {
+        jobGetQuotes = viewModelScope.launch(dispatchers.IO) {
             val response = getQuotesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
             when(response) {
                 is Resource.Success -> {
@@ -281,7 +288,7 @@ class DetailViewModel @Inject constructor(
     }
 
     private fun getTradesAssetInfo() {
-        viewModelScope.launch(dispatchers.IO) {
+        jobGetTrades = viewModelScope.launch(dispatchers.IO) {
             val response = getTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
             when(response) {
                 is Resource.Success -> {
@@ -335,7 +342,6 @@ class DetailViewModel @Inject constructor(
     }
 
     private fun retryToGetBarsInfo() {
-        _uiState.update { it.copy(statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = true, errorMessage = null)) }
         getHistoricalBarsInfo()
     }
 
@@ -351,6 +357,21 @@ class DetailViewModel @Inject constructor(
 
     private fun changeFilterAssetDetailInfo(newFilter: FilterAssetDetailInfo) {
         _uiState.update { it.copy(selectedFilterDetailInfo = newFilter) }
+    }
+
+    private fun refresh() {
+        viewModelScope.launch(dispatchers.IO) {
+            if (jobGetQuotes?.isCompleted == true && jobGetHistoricalBars?.isCompleted == true && jobGetTrades?.isCompleted == true) {
+                _uiState.update { it.copy(isRefreshing = true) }
+                retryToGetBarsInfo()
+                retryToGetQuotesInfo()
+                retryToGetTradesInfo()
+                jobGetHistoricalBars?.join()
+                jobGetQuotes?.join()
+                jobGetTrades?.join()
+                _uiState.update { it.copy(isRefreshing = false) }
+            }
+        }
     }
 
     override fun onCleared() {

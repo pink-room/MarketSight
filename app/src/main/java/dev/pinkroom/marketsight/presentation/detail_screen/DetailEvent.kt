@@ -12,4 +12,5 @@ sealed class DetailEvent {
     data object RetryToSubscribeRealTimeAsset: DetailEvent()
     data object RetryToGetQuotesAsset: DetailEvent()
     data object RetryToGetTradesAsset: DetailEvent()
+    data object Refresh: DetailEvent()
 }

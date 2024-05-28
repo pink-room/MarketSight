@@ -61,14 +61,22 @@ fun DetailScreen(
     filtersAssetDetailInfo: List<FilterAssetDetailInfo>,
     selectedFilterDetailInfo: FilterAssetDetailInfo,
     onBack: () -> Unit,
+    isRefreshing: Boolean,
     onEvent: (event: DetailEvent) -> Unit,
 ){
     PullToRefreshLazyColumn(
         modifier = modifier
             .fillMaxSize(),
-        isRefreshing = false,
+        isRefreshing = isRefreshing,
+        enabledPullToRefresh = {
+            val mainInfoStatus = statusMainInfo.isLoading || statusMainInfo.errorMessage != null
+            val barsInfo = statusHistoricalBars.isLoading
+            val quoteInfo = statusQuote.isLoading
+            val tradeInfo = statusTrade.isLoading
+            !mainInfoStatus && !barsInfo && !quoteInfo && !tradeInfo && !isRefreshing
+        },
         onRefresh = {
-            // TODO
+            onEvent(DetailEvent.Refresh)
         },
         contentPadding = PaddingValues(bottom = dimens.smallPadding)
     ) {
@@ -217,6 +225,7 @@ fun DetailScreenPreview() {
         ),
         trades = emptyList(),
         filtersAssetDetailInfo = assetDetailInfoFilters,
-        selectedFilterDetailInfo = assetDetailInfoFilters.first()
+        selectedFilterDetailInfo = assetDetailInfoFilters.first(),
+        isRefreshing = false,
     )
 }
