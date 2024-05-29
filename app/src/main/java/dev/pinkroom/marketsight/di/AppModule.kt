@@ -88,13 +88,14 @@ object AppModule {
     @Singleton
     @Named(ALPACA_NEWS_SERVICE)
     fun provideAlpacaNewsService(
-        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: WebSocketLifecycle
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient,
+        lifecycle: WebSocketLifecycle,
     ): AlpacaService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_NEWS))
             .addMessageAdapterFactory(GsonMessageAdapter.Factory())
             .addStreamAdapterFactory(FlowStreamAdapterFactory())
-            //.lifecycle(lifecycle)
+            .lifecycle(lifecycle)
             .build()
 
         return scarlet.create(AlpacaService::class.java)
@@ -154,13 +155,14 @@ object AppModule {
     @Singleton
     @Named(ALPACA_CRYPTO_SERVICE)
     fun provideAlpacaCryptoService(
-        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient, lifecycle: WebSocketLifecycle
+        @Named(OK_HTTP_WS) okHttpClient: OkHttpClient,
+        lifecycle: WebSocketLifecycle,
     ): AlpacaService {
         val scarlet = Scarlet.Builder()
             .webSocketFactory(okHttpClient.newWebSocketFactory(ALPACA_STREAM_URL_CRYPTO))
             .addMessageAdapterFactory(GsonMessageAdapter.Factory())
             .addStreamAdapterFactory(FlowStreamAdapterFactory())
-            //.lifecycle(lifecycle)
+            .lifecycle(lifecycle)
             .build()
 
         return scarlet.create(AlpacaService::class.java)

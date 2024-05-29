@@ -100,7 +100,7 @@ class HomeViewModelTest {
     @Test
     fun `Given new search input, When Assets is not empty, Then update values based on input`() = runTest {
         // GIVEN
-        val inputSearch = "AA"
+        val inputSearch = "A"
         val assets = assetFactory.buildList(number = 500).map { it.toAsset() }
         mockResponseGetAllAssetsSuccess(assets)
         initViewModel()

@@ -11,6 +11,7 @@ class TradeAssetDtoFactory: BaseFactory<TradeAssetDto> {
         type = if (Random.nextInt() % 2 == 0) "us_equity" else "crypto",
         tradePrice = faker.number().randomDouble(1000,1,10000000),
         tradeId = faker.number().randomNumber(),
+        tradeSize = faker.number().randomDouble(100,1,1000000),
         dateTransaction = "2024-05-03T16:58:38.422833437Z",
     )
 

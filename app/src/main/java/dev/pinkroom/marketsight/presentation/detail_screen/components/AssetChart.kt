@@ -3,7 +3,6 @@ package dev.pinkroom.marketsight.presentation.detail_screen.components
 import android.graphics.Paint
 import android.graphics.Paint.Align
 import android.graphics.PointF
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -340,7 +339,6 @@ private fun DrawScope.drawCurrentLinePrice(
     )
 
     drawContext.canvas.nativeCanvas.apply {
-        Log.d("TESTE", lastPoint.closingPrice.toString())
         drawText(
             lastPoint.closingPrice.formatToString(),
             (spaceStart-spaceBetweenYAndGraph)/2,

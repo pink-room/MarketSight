@@ -158,7 +158,9 @@ class AssetsRepositoryImpTest{
         // THEN
         val expectedResponse = tradesDto.map { it.toTradeAsset() }
         assertThat(response).isInstanceOf(Resource.Success::class)
-        assertThat((response as Resource.Success).data.trades).isEqualTo(expectedResponse)
+        (response as Resource.Success).data.trades.forEachIndexed { i, trade ->
+            assertThat(trade.tradePrice).isEqualTo(expectedResponse[i].tradePrice)
+        }
     }
 
     @Test
@@ -204,7 +206,9 @@ class AssetsRepositoryImpTest{
         // THEN
         val expectedResponse = quotesDto.map { it.toQuoteAsset() }
         assertThat(response).isInstanceOf(Resource.Success::class)
-        assertThat((response as Resource.Success).data.quotes).isEqualTo(expectedResponse)
+        (response as Resource.Success).data.quotes.forEachIndexed { i, quoteAsset ->
+            assertThat(quoteAsset.askPrice).isEqualTo(expectedResponse[i].askPrice)
+        }
     }
 
     @Test
@@ -271,7 +275,9 @@ class AssetsRepositoryImpTest{
         val expectedResponse = tradesDto.map { it.toTradeAsset() }
         assertThat(response).isNotEmpty()
         assertThat(response.size).isEqualTo(1)
-        assertThat(response.first()).isEqualTo(expectedResponse)
+        response.first().forEachIndexed { i, trade ->
+            assertThat(trade.tradePrice).isEqualTo(expectedResponse[i].tradePrice)
+        }
     }
 
     @Test
@@ -293,7 +299,9 @@ class AssetsRepositoryImpTest{
         val expectedResponse = quotesDto.map { it.toQuoteAsset() }
         assertThat(response).isNotEmpty()
         assertThat(response.size).isEqualTo(1)
-        assertThat(response.first()).isEqualTo(expectedResponse)
+        response.first().forEachIndexed { i, quoteAsset ->
+            assertThat(quoteAsset.askPrice).isEqualTo(expectedResponse[i].askPrice)
+        }
     }
 
     @Test

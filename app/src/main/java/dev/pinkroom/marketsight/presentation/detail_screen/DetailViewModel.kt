@@ -1,6 +1,5 @@
 package dev.pinkroom.marketsight.presentation.detail_screen
 
-import android.util.Log
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -374,11 +373,7 @@ class DetailViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         CoroutineScope(dispatchers.IO).launch {
-            val response = setUnsubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
-            when(response) {
-                is Resource.Error -> Log.d("TESTE","ERRO")
-                is Resource.Success -> Log.d("TESTE","OK UNS")
-            }
+            setUnsubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
         }
     }
 }

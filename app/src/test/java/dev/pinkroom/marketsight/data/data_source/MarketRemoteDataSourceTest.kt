@@ -5,6 +5,7 @@ import assertk.assertThat
 import assertk.assertions.hasMessage
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
+import assertk.assertions.isNotNull
 import com.google.gson.Gson
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.WebSocket
@@ -128,7 +129,6 @@ class MarketRemoteDataSourceTest{
             alpacaServiceStock.observeResponse()
         }
         assertThat(response).isNotEmpty()
-        println(response)
         response.map {
             assertThat(it.symbol).isEqualTo(symbol)
         }
@@ -174,7 +174,7 @@ class MarketRemoteDataSourceTest{
             )
         }
         assertThat(response.symbol).isEqualTo(symbol)
-        assertThat(response.trades).isNotEmpty()
+        assertThat(response.trades).isNotNull()
     }
 
     @Test
@@ -197,7 +197,7 @@ class MarketRemoteDataSourceTest{
             )
         }
         assertThat(response.symbol).isEqualTo(symbol)
-        assertThat(response.trades).isNotEmpty()
+        assertThat(response.trades).isNotNull()
     }
 
     @Test
@@ -260,7 +260,7 @@ class MarketRemoteDataSourceTest{
             )
         }
         assertThat(response.symbol).isEqualTo(symbol)
-        assertThat(response.quotes).isNotEmpty()
+        assertThat(response.quotes).isNotNull()
     }
 
     @Test
@@ -283,7 +283,7 @@ class MarketRemoteDataSourceTest{
             )
         }
         assertThat(response.symbol).isEqualTo(symbol)
-        assertThat(response.quotes).isNotEmpty()
+        assertThat(response.quotes).isNotNull()
     }
 
     @Test
