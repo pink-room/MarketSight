@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     kotlin("kapt")
+    alias(libs.plugins.ksp)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.hiltAndroid)
@@ -116,6 +117,10 @@ dependencies {
     // PAGING
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
+
+    // ROOM
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
     // COIL
     implementation(libs.coil)

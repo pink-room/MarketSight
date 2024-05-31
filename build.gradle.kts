@@ -5,4 +5,5 @@ plugins {
     alias(libs.plugins.hiltAndroid) apply false
     alias(libs.plugins.jvm) apply false
     alias(libs.plugins.jsonSerialization) apply false
+    alias(libs.plugins.ksp) apply false
 }

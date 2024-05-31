@@ -23,6 +23,8 @@ fakerVersion = "1.0.2"
 turbineVersion = "1.1.0"
 coilVersion = "2.6.0"
 pagingVersion = "3.3.0"
+roomVersion = "2.6.1"
+kspVersion = "2.0.0-1.0.21"
 
 [libraries]
 
@@ -72,6 +74,10 @@ splash = { group = "androidx.core", name = "core-splashscreen", version.ref = "s
 paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "pagingVersion" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "pagingVersion" }
 
+# ROOM
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }
+
 # COIL
 coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilVersion" }
 
@@ -107,4 +113,5 @@ jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "k
 hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "hiltVersion" }
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
 jsonSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
+ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
 
