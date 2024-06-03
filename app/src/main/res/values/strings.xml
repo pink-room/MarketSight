@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">MarketSight</string>
+    <string name="news">News</string>
+    <string name="home">Home</string>
+    <string name="desc_icon_bottom_bar">icon bottom bar</string>
+    <string name="get_news_error_message">Something went wrong when fetching the news. Check your Internet connection.</string>
+    <string name="retry">Retry</string>
+    <string name="real_time">Live News</string>
+    <string name="latest_news">Latest News</string>
+    <string name="empty_news">Unable to find news for selected filters.</string>
+    <string name="filter_list_news_btn">Filter list news button</string>
+    <string name="filters_news">Filters News</string>
+    <string name="filter_sort">Sort</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="filter_symbols">Symbols</string>
+    <string name="all">All</string>
+    <string name="select">Select</string>
+    <string name="cancel">Cancel</string>
+    <string name="date_range">Date Range</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="clear_date">Clear Date</string>
+    <string name="clear_all">Clear All</string>
+    <string name="apply">Apply</string>
+    <string name="error_subscription_real_time_news">An error occurred when trying to get news in real time.</string>
 </resources>
