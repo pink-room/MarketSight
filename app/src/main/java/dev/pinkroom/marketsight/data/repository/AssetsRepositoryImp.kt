@@ -4,9 +4,11 @@ import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
+import dev.pinkroom.marketsight.data.data_source.AssetsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.AssetsRemoteDataSource
 import dev.pinkroom.marketsight.data.data_source.MarketRemoteDataSource
 import dev.pinkroom.marketsight.data.mapper.toAsset
+import dev.pinkroom.marketsight.data.mapper.toAssetEntity
 import dev.pinkroom.marketsight.data.mapper.toBarAsset
 import dev.pinkroom.marketsight.data.mapper.toQuoteAsset
 import dev.pinkroom.marketsight.data.mapper.toQuotesResponse
@@ -31,15 +33,27 @@ import javax.inject.Inject
 
 class AssetsRepositoryImp @Inject constructor(
     private val assetsRemoteDataSource: AssetsRemoteDataSource,
+    private val assetsLocalDataSource: AssetsLocalDataSource,
     private val marketRemoteDataSource: MarketRemoteDataSource,
     private val dispatchers: DispatcherProvider,
 ): AssetsRepository {
-    override suspend fun getAllAssets(typeAsset: TypeAsset): Resource<List<Asset>> {
+    override suspend fun getAllAssets(
+        typeAsset: TypeAsset,
+        fetchFromRemote: Boolean,
+    ): Resource<List<Asset>> {
         return try {
-            val response = assetsRemoteDataSource.getAllAssets(
-                typeAsset = typeAsset,
-            )
-            Resource.Success(data = response.map { it.toAsset() })
+            val localData = if (fetchFromRemote) emptyList() else assetsLocalDataSource.getAllAssetsOfType(typeAsset = typeAsset)
+            val needToFetchData = localData.isEmpty()
+
+            val dataToReturn = if (needToFetchData) {
+                val response = assetsRemoteDataSource.getAllAssets(typeAsset = typeAsset)
+                assetsLocalDataSource.cacheAssets(
+                    data = response.map { it.toAssetEntity() },
+                    typeAsset = typeAsset
+                ).map { it.toAsset() }
+            } else localData.map { it.toAsset() }
+
+            Resource.Success(data = dataToReturn)
         } catch (e: Exception) {
             e.printStackTrace()
             Resource.Error(message = e.message ?: "Something Went Wrong on Get all assets")

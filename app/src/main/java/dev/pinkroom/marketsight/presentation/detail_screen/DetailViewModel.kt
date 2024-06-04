@@ -373,7 +373,7 @@ class DetailViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         CoroutineScope(dispatchers.IO).launch {
-            setUnsubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
+            if (::asset.isInitialized) setUnsubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
         }
     }
 }

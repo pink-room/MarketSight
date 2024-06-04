@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -26,6 +25,7 @@ import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.assetFilters
 import dev.pinkroom.marketsight.domain.model.assets.Asset
 import dev.pinkroom.marketsight.domain.model.assets.AssetFilter
+import dev.pinkroom.marketsight.presentation.core.components.PullToRefreshLazyColumn
 import dev.pinkroom.marketsight.presentation.core.theme.dimens
 import dev.pinkroom.marketsight.presentation.home_screen.components.FilterAssets
 import dev.pinkroom.marketsight.presentation.home_screen.components.ListAssets
@@ -42,6 +42,7 @@ fun HomeScreen(
     assets: List<Asset>,
     isEmptyOnSearch: Boolean,
     hasError: Boolean,
+    isRefreshing: Boolean,
     onEvent: (HomeEvent) -> Unit,
     navigateToAssetDetailScreen: (Asset) -> Unit,
 ){
@@ -54,7 +55,7 @@ fun HomeScreen(
         focusManager.clearFocus()
     }
 
-    LazyColumn(
+    PullToRefreshLazyColumn(
         modifier = modifier
             .clickable(
                 indication = null,
@@ -67,7 +68,12 @@ fun HomeScreen(
         contentPadding = PaddingValues(
             top = dimens.contentTopPadding,
             bottom = dimens.contentBottomPadding,
-        )
+        ),
+        onRefresh = { onEvent(HomeEvent.Refresh) },
+        isRefreshing = isRefreshing,
+        enabledPullToRefresh = {
+            !isLoading && !isRefreshing
+        }
     ) {
         stickyHeader {
             Column(
@@ -135,6 +141,7 @@ fun HomeScreenPreview(){
         filters = assetFilters,
         isEmptyOnSearch = false,
         hasError = true,
+        isRefreshing = false,
         onEvent = {},
         navigateToAssetDetailScreen = {},
     )

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.jsonSerialization)
     id("kotlin-parcelize")
@@ -64,9 +65,9 @@ android {
         compose = true
         buildConfig = true
     }
-    composeOptions {
+    /*composeOptions {
         kotlinCompilerExtensionVersion = "1.5.12"
-    }
+    }*/
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

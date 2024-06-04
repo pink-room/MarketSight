@@ -1,6 +1,8 @@
 package dev.pinkroom.marketsight.di
 
+import android.app.Application
 import android.content.Context
+import androidx.room.Room
 import com.google.gson.Gson
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.lifecycle.LifecycleRegistry
@@ -20,9 +22,11 @@ import dev.pinkroom.marketsight.common.addAuthenticationInterceptor
 import dev.pinkroom.marketsight.common.addLoggingInterceptor
 import dev.pinkroom.marketsight.common.connection_network.ConnectivityObserver
 import dev.pinkroom.marketsight.common.connection_network.NetworkConnectivityObserver
+import dev.pinkroom.marketsight.data.data_source.AssetsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.AssetsRemoteDataSource
 import dev.pinkroom.marketsight.data.data_source.MarketRemoteDataSource
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
+import dev.pinkroom.marketsight.data.local.MarketSightDatabase
 import dev.pinkroom.marketsight.data.remote.AlpacaCryptoApi
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaPaperApi
@@ -181,6 +185,20 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideMarketSightDatabase(app: Application): MarketSightDatabase {
+        return Room.databaseBuilder(
+            context = app,
+            klass = MarketSightDatabase::class.java,
+            name = "marketsightdb.db"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAssetDao(db: MarketSightDatabase) = db.assetDao
+
+    @Provides
+    @Singleton
     fun provideGson(): Gson = Gson()
 
     @Provides
@@ -231,11 +249,14 @@ object AppModule {
     fun provideAssetsRepository(
         marketRemoteDataSource: MarketRemoteDataSource,
         assetsRemoteDataSource: AssetsRemoteDataSource,
+        assetsLocalDataSource: AssetsLocalDataSource,
         dispatcherProvider: DispatcherProvider,
     ): AssetsRepository {
         return AssetsRepositoryImp(
             marketRemoteDataSource = marketRemoteDataSource,
-            assetsRemoteDataSource = assetsRemoteDataSource, dispatchers = dispatcherProvider,
+            assetsRemoteDataSource = assetsRemoteDataSource,
+            assetsLocalDataSource = assetsLocalDataSource,
+            dispatchers = dispatcherProvider,
         )
     }
 

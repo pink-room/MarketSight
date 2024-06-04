@@ -1,5 +1,6 @@
 package dev.pinkroom.marketsight.data.mapper
 
+import dev.pinkroom.marketsight.data.local.entity.AssetEntity
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.BarAssetDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.QuoteAssetDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.QuotesResponseDto
@@ -113,6 +114,14 @@ fun AssetDto.toAsset() = Asset(
     symbol = symbol,
     exchange = exchange,
     isStock = type != "crypto",
+)
+
+fun AssetDto.toAssetEntity() = AssetEntity(
+    id = id,
+    name = name,
+    symbol = symbol,
+    exchange = exchange,
+    type = type,
 )
 
 fun BarAssetDto.toBarAsset() = BarAsset(

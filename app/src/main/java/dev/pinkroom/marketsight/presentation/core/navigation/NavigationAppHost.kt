@@ -18,6 +18,7 @@ import dev.pinkroom.marketsight.presentation.detail_screen.DetailAction
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailEvent
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailScreen
 import dev.pinkroom.marketsight.presentation.detail_screen.DetailViewModel
+import dev.pinkroom.marketsight.presentation.home_screen.HomeAction
 import dev.pinkroom.marketsight.presentation.home_screen.HomeScreen
 import dev.pinkroom.marketsight.presentation.home_screen.HomeViewModel
 import dev.pinkroom.marketsight.presentation.news_screen.NewsAction
@@ -47,6 +48,18 @@ fun NavigationAppHost(
             val viewModel = hiltViewModel<HomeViewModel>()
             val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
 
+            ObserveAsEvents(viewModel.action){ action ->
+                when(action){
+                    is HomeAction.ShowSnackBar -> scope.launch {
+                        onShowSnackBar(
+                            context.getString(action.message),
+                            action.duration,
+                            action.actionMessage?.let { msg -> context.getString(msg) },
+                        )
+                    }
+                }
+            }
+
             HomeScreen(
                 isLoading = uiState.isLoading,
                 placeHolder = uiState.placeHolder,
@@ -54,6 +67,7 @@ fun NavigationAppHost(
                 filters = uiState.filters,
                 assets = uiState.assets,
                 isEmptyOnSearch = uiState.isEmptyOnSearch,
+                isRefreshing = uiState.isRefreshing,
                 hasError = uiState.hasError,
                 onEvent = viewModel::onEvent,
                 navigateToAssetDetailScreen = {

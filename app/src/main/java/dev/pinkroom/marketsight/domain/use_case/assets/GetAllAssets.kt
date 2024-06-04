@@ -9,5 +9,6 @@ class GetAllAssets @Inject constructor(
 ){
     suspend operator fun invoke(
         typeAsset: TypeAsset,
-    ) = assetsRepository.getAllAssets(typeAsset = typeAsset)
+        fetchFromRemote: Boolean = false,
+    ) = assetsRepository.getAllAssets(typeAsset = typeAsset, fetchFromRemote = fetchFromRemote)
 }

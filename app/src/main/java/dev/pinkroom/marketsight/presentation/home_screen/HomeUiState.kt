@@ -13,5 +13,6 @@ data class HomeUiState(
     val filters: List<AssetFilter> = assetFilters,
     val assets: List<Asset> = emptyList(),
     val isEmptyOnSearch: Boolean = false,
+    val isRefreshing: Boolean = false,
     val hasError: Boolean = false,
 )

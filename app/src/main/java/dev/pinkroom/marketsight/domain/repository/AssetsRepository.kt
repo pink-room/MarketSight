@@ -19,7 +19,8 @@ import java.time.LocalDateTime
 
 interface AssetsRepository {
     suspend fun getAllAssets(
-        typeAsset: TypeAsset
+        typeAsset: TypeAsset,
+        fetchFromRemote: Boolean,
     ): Resource<List<Asset>>
 
     suspend fun getAssetById(
