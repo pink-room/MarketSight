@@ -156,7 +156,7 @@ fun NavigationAppHost(
                 filtersAssetDetailInfo = uiState.filtersAssetDetailInfo,
                 selectedFilterDetailInfo = uiState.selectedFilterDetailInfo,
                 isRefreshing = uiState.isRefreshing,
-                onBack = { navController.popBackStack() },
+                onBack = { navController.navigateUp() },
                 onEvent = viewModel::onEvent,
             )
         }
