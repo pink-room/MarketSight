@@ -4,5 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 data class NewsResponseDto(
     val news: List<NewsDto>,
-    @SerializedName("next_page_token") val nextPageToken: String,
+    @SerializedName("next_page_token") val nextPageToken: String? = null,
 )

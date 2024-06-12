@@ -25,8 +25,10 @@ import dev.pinkroom.marketsight.common.connection_network.NetworkConnectivityObs
 import dev.pinkroom.marketsight.data.data_source.AssetsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.AssetsRemoteDataSource
 import dev.pinkroom.marketsight.data.data_source.MarketRemoteDataSource
+import dev.pinkroom.marketsight.data.data_source.NewsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
 import dev.pinkroom.marketsight.data.local.MarketSightDatabase
+import dev.pinkroom.marketsight.data.local.converter.SymbolsConverter
 import dev.pinkroom.marketsight.data.remote.AlpacaCryptoApi
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaPaperApi
@@ -61,6 +63,10 @@ object AppModule {
     private const val ALPACA_NEWS_SERVICE = "alpacaNewsService"
     private const val ALPACA_STOCK_SERVICE = "alpacaStockService"
     private const val ALPACA_CRYPTO_SERVICE = "alpacaCryptoService"
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
 
     @Provides
     @Singleton
@@ -185,12 +191,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMarketSightDatabase(app: Application): MarketSightDatabase {
-        return Room.databaseBuilder(
-            context = app,
-            klass = MarketSightDatabase::class.java,
-            name = "marketsightdb.db"
-        ).build()
+    fun provideSymbolsConverter(gson: Gson) = SymbolsConverter(gson)
+
+    @Provides
+    @Singleton
+    fun provideMarketSightDatabase(
+        app: Application,
+        symbolsConverter: SymbolsConverter,
+    ): MarketSightDatabase {
+        return Room.databaseBuilder(context = app, klass = MarketSightDatabase::class.java, name = "marketsightdb.db")
+            .addTypeConverter(typeConverter = symbolsConverter)
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
@@ -199,7 +211,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGson(): Gson = Gson()
+    fun provideNewsDao(db: MarketSightDatabase) = db.newsDao
+
+    @Provides
+    @Singleton
+    fun provideImagesDao(db: MarketSightDatabase) = db.imagesDao
 
     @Provides
     @Singleton
@@ -240,8 +256,16 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNewsRepository(newsRemoteDataSource: NewsRemoteDataSource, dispatcherProvider: DispatcherProvider): NewsRepository {
-        return NewsRepositoryImp(newsRemoteDataSource = newsRemoteDataSource, dispatchers = dispatcherProvider)
+    fun provideNewsRepository(
+        newsRemoteDataSource: NewsRemoteDataSource,
+        newsLocalDataSource: NewsLocalDataSource,
+        dispatcherProvider: DispatcherProvider,
+    ): NewsRepository {
+        return NewsRepositoryImp(
+            newsRemoteDataSource = newsRemoteDataSource,
+            newsLocalDataSource = newsLocalDataSource,
+            dispatchers = dispatcherProvider,
+        )
     }
 
     @Provides

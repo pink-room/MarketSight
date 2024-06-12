@@ -12,16 +12,22 @@ class GetNews @Inject constructor(
     suspend operator fun invoke(
         pageToken: String? = null,
         limitPerPage: Int? = LIMIT_NEWS,
+        offset: Int = 0,
         sortType: SortType? = SortType.DESC,
         symbols: List<String>? = null,
         startDate: LocalDateTime? = null,
         endDate: LocalDateTime? = null,
+        cleanCache: Boolean = false,
+        fetchFromRemote: Boolean = true,
     ) = newsRepository.getNews(
         pageToken = pageToken,
         limit = limitPerPage,
+        offset = offset,
         sort = sortType,
         symbols = symbols,
         startDate = startDate,
         endDate = endDate,
+        cleanCache = cleanCache,
+        fetchFromRemote = fetchFromRemote,
     )
 }

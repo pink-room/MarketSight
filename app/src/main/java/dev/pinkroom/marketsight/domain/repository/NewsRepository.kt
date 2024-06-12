@@ -17,8 +17,11 @@ interface NewsRepository {
     ): Resource<List<String>>
 
     suspend fun getNews(
+        cleanCache: Boolean,
+        fetchFromRemote: Boolean,
         symbols: List<String>? = null,
         limit: Int? = LIMIT_NEWS,
+        offset: Int,
         pageToken: String? = null,
         sort: SortType? = SortType.DESC,
         startDate: LocalDateTime? = null,

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.pinkroom.marketsight.R
 import dev.pinkroom.marketsight.common.Constants.ALL_SYMBOLS
+import dev.pinkroom.marketsight.common.Constants.LIMIT_NEWS
 import dev.pinkroom.marketsight.common.Constants.MAX_ITEMS_CAROUSEL
 import dev.pinkroom.marketsight.common.DateMomentType
 import dev.pinkroom.marketsight.common.DispatcherProvider
@@ -19,15 +20,18 @@ import dev.pinkroom.marketsight.common.paginator.DefaultPagination
 import dev.pinkroom.marketsight.domain.model.common.PaginationInfo
 import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import dev.pinkroom.marketsight.domain.model.news.NewsFilters
+import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterRealTimeNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetNews
 import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNews
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -56,10 +60,13 @@ class NewsViewModel @Inject constructor(
             paginationInfo = paginationInfo.copy(isLoading = isLoading)
             _uiState.update { it.copy(isLoadingMoreItems = isLoading) }
         },
-        onRequest = { nextPage ->
+        onRequest = { nextPageToken, nextPageNumber ->
             val filters = uiState.value.filters
             getNews(
-                pageToken = nextPage,
+                pageToken = nextPageToken,
+                fetchFromRemote = paginationInfo.fetchFromRemote,
+                offset = nextPageNumber * LIMIT_NEWS,
+                limitPerPage = LIMIT_NEWS,
                 sortType = filters.sortBy,
                 symbols = filters.getSubscribedSymbols(),
                 startDate = filters.startDateSort?.atStartOfDay(),
@@ -70,12 +77,13 @@ class NewsViewModel @Inject constructor(
             it.nextPageToken
         },
         onError = {
-            _action.send(NewsAction.ShowSnackBar(message = R.string.get_news_error_message))
+            if (paginationInfo.fetchFromRemote)
+                _action.send(NewsAction.ShowSnackBar(message = R.string.get_news_error_message, duration = SnackbarDuration.Long))
         },
         onSuccess = { data, newKey ->
             paginationInfo = paginationInfo.copy(
                 endReached = newKey == null,
-                page = newKey
+                pageToken = newKey,
             )
             _uiState.update { it.copy(news = it.news + data.news) }
         }
@@ -86,7 +94,7 @@ class NewsViewModel @Inject constructor(
     private var previousFilters: NewsFilters = uiState.value.filters
 
     init {
-        initNews()
+        initNews(clearCache = true)
         fetchRealTimeNews()
         observeNetworkStatus()
     }
@@ -111,54 +119,66 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch(dispatchers.IO) {
             connectivityObserver.observe().distinctUntilChanged().collect{ statusNet ->
                 connectionStatus = statusNet
-                if (statusNet == Available && uiState.value.news.isEmpty() && initNewsJob == null)
-                    initNews()
+                if (statusNet == Available && (uiState.value.news.isEmpty() || !paginationInfo.fetchFromRemote) && initNewsJob == null) {
+                    _action.trySend(NewsAction.CloseSnackBar)
+                    initNews(clearCache = true, tryToSubscribeFilter = true)
+                }
             }
         }
     }
 
-    private fun initNews() {
+    private fun initNews(clearCache: Boolean = false, tryToSubscribeFilter: Boolean = false) {
         initNewsJob = viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
-            paginationInfo = paginationInfo.copy(endReached = false)
+            paginationInfo = paginationInfo.copy(fetchFromRemote = clearCache)
 
             val filters = uiState.value.filters
             val response = getNews(
                 sortType = filters.sortBy,
+                limitPerPage = LIMIT_NEWS,
                 symbols = filters.getSubscribedSymbols(),
                 startDate = filters.startDateSort?.atStartOfDay(),
                 endDate = filters.endDateSort?.atEndOfTheDay(),
+                cleanCache = clearCache,
+                fetchFromRemote = paginationInfo.fetchFromRemote
             )
             when(response){
                 is Resource.Success -> {
-                    val allNews = response.data.news
-                    val maxNumberNews = if (allNews.size >= MAX_ITEMS_CAROUSEL) MAX_ITEMS_CAROUSEL else allNews.size
-                    val mainNews = allNews.take(maxNumberNews)
-                    val remainingNews = if (maxNumberNews == allNews.size) mainNews
-                    else allNews.drop(maxNumberNews)
-
                     pagination.reset(key = response.data.nextPageToken)
-                    _uiState.update {
-                        it.copy(
-                            news = remainingNews, mainNews = mainNews,
-                            isLoading = false, errorMessage = null, isRefreshing = false,
-                        )
-                    }
+                    paginationInfo = paginationInfo.copy(endReached = response.data.nextPageToken == null)
+                    initNewsState(allNews = response.data.news)
+                    if (tryToSubscribeFilter) updateFiltersRealTimeNews(uiState.value.filters)
                 }
                 is Resource.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false, isRefreshing = false,
-                            errorMessage = R.string.get_news_error_message
-                        )
+                    initNewsState(allNews = response.data?.news ?: emptyList(), errorMessage = R.string.get_news_error_message)
+                    response.data?.let {
+                        pagination.reset(key = response.data.nextPageToken)
+                        if (it.news.isNotEmpty()) paginationInfo = paginationInfo.copy(endReached = it.nextPageToken == null, fetchFromRemote = false)
                     }
                     if (uiState.value.news.isNotEmpty())
                         _action.send(
-                            NewsAction.ShowSnackBar(message = R.string.get_news_error_message)
+                            NewsAction.ShowSnackBar(
+                                message = R.string.get_news_error_message, actionMessage = R.string.retry,
+                                duration = SnackbarDuration.Indefinite, retryEvent = NewsEvent.RefreshNews
+                            )
                         )
                 }
             }
             initNewsJob = null
+        }
+    }
+
+    private fun initNewsState(allNews: List<NewsInfo>, errorMessage: Int? = null) {
+        val maxNumberNews = if (allNews.size >= MAX_ITEMS_CAROUSEL) MAX_ITEMS_CAROUSEL else allNews.size
+        val mainNews = allNews.take(maxNumberNews)
+        val remainingNews = if (maxNumberNews == allNews.size) mainNews
+        else allNews.drop(maxNumberNews)
+
+        _uiState.update {
+            it.copy(
+                news = remainingNews, mainNews = mainNews,
+                isLoading = false, errorMessage = errorMessage, isRefreshing = false,
+            )
         }
     }
 
@@ -168,8 +188,9 @@ class NewsViewModel @Inject constructor(
 
     private fun refreshNews() {
         if (initNewsJob == null){
+            _action.trySend(NewsAction.CloseSnackBar)
             _uiState.update { it.copy(isRefreshing = true) }
-            initNews()
+            initNews(clearCache = true, tryToSubscribeFilter = true)
         }
     }
 
@@ -263,11 +284,23 @@ class NewsViewModel @Inject constructor(
                                 message = R.string.error_subscription_real_time_news,
                                 duration = SnackbarDuration.Indefinite,
                                 actionMessage = R.string.retry,
+                                retryEvent = NewsEvent.RetryRealTimeNewsSubscribe,
                             )
                         )
                     }
                 }
             }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Stop Receiving Live News When user is not in the screen
+        CoroutineScope(dispatchers.IO).launch {
+            changeFilterRealTimeNews(
+                subscribeSymbols = null,
+                unsubscribeSymbols = uiState.value.filters.getSubscribedSymbols()
+            ).drop(1).collect {}
         }
     }
 }

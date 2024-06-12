@@ -22,7 +22,6 @@ import dev.pinkroom.marketsight.presentation.home_screen.HomeAction
 import dev.pinkroom.marketsight.presentation.home_screen.HomeScreen
 import dev.pinkroom.marketsight.presentation.home_screen.HomeViewModel
 import dev.pinkroom.marketsight.presentation.news_screen.NewsAction
-import dev.pinkroom.marketsight.presentation.news_screen.NewsEvent
 import dev.pinkroom.marketsight.presentation.news_screen.NewsScreen
 import dev.pinkroom.marketsight.presentation.news_screen.NewsViewModel
 import kotlinx.coroutines.launch
@@ -33,6 +32,7 @@ fun NavigationAppHost(
     navController: NavHostController,
     startDestination: Route,
     onShowSnackBar: suspend (message: String, duration: SnackbarDuration, action: String?) -> Boolean,
+    closeSnackBar: () -> Unit,
 ){
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -90,11 +90,12 @@ fun NavigationAppHost(
                                 action.duration,
                                 action.actionMessage?.let { msg -> context.getString(msg) },
                             )
-                            if (result && action.actionMessage != null){
-                                viewModel.onEvent(NewsEvent.RetryRealTimeNewsSubscribe)
+                            if (result) {
+                                action.retryEvent?.let { viewModel.onEvent(event = it) }
                             }
                         }
                     }
+                    NewsAction.CloseSnackBar -> closeSnackBar()
                 }
             }
 

@@ -6,7 +6,7 @@ import dev.pinkroom.marketsight.data.local.entity.AssetEntity
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
 import javax.inject.Inject
 
-class AssetsLocalDataSource  @Inject constructor(
+class AssetsLocalDataSource @Inject constructor(
     private val dbTransaction: DbTransaction,
     private val assetDao: AssetDao,
 ) {

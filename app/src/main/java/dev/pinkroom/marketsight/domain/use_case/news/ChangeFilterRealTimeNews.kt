@@ -35,6 +35,8 @@ class ChangeFilterRealTimeNews @Inject constructor(
                     symbolsToRevert.addAll(subscribeSymbols)
                 }
             }
+        } ?: run {
+            if (symbolsToRevert.isEmpty()) emit(Resource.Success(data = emptyList()))
         }
 
         if (symbolsToRevert.isNotEmpty()) emit(Resource.Error(data = symbolsToRevert))

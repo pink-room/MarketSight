@@ -10,19 +10,15 @@ import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_crypto_api.QuotesCr
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_crypto_api.TradesCryptoResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.ImagesNewsDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_paper_api.AssetDto
 import dev.pinkroom.marketsight.domain.model.assets.Asset
 import dev.pinkroom.marketsight.domain.model.bars_asset.BarAsset
-import dev.pinkroom.marketsight.domain.model.common.ErrorMessage
 import dev.pinkroom.marketsight.domain.model.common.SubscriptionMessage
 import dev.pinkroom.marketsight.domain.model.news.ImageSize
 import dev.pinkroom.marketsight.domain.model.news.ImagesNews
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
-import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.model.quotes_asset.QuoteAsset
 import dev.pinkroom.marketsight.domain.model.quotes_asset.QuotesResponse
 import dev.pinkroom.marketsight.domain.model.trades_asset.TradeAsset
@@ -43,11 +39,6 @@ fun NewsMessageDto.toNewsInfo() = NewsInfo(
     symbols = this.symbols,
     updatedAt = this.updatedAt.toLocalDateTime(),
     url = this.url,
-)
-
-fun ErrorMessageDto.toErrorMessage() = ErrorMessage(
-    code = this.code,
-    msg = this.msg,
 )
 
 fun SubscriptionMessageDto.toSubscriptionMessage() = SubscriptionMessage(
@@ -77,11 +68,6 @@ fun String.toLocalDateTimeWithNanoSecond(): LocalDateTime {
     return date.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
 }
 
-fun NewsResponseDto.toNewsResponse() = NewsResponse(
-    news = this.news.map { it.toNewsInfo() },
-    nextPageToken = this.nextPageToken,
-)
-
 fun NewsDto.toNewsInfo() = NewsInfo(
     author = this.author,
     createdAt = this.createdAt.toLocalDateTime(),
@@ -99,7 +85,6 @@ fun ImagesNewsDto.toImagesNews() = ImagesNews(
     url = this.url,
     size = this.size.toImageSize(),
 )
-
 
 fun String.toImageSize() = when(this) {
     "large" -> ImageSize.Large

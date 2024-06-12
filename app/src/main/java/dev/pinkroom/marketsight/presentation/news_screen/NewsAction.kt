@@ -8,5 +8,8 @@ sealed class NewsAction{
         @StringRes val message: Int,
         val duration: SnackbarDuration = SnackbarDuration.Short,
         @StringRes val actionMessage: Int? = null,
+        val retryEvent: NewsEvent? = null,
     ): NewsAction()
+
+    data object CloseSnackBar: NewsAction()
 }

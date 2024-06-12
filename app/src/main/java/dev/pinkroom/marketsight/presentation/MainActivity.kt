@@ -59,6 +59,9 @@ class MainActivity : ComponentActivity() {
                                     withDismissAction = true,
                                     actionLabel = actionMessage,
                                 ) == SnackbarResult.ActionPerformed
+                            },
+                            closeSnackBar = {
+                                snackBarHostState.currentSnackbarData?.dismiss()
                             }
                         )
                     }
