@@ -16,7 +16,7 @@ class AssetsLocalDataSource @Inject constructor(
         getAllAssetsOfType(typeAsset = typeAsset)
     }
 
-    suspend fun deleteAllAssetsOfType(typeAsset: TypeAsset) = assetDao.clearAllOfType(typeAsset = typeAsset.value)
+    private suspend fun deleteAllAssetsOfType(typeAsset: TypeAsset) = assetDao.clearAllOfType(typeAsset = typeAsset.value)
 
     suspend fun getAllAssetsOfType(typeAsset: TypeAsset) = assetDao.getAllAssetsOfType(typeAsset = typeAsset.value)
 }

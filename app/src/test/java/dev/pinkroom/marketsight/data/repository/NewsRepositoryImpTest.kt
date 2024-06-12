@@ -8,7 +8,10 @@ import com.github.javafaker.Faker
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
+import dev.pinkroom.marketsight.data.data_source.NewsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
+import dev.pinkroom.marketsight.data.mapper.toImageEntity
+import dev.pinkroom.marketsight.data.mapper.toNewsEntity
 import dev.pinkroom.marketsight.data.mapper.toNewsInfo
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
@@ -31,7 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class NewsRepositoryTest{
+class NewsRepositoryImpTest{
 
     @get:Rule
     val coroutineRule = MainCoroutineRule()
@@ -40,9 +43,11 @@ class NewsRepositoryTest{
     private val newsFactory = NewsFactory()
     private val newsDtoFactory = NewsDtoFactory()
     private val newsRemoteDataSource = mockk<NewsRemoteDataSource>(relaxed = true, relaxUnitFun = true)
+    private val newsLocalDataSource = mockk<NewsLocalDataSource>()
     private val dispatchers = TestDispatcherProvider()
     private val newsRepository = NewsRepositoryImp(
         newsRemoteDataSource = newsRemoteDataSource,
+        newsLocalDataSource = newsLocalDataSource,
         dispatchers = dispatchers,
     )
 
@@ -76,7 +81,10 @@ class NewsRepositoryTest{
             symbols = symbols,
             limit = limit,
             pageToken = pageToken,
-            sort = sort
+            sort = sort,
+            fetchFromRemote = true,
+            offset = 0,
+            cleanCache = true,
         )
 
         // THEN
@@ -96,14 +104,17 @@ class NewsRepositoryTest{
     @Test
     fun `Given params, then alpaca api throw error on call getNews`() = runTest {
         // GIVEN
-        mockNewsResponseApiWithError()
+        mockNewsResponseApiWithError(limit = 0, isCacheEmpty = true)
 
         // WHEN
         val response = newsRepository.getNews(
             symbols = null,
             limit = null,
             pageToken = null,
-            sort = null
+            sort = null,
+            fetchFromRemote = true,
+            offset = 0,
+            cleanCache = true,
         )
 
         // THEN
@@ -113,6 +124,16 @@ class NewsRepositoryTest{
                 pageToken = any(),
                 sort = any(),
                 limit = any(),
+            )
+        }
+        coVerify {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
             )
         }
         assertThat(response is Resource.Error).isTrue()
@@ -152,6 +173,7 @@ class NewsRepositoryTest{
 
 
     private fun mockNewsResponseApiWithSuccess(limit: Int) {
+        val news = newsDtoFactory.buildList(number = limit)
         coEvery {
             newsRemoteDataSource.getNews(
                 symbols = any(),
@@ -161,22 +183,85 @@ class NewsRepositoryTest{
             )
         }.returns(
             NewsResponseDto(
-                news = newsDtoFactory.buildList(number = limit),
+                news = news,
                 nextPageToken = faker.lorem().word()
             )
         )
+
+        coEvery {
+            newsLocalDataSource.cacheNews(
+                symbols = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+                isAsc = any(),
+                data = any(),
+                clearCurrentCache = any()
+            )
+        }.returns(
+            news.map { it.toNewsEntity() }
+        )
+
+        coEvery {
+            newsLocalDataSource.getImagesRelatedToNews(
+                newsId = any()
+            )
+        }.returns(
+            news.firstOrNull()?.images?.map { it.toImageEntity() } ?: emptyList()
+        )
     }
 
-    private fun mockNewsResponseApiWithError() {
+    private fun mockNewsResponseApiWithError(limit: Int, isCacheEmpty: Boolean) {
         coEvery {
             newsRemoteDataSource.getNews(
                 symbols = any(),
                 limit = any(),
                 pageToken = any(),
                 sort = any(),
+                startDate = any(),
+                endDate = any(),
             )
         }.throws(
             Exception("Test Error")
+        )
+
+        val news = if (isCacheEmpty) emptyList()
+        else newsDtoFactory.buildList(number = limit)
+        coEvery {
+            newsLocalDataSource.cacheNews(
+                symbols = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+                isAsc = any(),
+                data = any(),
+                clearCurrentCache = any()
+            )
+        }.returns(
+            news.map { it.toNewsEntity() }
+        )
+
+        coEvery {
+            newsLocalDataSource.getImagesRelatedToNews(
+                newsId = any()
+            )
+        }.returns(
+            news.firstOrNull()?.images?.map { it.toImageEntity() } ?: emptyList()
+        )
+
+        coEvery {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+            )
+        }.returns(
+            news.map { it.toNewsEntity() }
         )
     }
 

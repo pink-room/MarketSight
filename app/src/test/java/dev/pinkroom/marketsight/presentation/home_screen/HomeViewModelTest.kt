@@ -199,17 +199,26 @@ class HomeViewModelTest {
 
     private fun mockResponseGetAllAssetsOfTypeStockSuccess(assets: List<Asset>) {
         coEvery {
-            getAllAssets.invoke(typeAsset = TypeAsset.Crypto)
+            getAllAssets.invoke(
+                typeAsset = TypeAsset.Crypto,
+                fetchFromRemote = any(),
+            )
         } returns Resource.Error()
 
         coEvery {
-            getAllAssets.invoke(typeAsset = TypeAsset.Stock)
+            getAllAssets.invoke(
+                typeAsset = TypeAsset.Stock,
+                fetchFromRemote = any()
+            )
         } returns Resource.Success(data = assets.filter { it.isStock })
     }
 
     private fun mockResponseGetAllAssetsFirstWithErrorAndThenSuccess(assets: List<Asset>) {
         coEvery {
-            getAllAssets.invoke(typeAsset = any())
+            getAllAssets.invoke(
+                typeAsset = any(),
+                fetchFromRemote = any(),
+            )
         }.returnsMany(
             Resource.Error(),
             Resource.Success(data = assets),

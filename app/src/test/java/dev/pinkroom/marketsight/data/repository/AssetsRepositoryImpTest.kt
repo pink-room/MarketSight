@@ -9,9 +9,11 @@ import com.tinder.scarlet.WebSocket
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaService
 import dev.pinkroom.marketsight.common.Resource
+import dev.pinkroom.marketsight.data.data_source.AssetsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.AssetsRemoteDataSource
 import dev.pinkroom.marketsight.data.data_source.MarketRemoteDataSource
 import dev.pinkroom.marketsight.data.mapper.toAsset
+import dev.pinkroom.marketsight.data.mapper.toAssetEntity
 import dev.pinkroom.marketsight.data.mapper.toBarAsset
 import dev.pinkroom.marketsight.data.mapper.toQuoteAsset
 import dev.pinkroom.marketsight.data.mapper.toTradeAsset
@@ -50,10 +52,12 @@ class AssetsRepositoryImpTest{
     private val quoteAssetDtoFactory = QuoteAssetDtoFactory()
     private val dispatchers = TestDispatcherProvider()
     private val assetsRemoteDataSource = mockk<AssetsRemoteDataSource>()
+    private val assetsLocalDataSource = mockk<AssetsLocalDataSource>()
     private val marketRemoteDataSource = mockk<MarketRemoteDataSource>()
     private val assetsRepository = AssetsRepositoryImp(
         assetsRemoteDataSource = assetsRemoteDataSource,
         marketRemoteDataSource = marketRemoteDataSource,
+        assetsLocalDataSource = assetsLocalDataSource,
         dispatchers = dispatchers,
     )
 
@@ -67,7 +71,26 @@ class AssetsRepositoryImpTest{
         )
 
         // WHEN
-        val response = assetsRepository.getAllAssets(typeAsset = typeAsset)
+        val response = assetsRepository.getAllAssets(typeAsset = typeAsset, fetchFromRemote = true)
+
+        // THEN
+        val expectedResponse = assetsDto.map { it.toAsset() }
+        assertThat(response).isInstanceOf(Resource.Success::class)
+        assertThat((response as Resource.Success).data).isEqualTo(expectedResponse)
+    }
+
+    @Test
+    fun `When getAllAssets cached of type Stock, Then on Success return a List of Asset`() = runTest {
+        // GIVEN
+        val typeAsset = TypeAsset.Stock
+        val assetsDto = assetDtoFactory.listAssets(number = 250, type = typeAsset)
+        mockResponseGetAssetsAssetsRemoteDataSource(
+            assetsToReturn = assetsDto,
+            typeAsset = typeAsset,
+        )
+
+        // WHEN
+        val response = assetsRepository.getAllAssets(typeAsset = typeAsset, fetchFromRemote = false)
 
         // THEN
         val expectedResponse = assetsDto.map { it.toAsset() }
@@ -87,7 +110,7 @@ class AssetsRepositoryImpTest{
         )
 
         // WHEN
-        val response = assetsRepository.getAllAssets(typeAsset = typeAsset)
+        val response = assetsRepository.getAllAssets(typeAsset = typeAsset, fetchFromRemote = true)
 
         // THEN
         assertThat(response).isInstanceOf(Resource.Error::class)
@@ -365,15 +388,26 @@ class AssetsRepositoryImpTest{
         assetsToReturn: List<AssetDto> = emptyList(),
         isToThrowError: Boolean = false,
         messageError: String? = null,
+        typeAsset: TypeAsset? = null,
     ) {
         if (isToThrowError)
             coEvery {
                 assetsRemoteDataSource.getAllAssets(typeAsset = any())
             } throws Exception(messageError ?: "")
-        else
+        else {
             coEvery {
                 assetsRemoteDataSource.getAllAssets(typeAsset = any())
             } returns assetsToReturn
+
+            coEvery {
+                assetsLocalDataSource.cacheAssets(data = any(), typeAsset = any())
+            } returns assetsToReturn.map { it.toAssetEntity() }
+
+            coEvery {
+                assetsLocalDataSource.getAllAssetsOfType(typeAsset = any())
+            } returns if (typeAsset != null) assetsToReturn.filter { it.type == typeAsset.value }.map { it.toAssetEntity() }
+            else assetsToReturn.map { it.toAssetEntity() }
+        }
     }
 
     private fun mockResponseGetBarsMarketRemoteDataSource(

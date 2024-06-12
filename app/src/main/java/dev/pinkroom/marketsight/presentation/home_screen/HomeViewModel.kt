@@ -58,7 +58,7 @@ class HomeViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(500)
-            val newList = selectedFilter.getAssets().filter {
+            val newList = selectedFilter.typeAsset.getAssets().filter {
                 it.name.lowercase().startsWith(newInput.lowercase()) || it.symbol.startsWith(
                     newInput.uppercase()
                 )
@@ -74,7 +74,7 @@ class HomeViewModel @Inject constructor(
             else it.copy(isSelected = false)
         }
         selectedFilter = filterToBeSelected
-        val assets = filterToBeSelected.getAssets()
+        val assets = filterToBeSelected.typeAsset.getAssets()
         _uiState.update {
             it.copy(
                 filters = newFilters,
@@ -95,28 +95,33 @@ class HomeViewModel @Inject constructor(
             val allCryptoAssetsRequest = async { getAllAssets(typeAsset = TypeAsset.Crypto) }
             awaitAll(allStocksAssetsRequest, allCryptoAssetsRequest)
 
-            stocksList = extractAssetsFromResult(result = allStocksAssetsRequest.getCompleted())
-            cryptosList = extractAssetsFromResult(result = allCryptoAssetsRequest.getCompleted())
-            val assets = selectedFilter.getAssets()
-            val hasError = assets.isEmpty()
+            stocksList = extractAssetsFromResult(result = allStocksAssetsRequest.getCompleted(), typeAsset = TypeAsset.Stock)
+            cryptosList = extractAssetsFromResult(result = allCryptoAssetsRequest.getCompleted(), typeAsset = TypeAsset.Crypto)
 
+            val assets = selectedFilter.typeAsset.getAssets()
+            val hasError = assets.isEmpty()
             _uiState.update { it.copy(isLoading = false, assets = assets, hasError = hasError) }
         }
     }
 
-    private suspend fun extractAssetsFromResult(result: Resource<List<Asset>>): List<Asset> {
+    private fun extractAssetsFromResult(result: Resource<List<Asset>>, typeAsset: TypeAsset? = null): List<Asset> {
         return when(result){
             is Resource.Success -> result.data
             is Resource.Error -> {
-                val storedAssets = selectedFilter.getAssets()
-                if (storedAssets.isNotEmpty())
-                    _action.send(HomeAction.ShowSnackBar(message = R.string.error_on_getting_assets))
+                val storedAssets = if (typeAsset != null) {
+                    typeAsset.getAssets()
+                } else {
+                    val assets = selectedFilter.typeAsset.getAssets()
+                    if (assets.isNotEmpty())
+                        _action.trySend(HomeAction.ShowSnackBar(message = R.string.error_on_getting_assets))
+                    assets
+                }
                 storedAssets
             }
         }
     }
 
-    private fun AssetFilter.getAssets() = when(typeAsset) {
+    private fun TypeAsset.getAssets() = when(this) {
         TypeAsset.Crypto -> cryptosList
         TypeAsset.Stock -> stocksList
     }

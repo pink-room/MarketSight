@@ -55,11 +55,11 @@ class NewsLocalDataSource @Inject constructor(
         )
     }
 
-    suspend fun deleteAllNews() = newsDao.clearAll()
+    private suspend fun deleteAllNews() = newsDao.clearAll()
 
-    suspend fun deleteAllImages() = imagesDao.clearAll()
+    private suspend fun deleteAllImages() = imagesDao.clearAll()
 
-    suspend fun deleteAllCrossRefNewsImages() = newsDao.clearAllCrossRefNewsImages()
+    private suspend fun deleteAllCrossRefNewsImages() = newsDao.clearAllCrossRefNewsImages()
 
     suspend fun getNews(
         symbols: List<String>?,
