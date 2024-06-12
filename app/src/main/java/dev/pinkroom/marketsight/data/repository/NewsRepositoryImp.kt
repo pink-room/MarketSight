@@ -100,7 +100,7 @@ class NewsRepositoryImp @Inject constructor(
             Resource.Error(message = e.message ?: "Something Went Wrong")
         } catch (e: Exception) {
             e.printStackTrace()
-            val cachedNewsToReturn = if (cleanCache && fetchFromRemote)
+            val cachedNewsToReturn = if (fetchFromRemote)
                 newsLocalDataSource.getNews(
                     symbols = symbols,
                     limit = limit ?: LIMIT_NEWS,

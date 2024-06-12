@@ -127,10 +127,13 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    private fun initNews(clearCache: Boolean = false, tryToSubscribeFilter: Boolean = false) {
+    private fun initNews(
+        clearCache: Boolean = false,
+        tryToSubscribeFilter: Boolean = false
+    ) {
         initNewsJob = viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
-            paginationInfo = paginationInfo.copy(fetchFromRemote = clearCache)
+            paginationInfo = paginationInfo.copy(fetchFromRemote = true)
 
             val filters = uiState.value.filters
             val response = getNews(
@@ -147,7 +150,9 @@ class NewsViewModel @Inject constructor(
                     pagination.reset(key = response.data.nextPageToken)
                     paginationInfo = paginationInfo.copy(endReached = response.data.nextPageToken == null)
                     initNewsState(allNews = response.data.news)
-                    if (tryToSubscribeFilter) updateFiltersRealTimeNews(uiState.value.filters)
+                    if (tryToSubscribeFilter) {
+                        updateFiltersRealTimeNews(uiState.value.filters)
+                    }
                 }
                 is Resource.Error -> {
                     initNewsState(allNews = response.data?.news ?: emptyList(), errorMessage = R.string.get_news_error_message)
