@@ -23,9 +23,9 @@ import dev.pinkroom.marketsight.data.mapper.toNewsInfo
 import dev.pinkroom.marketsight.domain.model.news.NewsFilters
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
-import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterRealTimeNews
-import dev.pinkroom.marketsight.domain.use_case.news.GetNews
-import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNews
+import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterRealTimeNewsUseCase
+import dev.pinkroom.marketsight.domain.use_case.news.GetNewsUseCase
+import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNewsUseCase
 import dev.pinkroom.marketsight.factories.NewsDtoFactory
 import dev.pinkroom.marketsight.util.MainCoroutineRule
 import dev.pinkroom.marketsight.util.TestDispatcherProvider
@@ -52,9 +52,9 @@ class NewsViewModelTest{
 
     private val dispatchers = TestDispatcherProvider()
     private val newsFactory = NewsDtoFactory()
-    private val getNews = mockk<GetNews>(relaxed = true, relaxUnitFun = true)
-    private val getRealTimeNews = mockk<GetRealTimeNews>(relaxed = true, relaxUnitFun = true)
-    private val changeFilterRealTimeNews = mockk<ChangeFilterRealTimeNews>(relaxed = true, relaxUnitFun = true)
+    private val getNewsUseCase = mockk<GetNewsUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getRealTimeNewsUseCase = mockk<GetRealTimeNewsUseCase>(relaxed = true, relaxUnitFun = true)
+    private val changeFilterRealTimeNewsUseCase = mockk<ChangeFilterRealTimeNewsUseCase>(relaxed = true, relaxUnitFun = true)
     private val connectivityObserver = mockk<ConnectivityObserver>(relaxed = true, relaxUnitFun = true)
     private lateinit var newsViewModel: NewsViewModel
 
@@ -64,9 +64,9 @@ class NewsViewModelTest{
             mockResponseGetNewsSuccess(news)
         }
         newsViewModel = NewsViewModel(
-            getNews = getNews,
-            getRealTimeNews = getRealTimeNews,
-            changeFilterRealTimeNews = changeFilterRealTimeNews,
+            getNewsUseCase = getNewsUseCase,
+            getRealTimeNewsUseCase = getRealTimeNewsUseCase,
+            changeFilterRealTimeNewsUseCase = changeFilterRealTimeNewsUseCase,
             connectivityObserver = connectivityObserver,
             dispatchers = dispatchers,
         )
@@ -88,7 +88,7 @@ class NewsViewModelTest{
         val filters = uiState.filters
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = filters.sortBy,
                 symbols = filters.getSubscribedSymbols(),
                 startDate = filters.startDateSort?.atStartOfDay(),
@@ -104,7 +104,7 @@ class NewsViewModelTest{
         assertThat(uiState.mainNews).isEqualTo(news.take(MAX_ITEMS_CAROUSEL))
         assertThat(uiState.news).isEqualTo(news.drop(MAX_ITEMS_CAROUSEL))
 
-        coVerify { getRealTimeNews.invoke() }
+        coVerify { getRealTimeNewsUseCase.invoke() }
         assertThat(uiState.realTimeNews).isNotEmpty()
     }
 
@@ -121,7 +121,7 @@ class NewsViewModelTest{
         val uiState = newsViewModel.uiState.value
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = any(), fetchFromRemote = any(), cleanCache = any(),
@@ -148,7 +148,7 @@ class NewsViewModelTest{
         val uiState = newsViewModel.uiState.value
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = any(), fetchFromRemote = any(), cleanCache = any(),
@@ -191,7 +191,7 @@ class NewsViewModelTest{
         val uiState = newsViewModel.uiState.value
 
         coVerify(exactly = 2) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = any(), fetchFromRemote = any(), cleanCache = any(),
@@ -219,7 +219,7 @@ class NewsViewModelTest{
         val uiState = newsViewModel.uiState.value
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 cleanCache = true, fetchFromRemote = true, offset = 0,
@@ -245,7 +245,7 @@ class NewsViewModelTest{
         advanceUntilIdle()
 
         coVerify(exactly = 1) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 cleanCache = any(), fetchFromRemote = any(), offset = any(),
@@ -266,7 +266,7 @@ class NewsViewModelTest{
         advanceUntilIdle()
 
         coVerify {
-            changeFilterRealTimeNews.invoke(
+            changeFilterRealTimeNewsUseCase.invoke(
                 subscribeSymbols = filters.symbols.filter { it.isSubscribed }.map { it.symbol },
                 unsubscribeSymbols = filters.symbols.filter { !it.isSubscribed }.map { it.symbol },
             )
@@ -287,7 +287,7 @@ class NewsViewModelTest{
         advanceUntilIdle()
 
         coVerify {
-            changeFilterRealTimeNews.invoke(
+            changeFilterRealTimeNewsUseCase.invoke(
                 subscribeSymbols = filters.symbols.filter { it.isSubscribed }.map { it.symbol },
                 unsubscribeSymbols = filters.symbols.filter { !it.isSubscribed }.map { it.symbol },
             )
@@ -312,7 +312,7 @@ class NewsViewModelTest{
         }
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = 0, fetchFromRemote = true, cleanCache = true,
@@ -337,14 +337,14 @@ class NewsViewModelTest{
         val uiState = newsViewModel.uiState.value
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = 0, cleanCache = true, fetchFromRemote = true
             )
         }
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = LIMIT_NEWS, cleanCache = false, fetchFromRemote = true
@@ -370,14 +370,14 @@ class NewsViewModelTest{
         val action = newsViewModel.action.first()
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = 0, cleanCache = true, fetchFromRemote = true
             )
         }
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = LIMIT_NEWS, cleanCache = false, fetchFromRemote = true
@@ -403,14 +403,14 @@ class NewsViewModelTest{
         val uiState = newsViewModel.uiState.value
 
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = 0, cleanCache = true, fetchFromRemote = true
             )
         }
         coVerify {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = LIMIT_NEWS, cleanCache = false, fetchFromRemote = false
@@ -435,7 +435,7 @@ class NewsViewModelTest{
 
         // THEN
         coVerify(exactly = 2) { // IS 2 BECAUSE ON INIT VIEWMODEL IS CALLED GET NEWS
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 fetchFromRemote = any(), cleanCache = any(), offset = any(),
@@ -456,7 +456,7 @@ class NewsViewModelTest{
 
         // THEN
         coVerify(exactly = 1) { // IS 1 BECAUSE ON INIT VIEWMODEL IS CALLED GET NEWS
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = any(), cleanCache = any(), fetchFromRemote = any(),
@@ -605,7 +605,7 @@ class NewsViewModelTest{
         // THEN
         val expectedDate = Instant.ofEpochMilli(dateInMillis).atZone(ZoneOffset.UTC).toLocalDate()
         coVerify(exactly = 1) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = expectedDate.atStartOfDay(),
                 symbols = listOf(newsViewModel.uiState.value.filters.symbols.last().symbol),
                 pageToken = any(), endDate = any(), sortType = any(),
@@ -613,7 +613,7 @@ class NewsViewModelTest{
             )
         }
         coVerify(exactly = 1) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = expectedDate.atStartOfDay(),
                 symbols = listOf(newsViewModel.uiState.value.filters.symbols.last().symbol),
                 pageToken = any(), endDate = any(), sortType = any(),
@@ -621,7 +621,7 @@ class NewsViewModelTest{
             )
         }
         verify {
-            changeFilterRealTimeNews.invoke(
+            changeFilterRealTimeNewsUseCase.invoke(
                 subscribeSymbols = any(),
                 unsubscribeSymbols = any(),
             )
@@ -639,13 +639,13 @@ class NewsViewModelTest{
 
         // THEN
         coVerify(exactly = 1) { // 1 is because GetNews is called in INIT
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = any(), symbols = any(), pageToken = any(), endDate = any(), sortType = any(),
                 limitPerPage = any(), fetchFromRemote = any(), cleanCache = any(), offset = any(),
             )
         }
         verify(exactly = 0) {
-            changeFilterRealTimeNews.invoke()
+            changeFilterRealTimeNewsUseCase.invoke()
         }
     }
 
@@ -662,21 +662,21 @@ class NewsViewModelTest{
 
         // THEN
         coVerify(exactly = 1) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = any(), symbols = any(),
                 pageToken = any(), endDate = any(), sortType = any(),
                 limitPerPage = any(), fetchFromRemote = any(), cleanCache = true, offset = any(),
             )
         }
         coVerify(exactly = 1) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = any(), symbols = any(),
                 pageToken = any(), endDate = any(), sortType = any(),
                 limitPerPage = any(), fetchFromRemote = any(), cleanCache = false, offset = any(),
             )
         }
         verify(exactly = 0) {
-            changeFilterRealTimeNews.invoke()
+            changeFilterRealTimeNewsUseCase.invoke()
         }
     }
 
@@ -697,14 +697,14 @@ class NewsViewModelTest{
         assertThat(uiState.isToShowFilters).isFalse()
         assertThat(uiState.filters).isEqualTo(NewsFilters())
         coVerify(exactly = 2) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = any(), symbols = any(),
                 pageToken = any(), endDate = any(), sortType = any(),
                 limitPerPage = any(), fetchFromRemote = any(), cleanCache = false, offset = any(),
             )
         }
         coVerify(exactly = 1) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = any(), symbols = any(),
                 pageToken = any(), endDate = any(), sortType = any(),
                 limitPerPage = any(), fetchFromRemote = any(), cleanCache = true, offset = any(),
@@ -728,7 +728,7 @@ class NewsViewModelTest{
         assertThat(uiState.isToShowFilters).isFalse()
         assertThat(uiState.filters).isEqualTo(NewsFilters())
         coVerify(exactly = 1) {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 startDate = any(), symbols = any(),
                 pageToken = any(), endDate = any(), sortType = any(),
                 limitPerPage = any(), fetchFromRemote = any(), cleanCache = any(), offset = any(),
@@ -760,7 +760,7 @@ class NewsViewModelTest{
 
     private fun mockChangeFilterRealTimeNewsError() {
         coEvery {
-            changeFilterRealTimeNews.invoke(
+            changeFilterRealTimeNewsUseCase.invoke(
                 subscribeSymbols = any(),
                 unsubscribeSymbols = any(),
             )
@@ -776,7 +776,7 @@ class NewsViewModelTest{
         nextPageToken: String? = null,
     ) {
         coEvery {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 cleanCache = any(), fetchFromRemote = any(), offset = any(),
@@ -792,7 +792,7 @@ class NewsViewModelTest{
         nextPageToken: String? = null,
     ) {
         coEvery {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 cleanCache = any(), fetchFromRemote = any(), offset = any(),
@@ -808,7 +808,7 @@ class NewsViewModelTest{
         nextPageToken: String? = null,
     ) {
         coEvery {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 cleanCache = any(), fetchFromRemote = any(), offset = any(),
@@ -821,7 +821,7 @@ class NewsViewModelTest{
 
     private fun mockResponseGetNewsError(data: NewsResponse? = null) {
         coEvery {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 cleanCache = any(), fetchFromRemote = any(), offset = any(),
@@ -836,7 +836,7 @@ class NewsViewModelTest{
         news: List<NewsInfo>,
     ) {
         coEvery {
-            getNews.invoke(
+            getNewsUseCase.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
                 offset = any(), fetchFromRemote = any(), cleanCache = any(),
@@ -863,7 +863,7 @@ class NewsViewModelTest{
         news: List<NewsInfo>,
     ) {
         coEvery {
-            getRealTimeNews.invoke()
+            getRealTimeNewsUseCase.invoke()
         }.returns(
             flow {
                 emit(news)

@@ -9,7 +9,7 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.domain.model.assets.Asset
 import dev.pinkroom.marketsight.domain.model.assets.AssetFilter
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
-import dev.pinkroom.marketsight.domain.use_case.assets.GetAllAssets
+import dev.pinkroom.marketsight.domain.use_case.assets.GetAllAssetsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getAllAssets: GetAllAssets,
+    private val getAllAssetsUseCase: GetAllAssetsUseCase,
     private val dispatchers: DispatcherProvider,
 ): ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -91,8 +91,8 @@ class HomeViewModel @Inject constructor(
     private fun getAllAssets() {
         viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
-            val allStocksAssetsRequest = async { getAllAssets(typeAsset = TypeAsset.Stock) }
-            val allCryptoAssetsRequest = async { getAllAssets(typeAsset = TypeAsset.Crypto) }
+            val allStocksAssetsRequest = async { getAllAssetsUseCase(typeAsset = TypeAsset.Stock) }
+            val allCryptoAssetsRequest = async { getAllAssetsUseCase(typeAsset = TypeAsset.Crypto) }
             awaitAll(allStocksAssetsRequest, allCryptoAssetsRequest)
 
             stocksList = extractAssetsFromResult(result = allStocksAssetsRequest.getCompleted(), typeAsset = TypeAsset.Stock)
@@ -129,7 +129,7 @@ class HomeViewModel @Inject constructor(
     private fun retryToGetAssetList() {
         viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
-            val response = getAllAssets(typeAsset = selectedFilter.typeAsset, fetchFromRemote = true)
+            val response = getAllAssetsUseCase(typeAsset = selectedFilter.typeAsset, fetchFromRemote = true)
             val assets = extractAssetsFromResult(result = response)
 
             when(selectedFilter.typeAsset) {

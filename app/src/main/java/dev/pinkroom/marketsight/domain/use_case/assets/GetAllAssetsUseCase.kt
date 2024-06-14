@@ -1,17 +1,14 @@
-package dev.pinkroom.marketsight.domain.use_case.market
+package dev.pinkroom.marketsight.domain.use_case.assets
 
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
 import dev.pinkroom.marketsight.domain.repository.AssetsRepository
 import javax.inject.Inject
 
-class GetLatestBarAsset @Inject constructor(
+class GetAllAssetsUseCase @Inject constructor(
     private val assetsRepository: AssetsRepository,
 ){
     suspend operator fun invoke(
-        symbol: String,
         typeAsset: TypeAsset,
-    ) = assetsRepository.getLatestBar(
-        typeAsset = typeAsset,
-        symbol = symbol,
-    )
+        fetchFromRemote: Boolean = false,
+    ) = assetsRepository.getAllAssets(typeAsset = typeAsset, fetchFromRemote = fetchFromRemote)
 }

@@ -12,7 +12,7 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.data.mapper.toAsset
 import dev.pinkroom.marketsight.domain.model.assets.Asset
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
-import dev.pinkroom.marketsight.domain.use_case.assets.GetAllAssets
+import dev.pinkroom.marketsight.domain.use_case.assets.GetAllAssetsUseCase
 import dev.pinkroom.marketsight.factories.AssetDtoFactory
 import dev.pinkroom.marketsight.util.MainCoroutineRule
 import dev.pinkroom.marketsight.util.TestDispatcherProvider
@@ -33,12 +33,12 @@ class HomeViewModelTest {
 
     private val dispatchers = TestDispatcherProvider()
     private val assetFactory = AssetDtoFactory()
-    private val getAllAssets = mockk<GetAllAssets>(relaxed = true, relaxUnitFun = true)
+    private val getAllAssetsUseCase = mockk<GetAllAssetsUseCase>(relaxed = true, relaxUnitFun = true)
     private lateinit var homeViewModel: HomeViewModel
 
     private fun initViewModel() {
         homeViewModel = HomeViewModel(
-            getAllAssets = getAllAssets,
+            getAllAssetsUseCase = getAllAssetsUseCase,
             dispatchers = dispatchers,
         )
     }
@@ -57,7 +57,7 @@ class HomeViewModelTest {
         val uiState = homeViewModel.uiState.value
 
         coVerify(exactly = 2) {
-            getAllAssets.invoke(typeAsset = any())
+            getAllAssetsUseCase.invoke(typeAsset = any())
         }
         assertThat(uiState.assets).isNotEmpty()
         assertThat(uiState.isLoading).isFalse()
@@ -93,7 +93,7 @@ class HomeViewModelTest {
         assertThat(uiState.hasError).isTrue()
 
         coVerify {
-            getAllAssets.invoke(typeAsset = any())
+            getAllAssetsUseCase.invoke(typeAsset = any())
         }
     }
 
@@ -189,24 +189,24 @@ class HomeViewModelTest {
 
     private fun mockResponseGetAllAssetsSuccess(assets: List<Asset>) {
         coEvery {
-            getAllAssets.invoke(typeAsset = TypeAsset.Crypto)
+            getAllAssetsUseCase.invoke(typeAsset = TypeAsset.Crypto)
         } returns Resource.Success(data = assets.filter { !it.isStock })
 
         coEvery {
-            getAllAssets.invoke(typeAsset = TypeAsset.Stock)
+            getAllAssetsUseCase.invoke(typeAsset = TypeAsset.Stock)
         } returns Resource.Success(data = assets.filter { it.isStock })
     }
 
     private fun mockResponseGetAllAssetsOfTypeStockSuccess(assets: List<Asset>) {
         coEvery {
-            getAllAssets.invoke(
+            getAllAssetsUseCase.invoke(
                 typeAsset = TypeAsset.Crypto,
                 fetchFromRemote = any(),
             )
         } returns Resource.Error()
 
         coEvery {
-            getAllAssets.invoke(
+            getAllAssetsUseCase.invoke(
                 typeAsset = TypeAsset.Stock,
                 fetchFromRemote = any()
             )
@@ -215,7 +215,7 @@ class HomeViewModelTest {
 
     private fun mockResponseGetAllAssetsFirstWithErrorAndThenSuccess(assets: List<Asset>) {
         coEvery {
-            getAllAssets.invoke(
+            getAllAssetsUseCase.invoke(
                 typeAsset = any(),
                 fetchFromRemote = any(),
             )

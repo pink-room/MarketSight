@@ -21,17 +21,17 @@ import dev.pinkroom.marketsight.domain.model.quotes_asset.QuoteAsset
 import dev.pinkroom.marketsight.domain.model.quotes_asset.QuotesResponse
 import dev.pinkroom.marketsight.domain.model.trades_asset.TradeAsset
 import dev.pinkroom.marketsight.domain.model.trades_asset.TradesResponse
-import dev.pinkroom.marketsight.domain.use_case.assets.GetAssetById
-import dev.pinkroom.marketsight.domain.use_case.market.GetBarsAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetLatestBarAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetQuotesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeBarsAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeQuotesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeTradesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetStatusServiceAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetTradesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.SetSubscribeRealTimeAsset
-import dev.pinkroom.marketsight.domain.use_case.market.SetUnsubscribeRealTimeAsset
+import dev.pinkroom.marketsight.domain.use_case.assets.GetAssetByIdUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetBarsAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetLatestBarAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetQuotesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeBarsAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeQuotesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeTradesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetStatusServiceAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetTradesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.SetSubscribeRealTimeAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.SetUnsubscribeRealTimeAssetUseCase
 import dev.pinkroom.marketsight.factories.BarAssetDtoFactory
 import dev.pinkroom.marketsight.factories.QuoteAssetDtoFactory
 import dev.pinkroom.marketsight.factories.TradeAssetDtoFactory
@@ -60,17 +60,17 @@ class DetailViewModelTest {
     private val quotesFactory = QuoteAssetDtoFactory()
     private val tradeFactory = TradeAssetDtoFactory()
     private val dispatchers = TestDispatcherProvider()
-    private val getAssetById = mockk<GetAssetById>(relaxed = true, relaxUnitFun = true)
-    private val getBarsAsset = mockk<GetBarsAsset>(relaxed = true, relaxUnitFun = true)
-    private val getLatestBarAsset = mockk<GetLatestBarAsset>(relaxed = true, relaxUnitFun = true)
-    private val getQuoteAsset = mockk<GetQuotesAsset>(relaxed = true, relaxUnitFun = true)
-    private val getRealTimeBarAsset = mockk<GetRealTimeBarsAsset>(relaxed = true, relaxUnitFun = true)
-    private val getRealTimeQuotesAsset = mockk<GetRealTimeQuotesAsset>(relaxed = true, relaxUnitFun = true)
-    private val getRealTimeTradesAsset = mockk<GetRealTimeTradesAsset>(relaxed = true, relaxUnitFun = true)
-    private val getStatusServiceAsset = mockk<GetStatusServiceAsset>(relaxed = true, relaxUnitFun = true)
-    private val getTradesAsset = mockk<GetTradesAsset>(relaxed = true, relaxUnitFun = true)
-    private val setSubscribeRealTimeAsset = mockk<SetSubscribeRealTimeAsset>(relaxed = true, relaxUnitFun = true)
-    private val setUnsubscribeRealTimeAsset = mockk<SetUnsubscribeRealTimeAsset>(relaxed = true, relaxUnitFun = true)
+    private val getAssetByIdUseCase = mockk<GetAssetByIdUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getBarsAssetUseCase = mockk<GetBarsAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getLatestBarAssetUseCase = mockk<GetLatestBarAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getQuoteAsset = mockk<GetQuotesAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getRealTimeBarAsset = mockk<GetRealTimeBarsAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getRealTimeQuotesAssetUseCase = mockk<GetRealTimeQuotesAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getRealTimeTradesAssetUseCase = mockk<GetRealTimeTradesAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getStatusServiceAssetUseCase = mockk<GetStatusServiceAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val getTradesAssetUseCase = mockk<GetTradesAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val setSubscribeRealTimeAssetUseCase = mockk<SetSubscribeRealTimeAssetUseCase>(relaxed = true, relaxUnitFun = true)
+    private val setUnsubscribeRealTimeAssetUseCase = mockk<SetUnsubscribeRealTimeAssetUseCase>(relaxed = true, relaxUnitFun = true)
     private var symbolIdArg: String? = "TSLA"
     private val asset = Asset(name = "Tesla", symbol = symbolIdArg ?: "", isStock = true)
     private lateinit var detailViewModel: DetailViewModel
@@ -79,17 +79,17 @@ class DetailViewModelTest {
         if (assetArg != null) mockResponseGetAssetById(asset = asset)
 
         detailViewModel = DetailViewModel(
-            getAssetById = getAssetById,
-            getBarsAsset = getBarsAsset,
-            getLatestBarAsset = getLatestBarAsset,
-            getQuotesAsset = getQuoteAsset,
-            getRealTimeBarsAsset = getRealTimeBarAsset,
-            getRealTimeQuotesAsset = getRealTimeQuotesAsset,
-            getRealTimeTradesAsset = getRealTimeTradesAsset,
-            getStatusServiceAsset = getStatusServiceAsset,
-            getTradesAsset = getTradesAsset,
-            setSubscribeRealTimeAsset = setSubscribeRealTimeAsset,
-            setUnsubscribeRealTimeAsset = setUnsubscribeRealTimeAsset,
+            getAssetByIdUseCase = getAssetByIdUseCase,
+            getBarsAssetUseCase = getBarsAssetUseCase,
+            getLatestBarAssetUseCase = getLatestBarAssetUseCase,
+            getQuotesAssetUseCase = getQuoteAsset,
+            getRealTimeBarsAssetUseCase = getRealTimeBarAsset,
+            getRealTimeQuotesAssetUseCase = getRealTimeQuotesAssetUseCase,
+            getRealTimeTradesAssetUseCase = getRealTimeTradesAssetUseCase,
+            getStatusServiceAssetUseCase = getStatusServiceAssetUseCase,
+            getTradesAssetUseCase = getTradesAssetUseCase,
+            setSubscribeRealTimeAssetUseCase = setSubscribeRealTimeAssetUseCase,
+            setUnsubscribeRealTimeAssetUseCase = setUnsubscribeRealTimeAssetUseCase,
             symbolIdArg = symbolIdArg,
             dispatchers = dispatchers,
         )
@@ -121,7 +121,7 @@ class DetailViewModelTest {
         val uiState = detailViewModel.uiState.value
         assertThat(uiState.statusMainInfo.isLoading).isEqualTo(false)
         assertThat(uiState.statusMainInfo.errorMessage).isNotNull()
-        coVerify { getAssetById.invoke(id = any()) }
+        coVerify { getAssetByIdUseCase.invoke(id = any()) }
     }
 
     @Test
@@ -148,7 +148,7 @@ class DetailViewModelTest {
         advanceUntilIdle()
 
         // THEN
-        coVerify(exactly = 1) { setSubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { setSubscribeRealTimeAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -165,8 +165,8 @@ class DetailViewModelTest {
         advanceUntilIdle()
 
         // THEN
-        coVerify(exactly = 1) { setSubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
-        coVerify(exactly = 1) { setUnsubscribeRealTimeAsset(symbol = otherAssetSubscribed, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { setSubscribeRealTimeAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { setUnsubscribeRealTimeAssetUseCase(symbol = otherAssetSubscribed, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -181,7 +181,7 @@ class DetailViewModelTest {
         // THEN
         assertThat(action).isNotNull()
         assertThat(action).isInstanceOf(DetailAction.ShowSnackBar::class.java)
-        coVerify(exactly = 1) { setSubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { setSubscribeRealTimeAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -200,7 +200,7 @@ class DetailViewModelTest {
         advanceUntilIdle()
 
         // THEN
-        coVerify(exactly = 2) { setSubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 2) { setSubscribeRealTimeAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -215,7 +215,7 @@ class DetailViewModelTest {
         advanceUntilIdle()
 
         // THEN
-        coVerify(exactly = 2) { setSubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 2) { setSubscribeRealTimeAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -234,7 +234,7 @@ class DetailViewModelTest {
         assertThat(uiState.currentPriceInfo.price).isEqualTo(barAsset.closingPrice)
         assertThat(uiState.statusMainInfo.isLoading).isFalse()
         assertThat(uiState.statusMainInfo.errorMessage).isNull()
-        coVerify(exactly = 1) { getLatestBarAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { getLatestBarAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -250,7 +250,7 @@ class DetailViewModelTest {
         val uiState = detailViewModel.uiState.value
         assertThat(uiState.statusMainInfo.isLoading).isFalse()
         assertThat(uiState.statusMainInfo.errorMessage).isNotNull()
-        coVerify(exactly = 1) { getLatestBarAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { getLatestBarAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -273,8 +273,8 @@ class DetailViewModelTest {
         assertThat(uiState.statusMainInfo.isLoading).isFalse()
         assertThat(uiState.statusMainInfo.errorMessage).isNull()
         assertThat(uiState.currentPriceInfo.price).isEqualTo(barAsset.closingPrice)
-        coVerify(exactly = 1) { getAssetById(id = any()) }
-        coVerify(exactly = 2) { getLatestBarAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { getAssetByIdUseCase(id = any()) }
+        coVerify(exactly = 2) { getLatestBarAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -298,8 +298,8 @@ class DetailViewModelTest {
         assertThat(uiState.statusMainInfo.isLoading).isFalse()
         assertThat(uiState.statusMainInfo.errorMessage).isNull()
         assertThat(uiState.asset).isEqualTo(asset)
-        coVerify(exactly = 2) { getAssetById(id = any()) }
-        coVerify(exactly = 1) { getLatestBarAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 2) { getAssetByIdUseCase(id = any()) }
+        coVerify(exactly = 1) { getLatestBarAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -326,7 +326,7 @@ class DetailViewModelTest {
         assertThat(uiState.currentPriceInfo.priceDifference).isEqualTo(lastBar.closingPrice - firstBar.closingPrice)
         assertThat(uiState.currentPriceInfo.percentage).isEqualTo(expectedPercentage)
         coVerify(exactly = 1) {
-            getBarsAsset(
+            getBarsAssetUseCase(
                 symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any(),
                 endDate = any(), timeFrame = any(), limit = any(), sort = any()
             )
@@ -347,7 +347,7 @@ class DetailViewModelTest {
         assertThat(uiState.statusHistoricalBars.isLoading).isFalse()
         assertThat(uiState.statusHistoricalBars.errorMessage).isNotNull()
         coVerify(exactly = 1) {
-            getBarsAsset(
+            getBarsAssetUseCase(
                 symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any(),
                 endDate = any(), timeFrame = any(), limit = any(), sort = any()
             )
@@ -375,7 +375,7 @@ class DetailViewModelTest {
         assertThat(uiState.statusHistoricalBars.errorMessage).isNull()
         assertThat(uiState.assetCharInfo.barsInfo).isEqualTo(barAssets)
         coVerify(exactly = 2) {
-            getBarsAsset(
+            getBarsAssetUseCase(
                 symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any(),
                 endDate = any(), timeFrame = any(), limit = any(), sort = any()
             )
@@ -483,7 +483,7 @@ class DetailViewModelTest {
         // THEN
         val uiState = detailViewModel.uiState.value
         assertThat(uiState.latestQuotes).isEqualTo(expectedQuotesData)
-        coVerify(exactly = 1) { getRealTimeQuotesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { getRealTimeQuotesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -501,7 +501,7 @@ class DetailViewModelTest {
         assertThat(uiState.statusTrades.isLoading).isFalse()
         assertThat(uiState.statusTrades.errorMessage).isNull()
         assertThat(uiState.latestTrades).isEqualTo(trades)
-        coVerify(exactly = 1) { getTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
+        coVerify(exactly = 1) { getTradesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
     }
 
     @Test
@@ -540,7 +540,7 @@ class DetailViewModelTest {
         assertThat(uiState.statusTrades.isLoading).isFalse()
         assertThat(uiState.statusTrades.errorMessage).isNull()
         assertThat(uiState.latestTrades).isEqualTo(trades)
-        coVerify(exactly = 2) { getTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
+        coVerify(exactly = 2) { getTradesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
     }
 
     @Test
@@ -559,7 +559,7 @@ class DetailViewModelTest {
         // THEN
         val uiState = detailViewModel.uiState.value
         assertThat(uiState.latestTrades).isEqualTo(expectedTradesData)
-        coVerify(exactly = 1) { getRealTimeTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
+        coVerify(exactly = 1) { getRealTimeTradesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()) }
     }
 
     @Test
@@ -589,10 +589,10 @@ class DetailViewModelTest {
         assertThat(uiState.latestQuotes).isEqualTo(quotes)
         assertThat(uiState.assetCharInfo.barsInfo).isEqualTo(bars)
         assertThat(uiState.isRefreshing).isFalse()
-        coVerify(exactly = 2) { getTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
+        coVerify(exactly = 2) { getTradesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
         coVerify(exactly = 2) { getQuoteAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
         coVerify(exactly = 2) {
-            getBarsAsset(
+            getBarsAssetUseCase(
                 symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any(), endDate = any(),
                 limit = any(), sort = any(), timeFrame = any(),
             )
@@ -619,10 +619,10 @@ class DetailViewModelTest {
         // THEN
         val uiState = detailViewModel.uiState.value
         assertThat(uiState.isRefreshing).isFalse()
-        coVerify(exactly = 2) { getTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
+        coVerify(exactly = 2) { getTradesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
         coVerify(exactly = 2) { getQuoteAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any()) }
         coVerify(exactly = 2) {
-            getBarsAsset(
+            getBarsAssetUseCase(
                 symbol = asset.symbol, typeAsset = asset.getTypeAsset(), startDate = any(), endDate = any(),
                 limit = any(), sort = any(), timeFrame = any(),
             )
@@ -662,7 +662,7 @@ class DetailViewModelTest {
         uiState = detailViewModel.uiState.value
         assertThat(uiState.selectedFilterHistorical).isEqualTo(filterToSelect)
         coVerify {
-            getBarsAsset.invoke(
+            getBarsAssetUseCase.invoke(
                 symbol = any(), typeAsset = any(), timeFrame = filterToSelect.timeFrameIntervalValues,
                 startDate = any(), endDate = any(),
             )
@@ -685,7 +685,7 @@ class DetailViewModelTest {
         uiState = detailViewModel.uiState.value
         assertThat(uiState.selectedFilterHistorical).isEqualTo(filterToSelect)
         coVerify(exactly = 1) {
-            getBarsAsset.invoke(
+            getBarsAssetUseCase.invoke(
                 symbol = any(), typeAsset = any(), timeFrame = any(),
                 startDate = any(), endDate = any(),
             )
@@ -712,7 +712,7 @@ class DetailViewModelTest {
         uiState = detailViewModel.uiState.value
         assertThat(uiState.selectedFilterHistorical).isEqualTo(filters.first())
         coVerify(exactly = 2) {
-            getBarsAsset.invoke(
+            getBarsAssetUseCase.invoke(
                 symbol = any(), typeAsset = any(), timeFrame = any(),
                 startDate = any(), endDate = any(),
             )
@@ -741,60 +741,60 @@ class DetailViewModelTest {
 
     private fun mockResponseGetAssetById(asset: Asset?) {
         coEvery {
-            getAssetById.invoke(id = any())
+            getAssetByIdUseCase.invoke(id = any())
         } returns if (asset == null) Resource.Error(message = "Error on GetAssetById")
         else Resource.Success(data = asset)
     }
 
     private fun mockResponseGetAssetByIdRetry(asset: Asset) {
         coEvery {
-            getAssetById.invoke(id = any())
+            getAssetByIdUseCase.invoke(id = any())
         } returnsMany listOf(Resource.Error(message = "Error on GetAssetById"),Resource.Success(data = asset))
     }
 
     private fun mockSubscribeRealTimeAsset(message: SubscriptionMessage?) {
         coEvery {
-            setSubscribeRealTimeAsset.invoke(symbol = any(), typeAsset = any())
+            setSubscribeRealTimeAssetUseCase.invoke(symbol = any(), typeAsset = any())
         } returns if (message == null) Resource.Error(message = "Error on Subscribe")
         else Resource.Success(data = message)
     }
 
     private fun mockRetrySubscribeRealTimeAsset(message: SubscriptionMessage) {
         coEvery {
-            setSubscribeRealTimeAsset.invoke(symbol = any(), typeAsset = any())
+            setSubscribeRealTimeAssetUseCase.invoke(symbol = any(), typeAsset = any())
         } returnsMany listOf(Resource.Error(message = "Error on Subscribe"), Resource.Success(data = message))
     }
 
     private fun mockUnSubscribeRealTimeAsset(message: SubscriptionMessage?) {
         coEvery {
-            setUnsubscribeRealTimeAsset.invoke(symbol = any(), typeAsset = any())
+            setUnsubscribeRealTimeAssetUseCase.invoke(symbol = any(), typeAsset = any())
         } returns if (message == null) Resource.Error(message = "Error on UnSubscribe")
         else Resource.Success(data = message)
     }
 
     private fun mockGetLatestBarAsset(barAsset: BarAsset?) {
         coEvery {
-            getLatestBarAsset.invoke(symbol = any(), typeAsset = any())
+            getLatestBarAssetUseCase.invoke(symbol = any(), typeAsset = any())
         } returns if (barAsset == null) Resource.Error(message = "Error on Latest Bar Asset")
         else Resource.Success(data = barAsset)
     }
 
     private fun mockGetLatestBarAssetRetry(barAsset: BarAsset) {
         coEvery {
-            getLatestBarAsset.invoke(symbol = any(), typeAsset = any())
+            getLatestBarAssetUseCase.invoke(symbol = any(), typeAsset = any())
         } returnsMany(listOf(Resource.Error(message = "Error on Latest Bar Asset"),Resource.Success(data = barAsset)))
     }
 
     private fun mockGetBarsAsset(barAsset: List<BarAsset>?) {
         coEvery {
-            getBarsAsset.invoke(symbol = any(), typeAsset = any(), startDate = any(), endDate = any(), timeFrame = any())
+            getBarsAssetUseCase.invoke(symbol = any(), typeAsset = any(), startDate = any(), endDate = any(), timeFrame = any())
         } returns if (barAsset == null) Resource.Error(message = "Error on Bars Asset")
         else Resource.Success(data = barAsset)
     }
 
     private fun mockGetBarsAssetWithDelay(barAsset: List<BarAsset>) {
         coEvery {
-            getBarsAsset.invoke(symbol = any(), typeAsset = any(), startDate = any(), endDate = any(), timeFrame = any())
+            getBarsAssetUseCase.invoke(symbol = any(), typeAsset = any(), startDate = any(), endDate = any(), timeFrame = any())
         } coAnswers {
             delay(500)
             Resource.Success(data = barAsset)
@@ -803,7 +803,7 @@ class DetailViewModelTest {
 
     private fun mockRetryGetBarsAsset(barAsset: List<BarAsset>) {
         coEvery {
-            getBarsAsset.invoke(symbol = any(), typeAsset = any(), startDate = any(), endDate = any(), timeFrame = any())
+            getBarsAssetUseCase.invoke(symbol = any(), typeAsset = any(), startDate = any(), endDate = any(), timeFrame = any())
         } returnsMany listOf(Resource.Error(message = "Error on Bars Asset"),Resource.Success(data = barAsset))
     }
 
@@ -836,7 +836,7 @@ class DetailViewModelTest {
 
     private fun mockGetRealTimeQuoteAsset(quotesAsset: List<QuoteAsset>) {
         coEvery {
-            getRealTimeQuotesAsset.invoke(typeAsset = any(), symbol = any())
+            getRealTimeQuotesAssetUseCase.invoke(typeAsset = any(), symbol = any())
         } returns flow {
             emit(quotesAsset)
         }
@@ -844,7 +844,7 @@ class DetailViewModelTest {
 
     private fun mockGetTradesAsset(tradesAsset: List<TradeAsset>?) {
         coEvery {
-            getTradesAsset.invoke(
+            getTradesAssetUseCase.invoke(
                 symbol = any(), typeAsset = any(), startDate = any(), endDate = any(),
                 sort = any(), limit = any(), pageToken = any(),
             )
@@ -854,7 +854,7 @@ class DetailViewModelTest {
 
     private fun mockRetryGetTradesAsset(tradesAsset: List<TradeAsset>) {
         coEvery {
-            getTradesAsset.invoke(
+            getTradesAssetUseCase.invoke(
                 symbol = any(), typeAsset = any(), startDate = any(), endDate = any(),
                 sort = any(), limit = any(), pageToken = any(),
             )
@@ -863,7 +863,7 @@ class DetailViewModelTest {
 
     private fun mockGetRealTimeTradeAsset(tradesAsset: List<TradeAsset>) {
         coEvery {
-            getRealTimeTradesAsset.invoke(typeAsset = any(), symbol = any())
+            getRealTimeTradesAssetUseCase.invoke(typeAsset = any(), symbol = any())
         } returns flow {
             emit(tradesAsset)
         }
@@ -871,7 +871,7 @@ class DetailViewModelTest {
 
     private fun mockStatusServiceAsset() {
         coEvery {
-            getStatusServiceAsset.invoke(typeAsset = any())
+            getStatusServiceAssetUseCase.invoke(typeAsset = any())
         } returns flow {
             delay(500)
             emit(WebSocket.Event.OnConnectionOpened(webSocket = Any()))

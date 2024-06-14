@@ -7,7 +7,7 @@ import dev.pinkroom.marketsight.domain.repository.AssetsRepository
 import java.time.LocalDateTime
 import javax.inject.Inject
 
-class GetQuotesAsset @Inject constructor(
+class GetQuotesAssetUseCase @Inject constructor(
     private val assetsRepository: AssetsRepository,
 ){
     suspend operator fun invoke(

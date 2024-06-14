@@ -18,7 +18,7 @@ import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsRespon
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.ErrorMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
-import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
 import dev.pinkroom.marketsight.factories.NewsDtoFactory
 import dev.pinkroom.marketsight.factories.NewsFactory
 import dev.pinkroom.marketsight.util.MainCoroutineRule
@@ -72,7 +72,7 @@ class NewsRemoteDataSourceTest {
         assertThat(response).isNotEmpty()
 
         // THEN
-        val expectedMessageToSubscribe = MessageAlpacaService(
+        val expectedMessageToSubscribe = MessageAlpacaServiceDto(
             action = ActionAlpaca.Subscribe.action, news = listOf("*"),
         )
         verify(exactly = 1) { alpacaService.sendMessage(expectedMessageToSubscribe) }
@@ -81,7 +81,7 @@ class NewsRemoteDataSourceTest {
     @Test
     fun `Given params, when send subscribe message to service, then sendMessage is called with correct params`() = runTest {
         // GIVEN
-        val messageToSend = MessageAlpacaService(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"), quotes = listOf("TSLA"))
+        val messageToSend = MessageAlpacaServiceDto(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"), quotes = listOf("TSLA"))
         mockMessageSubscriptionServiceWithSuccess(messageToSend)
 
         // WHEN
@@ -162,7 +162,7 @@ class NewsRemoteDataSourceTest {
     @Test
     fun `When receive message from WS, then alpaca service receive error message on sendSubscribeMessageToAlpacaService`() = runTest {
         // GIVEN
-        val messageToSend = MessageAlpacaService(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"), quotes = listOf("TSLA"))
+        val messageToSend = MessageAlpacaServiceDto(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"), quotes = listOf("TSLA"))
         mockMessageSubscriptionServiceWithError()
 
         // WHEN
@@ -220,12 +220,12 @@ class NewsRemoteDataSourceTest {
         )
     }
 
-    private fun mockMessageSubscriptionServiceWithSuccess(messageAlpacaService: MessageAlpacaService) {
+    private fun mockMessageSubscriptionServiceWithSuccess(messageAlpacaServiceDto: MessageAlpacaServiceDto) {
         val returnedMessageService = SubscriptionMessageDto(
             type = "subscription",
-            news = messageAlpacaService.news,
-            quotes = messageAlpacaService.quotes,
-            trades = messageAlpacaService.trades,
+            news = messageAlpacaServiceDto.news,
+            quotes = messageAlpacaServiceDto.quotes,
+            trades = messageAlpacaServiceDto.trades,
         )
 
         every { alpacaService.sendMessage(any()) } returns(Unit)

@@ -6,7 +6,7 @@ import dev.pinkroom.marketsight.domain.repository.AssetsRepository
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetRealTimeQuotesAsset @Inject constructor(
+class GetRealTimeQuotesAssetUseCase @Inject constructor(
     private val assetsRepository: AssetsRepository,
     private val dispatchers: DispatcherProvider,
 ) {

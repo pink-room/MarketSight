@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.Constants
 import dev.pinkroom.marketsight.common.DispatcherProvider
-import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaService
+import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaWS
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.common.formatToStandardIso
 import dev.pinkroom.marketsight.common.toObject
@@ -17,7 +17,7 @@ import dev.pinkroom.marketsight.data.remote.AlpacaStockApi
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.BarAssetDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.QuotesResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_api.TradesResponseDto
-import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
 import dev.pinkroom.marketsight.domain.model.bars_asset.TimeFrame
 import kotlinx.coroutines.flow.flow
@@ -72,7 +72,7 @@ class MarketRemoteDataSource @Inject constructor(
         typeAsset: TypeAsset,
     ) = getRealTimeData(
         typeAsset = typeAsset,
-        helperIdentifierMessagesAlpacaService = HelperIdentifierMessagesAlpacaService.Bars
+        helperIdentifierMessagesAlpacaWS = HelperIdentifierMessagesAlpacaWS.Bars
     ).flowOn(dispatchers.IO)
 
     suspend fun getTrades(
@@ -108,7 +108,7 @@ class MarketRemoteDataSource @Inject constructor(
         typeAsset: TypeAsset,
     ) = getRealTimeData(
         typeAsset = typeAsset,
-        helperIdentifierMessagesAlpacaService = HelperIdentifierMessagesAlpacaService.Trades
+        helperIdentifierMessagesAlpacaWS = HelperIdentifierMessagesAlpacaWS.Trades
     ).flowOn(dispatchers.IO)
 
     suspend fun getQuotes(
@@ -144,7 +144,7 @@ class MarketRemoteDataSource @Inject constructor(
         typeAsset: TypeAsset,
     ) = getRealTimeData(
         typeAsset = typeAsset,
-        helperIdentifierMessagesAlpacaService = HelperIdentifierMessagesAlpacaService.Quotes
+        helperIdentifierMessagesAlpacaWS = HelperIdentifierMessagesAlpacaWS.Quotes
     ).flowOn(dispatchers.IO)
 
     fun subscribeUnsubscribeRealTimeFinancialData(
@@ -154,7 +154,7 @@ class MarketRemoteDataSource @Inject constructor(
     ) = flow {
         val serviceToUse = getServiceToUse(typeAsset = typeAsset)
         val symbols = listOf(symbol)
-        val message = MessageAlpacaService(
+        val message = MessageAlpacaServiceDto(
             action = action.action, trades = symbols,
             quotes = symbols, bars = symbols,
         )
@@ -163,7 +163,7 @@ class MarketRemoteDataSource @Inject constructor(
             data.forEach {
                 gson.toObject(
                     value = it,
-                    helperIdentifier = HelperIdentifierMessagesAlpacaService.Subscription
+                    helperIdentifier = HelperIdentifierMessagesAlpacaWS.Subscription
                 )?.let { sub ->
                     emit(sub)
                     return@collect
@@ -185,13 +185,13 @@ class MarketRemoteDataSource @Inject constructor(
 
     private fun <T> getRealTimeData(
         typeAsset: TypeAsset,
-        helperIdentifierMessagesAlpacaService: HelperIdentifierMessagesAlpacaService<T>,
+        helperIdentifierMessagesAlpacaWS: HelperIdentifierMessagesAlpacaWS<T>,
     ) = flow {
         val serviceToUse = getServiceToUse(typeAsset = typeAsset)
         serviceToUse.observeResponse().collect{ data ->
             val listObject = mutableListOf<T>()
             data.forEach {
-                gson.toObject(value = it, helperIdentifier = helperIdentifierMessagesAlpacaService)?.let { response ->
+                gson.toObject(value = it, helperIdentifier = helperIdentifierMessagesAlpacaWS)?.let { response ->
                     listObject.add(response)
                 }
             }

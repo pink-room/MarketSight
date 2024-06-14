@@ -11,7 +11,7 @@ import dev.pinkroom.marketsight.data.data_source.NewsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
 import dev.pinkroom.marketsight.data.mapper.toNewsInfo
 import dev.pinkroom.marketsight.data.mapper.toNewsMap
-import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import kotlinx.coroutines.flow.flow
@@ -37,7 +37,7 @@ class NewsRepositoryImp @Inject constructor(
         symbols: List<String>,
         actionAlpaca: ActionAlpaca,
     ): Resource<List<String>> = flow {
-        val message = MessageAlpacaService(action = actionAlpaca.action, news = symbols)
+        val message = MessageAlpacaServiceDto(action = actionAlpaca.action, news = symbols)
         newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = message).collect{ response ->
             when(response){
                 is Resource.Error -> {

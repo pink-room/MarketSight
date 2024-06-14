@@ -7,7 +7,7 @@ import assertk.assertions.isNotEmpty
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.WebSocket
 import dev.pinkroom.marketsight.common.ActionAlpaca
-import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaService
+import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaWS
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.data.data_source.AssetsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.AssetsRemoteDataSource
@@ -574,7 +574,7 @@ class AssetsRepositoryImpTest{
                 flow {
                     emit(
                         SubscriptionMessageDto(
-                            type = HelperIdentifierMessagesAlpacaService.Subscription.identifier,
+                            type = HelperIdentifierMessagesAlpacaWS.Subscription.identifier,
                             quotes = symbols,
                             trades = symbols,
                             bars = symbols,

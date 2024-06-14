@@ -10,7 +10,7 @@ import com.google.gson.Gson
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.WebSocket
 import dev.pinkroom.marketsight.common.ActionAlpaca
-import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaService
+import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaWS
 import dev.pinkroom.marketsight.data.remote.AlpacaCryptoApi
 import dev.pinkroom.marketsight.data.remote.AlpacaService
 import dev.pinkroom.marketsight.data.remote.AlpacaStockApi
@@ -366,7 +366,7 @@ class MarketRemoteDataSourceTest{
         }
         assertThat(response).isNotEmpty()
         assertThat(response.size).isEqualTo(1)
-        assertThat(response.first().type).isEqualTo(HelperIdentifierMessagesAlpacaService.Subscription.identifier)
+        assertThat(response.first().type).isEqualTo(HelperIdentifierMessagesAlpacaWS.Subscription.identifier)
     }
 
     @Test
@@ -607,16 +607,16 @@ class MarketRemoteDataSourceTest{
 
     private fun buildMessageResponseServiceBar(symbol: String) = barAssetDtoFactory.buildList(
         number = 20, symbol = symbol,
-        type = HelperIdentifierMessagesAlpacaService.Bars.identifier,
+        type = HelperIdentifierMessagesAlpacaWS.Bars.identifier,
     ).map { gson.toJsonTree(it) }
 
     private fun buildMessageResponseServiceTrade(symbol: String) = tradeAssetDtoFactory.buildList(
         number = 20, symbol = symbol,
-        type = HelperIdentifierMessagesAlpacaService.Trades.identifier,
+        type = HelperIdentifierMessagesAlpacaWS.Trades.identifier,
     ).map { gson.toJsonTree(it) }
 
     private fun buildMessageResponseServiceQuote(symbol: String) = quoteAssetDtoFactory.buildList(
         number = 20, symbol = symbol,
-        type = HelperIdentifierMessagesAlpacaService.Quotes.identifier,
+        type = HelperIdentifierMessagesAlpacaWS.Quotes.identifier,
     ).map { gson.toJsonTree(it) }
 }

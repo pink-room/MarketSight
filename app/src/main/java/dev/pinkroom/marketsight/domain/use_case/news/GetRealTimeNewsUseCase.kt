@@ -5,7 +5,7 @@ import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetRealTimeNews @Inject constructor(
+class GetRealTimeNewsUseCase @Inject constructor(
     private val newsRepository: NewsRepository,
     private val dispatchers: DispatcherProvider,
 ){

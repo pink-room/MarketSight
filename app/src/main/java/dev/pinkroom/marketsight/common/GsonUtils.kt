@@ -11,7 +11,7 @@ inline fun <reified T> Gson.fromJson(value: String): T = fromJson(value, typeTok
 
 inline fun <reified T> typeToken(): Type = object : TypeToken<T>() {}.type
 
-fun <T> Gson.toObject(value: Any, helperIdentifier: HelperIdentifierMessagesAlpacaService<T>): T? {
+fun <T> Gson.toObject(value: Any, helperIdentifier: HelperIdentifierMessagesAlpacaWS<T>): T? {
     val typeMessage = toJsonValue(value, TypeMessageDto::class.java)
     return if (typeMessage.value == helperIdentifier.identifier && helperIdentifier.classOfT != null){
         toJsonValue(value, helperIdentifier.classOfT)
@@ -19,7 +19,7 @@ fun <T> Gson.toObject(value: Any, helperIdentifier: HelperIdentifierMessagesAlpa
 }
 
 fun Gson.verifyIfIsError(value: Any): ErrorMessageDto? {
-    val helperIdentifier = HelperIdentifierMessagesAlpacaService.Error
+    val helperIdentifier = HelperIdentifierMessagesAlpacaWS.Error
     toObject(value = value, helperIdentifier = helperIdentifier)?.let {
         return it
     }

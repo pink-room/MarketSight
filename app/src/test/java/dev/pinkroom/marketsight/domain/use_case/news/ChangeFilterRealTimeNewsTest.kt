@@ -27,7 +27,7 @@ class ChangeFilterRealTimeNewsTest{
 
     private val dispatchers = TestDispatcherProvider()
     private val newsRepository = mockk<NewsRepository>(relaxed = true, relaxUnitFun = true)
-    private val changeFilterRealTimeNews = ChangeFilterRealTimeNews(
+    private val changeFilterRealTimeNewsUseCase = ChangeFilterRealTimeNewsUseCase(
         newsRepository = newsRepository,
         dispatchers = dispatchers,
     )
@@ -40,7 +40,7 @@ class ChangeFilterRealTimeNewsTest{
         mockChangeFilterNewsSuccess(subscribeSymbols)
 
         // WHEN
-        val response = changeFilterRealTimeNews(
+        val response = changeFilterRealTimeNewsUseCase(
             subscribeSymbols = subscribeSymbols,
             unsubscribeSymbols = unsubscribeSymbols
         ).toList()
@@ -79,7 +79,7 @@ class ChangeFilterRealTimeNewsTest{
         )
 
         // WHEN
-        val response = changeFilterRealTimeNews(
+        val response = changeFilterRealTimeNewsUseCase(
             subscribeSymbols = subscribeSymbols,
             unsubscribeSymbols = unsubscribeSymbols
         ).last()

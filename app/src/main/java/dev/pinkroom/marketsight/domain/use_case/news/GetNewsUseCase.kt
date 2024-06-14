@@ -6,7 +6,7 @@ import dev.pinkroom.marketsight.domain.repository.NewsRepository
 import java.time.LocalDateTime
 import javax.inject.Inject
 
-class GetNews @Inject constructor(
+class GetNewsUseCase @Inject constructor(
     private val newsRepository: NewsRepository,
 ){
     suspend operator fun invoke(

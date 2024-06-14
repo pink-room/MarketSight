@@ -3,7 +3,7 @@ package dev.pinkroom.marketsight.data.remote
 import com.tinder.scarlet.WebSocket
 import com.tinder.scarlet.ws.Receive
 import com.tinder.scarlet.ws.Send
-import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
 import kotlinx.coroutines.flow.Flow
 
 interface AlpacaService {
@@ -11,7 +11,7 @@ interface AlpacaService {
     fun observeOnConnectionEvent(): Flow<WebSocket.Event>
 
     @Send
-    fun sendMessage(message: MessageAlpacaService)
+    fun sendMessage(message: MessageAlpacaServiceDto)
 
     @Receive
     fun observeResponse(): Flow<List<Any>>

@@ -22,9 +22,9 @@ import dev.pinkroom.marketsight.domain.model.common.SubInfoSymbols
 import dev.pinkroom.marketsight.domain.model.news.NewsFilters
 import dev.pinkroom.marketsight.domain.model.news.NewsInfo
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
-import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterRealTimeNews
-import dev.pinkroom.marketsight.domain.use_case.news.GetNews
-import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNews
+import dev.pinkroom.marketsight.domain.use_case.news.ChangeFilterRealTimeNewsUseCase
+import dev.pinkroom.marketsight.domain.use_case.news.GetNewsUseCase
+import dev.pinkroom.marketsight.domain.use_case.news.GetRealTimeNewsUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -41,9 +41,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
-    private val getRealTimeNews: GetRealTimeNews,
-    private val getNews: GetNews,
-    private val changeFilterRealTimeNews: ChangeFilterRealTimeNews,
+    private val getRealTimeNewsUseCase: GetRealTimeNewsUseCase,
+    private val getNewsUseCase: GetNewsUseCase,
+    private val changeFilterRealTimeNewsUseCase: ChangeFilterRealTimeNewsUseCase,
     private val connectivityObserver: ConnectivityObserver,
     private val dispatchers: DispatcherProvider,
 ): ViewModel() {
@@ -62,7 +62,7 @@ class NewsViewModel @Inject constructor(
         },
         onRequest = { nextPageToken, nextPageNumber ->
             val filters = uiState.value.filters
-            getNews(
+            getNewsUseCase(
                 pageToken = nextPageToken,
                 fetchFromRemote = paginationInfo.fetchFromRemote,
                 offset = nextPageNumber * LIMIT_NEWS,
@@ -136,7 +136,7 @@ class NewsViewModel @Inject constructor(
             paginationInfo = paginationInfo.copy(fetchFromRemote = true)
 
             val filters = uiState.value.filters
-            val response = getNews(
+            val response = getNewsUseCase(
                 sortType = filters.sortBy,
                 limitPerPage = LIMIT_NEWS,
                 symbols = filters.getSubscribedSymbols(),
@@ -207,7 +207,7 @@ class NewsViewModel @Inject constructor(
 
     private fun fetchRealTimeNews() {
         viewModelScope.launch(dispatchers.IO) {
-            getRealTimeNews().collect{ news ->
+            getRealTimeNewsUseCase().collect{ news ->
                 _uiState.update { it.copy(realTimeNews = it.realTimeNews + news) }
             }
         }
@@ -277,7 +277,7 @@ class NewsViewModel @Inject constructor(
     private fun updateFiltersRealTimeNews(newFilters: NewsFilters) {
         viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(realTimeNews = emptyList()) }
-            changeFilterRealTimeNews(
+            changeFilterRealTimeNewsUseCase(
                 subscribeSymbols = newFilters.symbols.filter { it.isSubscribed }.map { it.symbol },
                 unsubscribeSymbols = newFilters.symbols.filter { !it.isSubscribed }.map { it.symbol }
             ).collect{ response ->
@@ -302,7 +302,7 @@ class NewsViewModel @Inject constructor(
         super.onCleared()
         // Stop Receiving Live News When user is not in the screen
         CoroutineScope(dispatchers.IO).launch {
-            changeFilterRealTimeNews(
+            changeFilterRealTimeNewsUseCase(
                 subscribeSymbols = null,
                 unsubscribeSymbols = uiState.value.filters.getSubscribedSymbols()
             ).drop(1).collect {}

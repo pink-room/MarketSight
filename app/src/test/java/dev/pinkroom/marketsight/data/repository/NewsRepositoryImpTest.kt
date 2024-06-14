@@ -19,7 +19,7 @@ import dev.pinkroom.marketsight.data.mapper.toNewsInfo
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
-import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
 import dev.pinkroom.marketsight.factories.NewsDtoFactory
 import dev.pinkroom.marketsight.factories.NewsFactory
 import dev.pinkroom.marketsight.util.MainCoroutineRule
@@ -276,7 +276,7 @@ class NewsRepositoryImpTest{
     @Test
     fun `Given params, when change filters, then receive list with symbols subscribed`() = runTest {
         // GIVEN
-        val messageToSend = MessageAlpacaService(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"))
+        val messageToSend = MessageAlpacaServiceDto(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"))
         mockMessageSubscriptionServiceWithSuccess(messageToSend)
 
         // WHEN
@@ -292,7 +292,7 @@ class NewsRepositoryImpTest{
     @Test
     fun `Given params, when change filters, then error occur and return list with symbols that fail to subscribe`() = runTest {
         // GIVEN
-        val messageToSend = MessageAlpacaService(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"))
+        val messageToSend = MessageAlpacaServiceDto(action = ActionAlpaca.Subscribe.action, news = listOf("TSLA","AAPL"))
         mockMessageSubscriptionServiceWithError()
 
         // WHEN
@@ -452,12 +452,12 @@ class NewsRepositoryImpTest{
         )
     }
 
-    private fun mockMessageSubscriptionServiceWithSuccess(messageAlpacaService: MessageAlpacaService) {
+    private fun mockMessageSubscriptionServiceWithSuccess(messageAlpacaServiceDto: MessageAlpacaServiceDto) {
         val returnedMessageService = SubscriptionMessageDto(
             type = "subscription",
-            news = messageAlpacaService.news,
-            quotes = messageAlpacaService.quotes,
-            trades = messageAlpacaService.trades,
+            news = messageAlpacaServiceDto.news,
+            quotes = messageAlpacaServiceDto.quotes,
+            trades = messageAlpacaServiceDto.trades,
         )
 
         every { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(any()) } returns(

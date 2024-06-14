@@ -25,6 +25,7 @@ coilVersion = "2.6.0"
 pagingVersion = "3.3.0"
 roomVersion = "2.6.1"
 kspVersion = "2.0.0-1.0.21"
+konsistVersion = "0.15.1"
 
 [libraries]
 
@@ -96,7 +97,10 @@ mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "moc
 mockk-agent = { group = "io.mockk", name = "mockk-agent", version.ref = "mockkVersion" }
 
 # TURBINE
-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbineVersion"}
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbineVersion" }
+
+# KONSIST
+konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsistVersion" }
 
 # END-TO-END TEST
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

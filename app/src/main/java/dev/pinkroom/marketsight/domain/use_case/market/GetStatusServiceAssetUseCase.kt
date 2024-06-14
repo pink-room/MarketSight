@@ -1,19 +1,18 @@
 package dev.pinkroom.marketsight.domain.use_case.market
 
-import dev.pinkroom.marketsight.common.ActionAlpaca
+import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.domain.model.assets.TypeAsset
 import dev.pinkroom.marketsight.domain.repository.AssetsRepository
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class SetUnsubscribeRealTimeAsset @Inject constructor(
+class GetStatusServiceAssetUseCase @Inject constructor(
     private val assetsRepository: AssetsRepository,
+    private val dispatcher: DispatcherProvider,
 ) {
-    suspend operator fun invoke(
-        symbol: String,
+    operator fun invoke(
         typeAsset: TypeAsset,
-    ) = assetsRepository.subscribeUnsubscribeRealTimeFinancialData(
-        symbol = symbol,
+    ) = assetsRepository.statusService(
         typeAsset = typeAsset,
-        action = ActionAlpaca.Unsubscribe,
-    )
+    ).flowOn(dispatcher.IO)
 }

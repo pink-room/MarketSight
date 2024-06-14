@@ -5,7 +5,7 @@ import com.tinder.scarlet.WebSocket
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.Constants
 import dev.pinkroom.marketsight.common.DispatcherProvider
-import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaService
+import dev.pinkroom.marketsight.common.HelperIdentifierMessagesAlpacaWS
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.common.formatToStandardIso
@@ -15,7 +15,7 @@ import dev.pinkroom.marketsight.data.remote.AlpacaService
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
-import dev.pinkroom.marketsight.data.remote.model.request.MessageAlpacaService
+import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -38,7 +38,7 @@ class NewsRemoteDataSource @Inject constructor(
             .collect{
                 isNewsSubscribed = true
                 alpacaService.sendMessage(
-                    message = MessageAlpacaService(
+                    message = MessageAlpacaServiceDto(
                         action = ActionAlpaca.Subscribe.action, news = symbols,
                     )
                 )
@@ -52,7 +52,7 @@ class NewsRemoteDataSource @Inject constructor(
         alpacaService.observeResponse().collect{ data ->
             val listNews = mutableListOf<NewsMessageDto>()
             data.forEach {
-                gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.News)?.let { news ->
+                gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaWS.News)?.let { news ->
                     listNews.add(news)
                 }
             }
@@ -60,11 +60,11 @@ class NewsRemoteDataSource @Inject constructor(
         }
     }.flowOn(dispatchers.IO)
 
-    fun sendSubscribeMessageToAlpacaService(message: MessageAlpacaService) = flow<Resource<SubscriptionMessageDto>> {
+    fun sendSubscribeMessageToAlpacaService(message: MessageAlpacaServiceDto) = flow<Resource<SubscriptionMessageDto>> {
         alpacaService.sendMessage(message = message)
         alpacaService.observeResponse().collect { data ->
             data.forEach {
-                gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaService.Subscription)?.let { sub ->
+                gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaWS.Subscription)?.let { sub ->
                     emit(Resource.Success(sub))
                 } ?: run {
                     emit(Resource.Error(message = "Something went wrong on subscribe"))

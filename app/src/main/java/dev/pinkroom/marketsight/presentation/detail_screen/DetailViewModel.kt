@@ -16,17 +16,17 @@ import dev.pinkroom.marketsight.domain.model.assets.FilterAssetDetailInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.AssetChartInfo
 import dev.pinkroom.marketsight.domain.model.bars_asset.BarAsset
 import dev.pinkroom.marketsight.domain.model.bars_asset.FilterHistoricalBar
-import dev.pinkroom.marketsight.domain.use_case.assets.GetAssetById
-import dev.pinkroom.marketsight.domain.use_case.market.GetBarsAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetLatestBarAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetQuotesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeBarsAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeQuotesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeTradesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetStatusServiceAsset
-import dev.pinkroom.marketsight.domain.use_case.market.GetTradesAsset
-import dev.pinkroom.marketsight.domain.use_case.market.SetSubscribeRealTimeAsset
-import dev.pinkroom.marketsight.domain.use_case.market.SetUnsubscribeRealTimeAsset
+import dev.pinkroom.marketsight.domain.use_case.assets.GetAssetByIdUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetBarsAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetLatestBarAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetQuotesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeBarsAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeQuotesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetRealTimeTradesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetStatusServiceAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.GetTradesAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.SetSubscribeRealTimeAssetUseCase
+import dev.pinkroom.marketsight.domain.use_case.market.SetUnsubscribeRealTimeAssetUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -43,17 +43,17 @@ import kotlin.math.abs
 class DetailViewModel @Inject constructor(
     @SymbolId private val symbolIdArg: String?,
     private val dispatchers: DispatcherProvider,
-    private val getAssetById: GetAssetById,
-    private val getBarsAsset: GetBarsAsset,
-    private val getLatestBarAsset: GetLatestBarAsset,
-    private val getStatusServiceAsset: GetStatusServiceAsset,
-    private val setSubscribeRealTimeAsset: SetSubscribeRealTimeAsset,
-    private val setUnsubscribeRealTimeAsset: SetUnsubscribeRealTimeAsset,
-    private val getRealTimeBarsAsset: GetRealTimeBarsAsset,
-    private val getQuotesAsset: GetQuotesAsset,
-    private val getRealTimeQuotesAsset: GetRealTimeQuotesAsset,
-    private val getTradesAsset: GetTradesAsset,
-    private val getRealTimeTradesAsset: GetRealTimeTradesAsset,
+    private val getAssetByIdUseCase: GetAssetByIdUseCase,
+    private val getBarsAssetUseCase: GetBarsAssetUseCase,
+    private val getLatestBarAssetUseCase: GetLatestBarAssetUseCase,
+    private val getStatusServiceAssetUseCase: GetStatusServiceAssetUseCase,
+    private val setSubscribeRealTimeAssetUseCase: SetSubscribeRealTimeAssetUseCase,
+    private val setUnsubscribeRealTimeAssetUseCase: SetUnsubscribeRealTimeAssetUseCase,
+    private val getRealTimeBarsAssetUseCase: GetRealTimeBarsAssetUseCase,
+    private val getQuotesAssetUseCase: GetQuotesAssetUseCase,
+    private val getRealTimeQuotesAssetUseCase: GetRealTimeQuotesAssetUseCase,
+    private val getTradesAssetUseCase: GetTradesAssetUseCase,
+    private val getRealTimeTradesAssetUseCase: GetRealTimeTradesAssetUseCase,
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(DetailUiState())
@@ -109,7 +109,7 @@ class DetailViewModel @Inject constructor(
 
     private fun getDataAboutAsset() {
         viewModelScope.launch(dispatchers.IO) {
-            when(val response = getAssetById(id = symbolId)) {
+            when(val response = getAssetByIdUseCase(id = symbolId)) {
                 is Resource.Success -> {
                     asset = response.data
                     _uiState.update { it.copy(asset = response.data) }
@@ -130,7 +130,7 @@ class DetailViewModel @Inject constructor(
 
     private fun getLatestValueAsset() {
         viewModelScope.launch(dispatchers.IO) {
-            when(val response = getLatestBarAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())) {
+            when(val response = getLatestBarAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset())) {
                 is Resource.Success -> {
                     errorOnGetAssetValue = false
                     latestValueAsset = response.data.closingPrice
@@ -153,7 +153,7 @@ class DetailViewModel @Inject constructor(
         jobGetHistoricalBars = viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(statusHistoricalBars = it.statusHistoricalBars.copy(isLoading = true, errorMessage = null)) }
             val selectedFilter = uiState.value.selectedFilterHistorical
-            val response = getBarsAsset(
+            val response = getBarsAssetUseCase(
                 symbol = asset.symbol,
                 typeAsset = asset.getTypeAsset(),
                 timeFrame = selectedFilter.timeFrameIntervalValues,
@@ -181,7 +181,7 @@ class DetailViewModel @Inject constructor(
 
     private fun statusWSService() {
         viewModelScope.launch(dispatchers.IO) {
-            getStatusServiceAsset(typeAsset = asset.getTypeAsset())
+            getStatusServiceAssetUseCase(typeAsset = asset.getTypeAsset())
                 .filter { it is WebSocket.Event.OnConnectionOpened<*> }
                 .collect{
                     subscribeRealTimeAsset()
@@ -191,13 +191,13 @@ class DetailViewModel @Inject constructor(
 
     private fun subscribeRealTimeAsset() {
         viewModelScope.launch(dispatchers.IO) {
-            val response = setSubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
+            val response = setSubscribeRealTimeAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
             when(response) {
                 is Resource.Success -> {
                     val data = response.data
                     val symbolsSubscribed = listOf(data.bars, data.quotes, data.trades).flatMap { it.orEmpty() }.distinct()
                     symbolsSubscribed.forEach { symbol ->
-                        if (symbol != asset.symbol) setUnsubscribeRealTimeAsset(symbol = symbol, typeAsset = asset.getTypeAsset())
+                        if (symbol != asset.symbol) setUnsubscribeRealTimeAssetUseCase(symbol = symbol, typeAsset = asset.getTypeAsset())
                     }
                 }
                 is Resource.Error -> _action.send(
@@ -213,7 +213,7 @@ class DetailViewModel @Inject constructor(
 
     private fun observeRealTimeBars() {
         jobGetRealTimeBars = viewModelScope.launch(dispatchers.IO) {
-            getRealTimeBarsAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
+            getRealTimeBarsAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
                 updateAssetChartInfo(data = uiState.value.assetCharInfo.barsInfo + response)
                 latestValueAsset = response.last().closingPrice
                 if (!isUserPressing) updateCurrentPriceToShow(
@@ -253,7 +253,7 @@ class DetailViewModel @Inject constructor(
 
     private fun getQuotesAssetInfo() {
         jobGetQuotes = viewModelScope.launch(dispatchers.IO) {
-            val response = getQuotesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
+            val response = getQuotesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
             when(response) {
                 is Resource.Success -> {
                     _uiState.update {
@@ -274,7 +274,7 @@ class DetailViewModel @Inject constructor(
 
     private fun observeRealTimeQuotes() {
         jobGetRealTimeQuotes = viewModelScope.launch(dispatchers.IO) {
-            getRealTimeQuotesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
+            getRealTimeQuotesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
                 if (!uiState.value.statusQuotes.isLoading) {
                     val newQuotesList = (response + uiState.value.latestQuotes).take(DEFAULT_LIMIT_QUOTES_ASSET)
                     _uiState.update { it.copy(latestQuotes = newQuotesList) }
@@ -285,7 +285,7 @@ class DetailViewModel @Inject constructor(
 
     private fun getTradesAssetInfo() {
         jobGetTrades = viewModelScope.launch(dispatchers.IO) {
-            val response = getTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
+            val response = getTradesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
             when(response) {
                 is Resource.Success -> {
                     _uiState.update {
@@ -306,7 +306,7 @@ class DetailViewModel @Inject constructor(
 
     private fun observeRealTimeTrades() {
         jobGetRealTimeTrades = viewModelScope.launch(dispatchers.IO) {
-            getRealTimeTradesAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
+            getRealTimeTradesAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset()).collect { response ->
                 if (!uiState.value.statusTrades.isLoading) {
                     val newTradesList = (response + uiState.value.latestTrades).take(DEFAULT_LIMIT_TRADES_ASSET)
                     _uiState.update { it.copy(latestTrades = newTradesList) }
@@ -373,7 +373,7 @@ class DetailViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         CoroutineScope(dispatchers.IO).launch {
-            if (::asset.isInitialized) setUnsubscribeRealTimeAsset(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
+            if (::asset.isInitialized) setUnsubscribeRealTimeAssetUseCase(symbol = asset.symbol, typeAsset = asset.getTypeAsset())
         }
     }
 }

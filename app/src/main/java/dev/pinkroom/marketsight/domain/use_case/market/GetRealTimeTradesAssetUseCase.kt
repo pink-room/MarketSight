@@ -6,13 +6,15 @@ import dev.pinkroom.marketsight.domain.repository.AssetsRepository
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class GetStatusServiceAsset @Inject constructor(
+class GetRealTimeTradesAssetUseCase @Inject constructor(
     private val assetsRepository: AssetsRepository,
-    private val dispatcher: DispatcherProvider,
+    private val dispatchers: DispatcherProvider,
 ) {
     operator fun invoke(
+        symbol: String,
         typeAsset: TypeAsset,
-    ) = assetsRepository.statusService(
+    ) = assetsRepository.getRealTimeTrades(
+        symbol = symbol,
         typeAsset = typeAsset,
-    ).flowOn(dispatcher.IO)
+    ).flowOn(dispatchers.IO)
 }
