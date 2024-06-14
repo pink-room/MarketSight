@@ -30,7 +30,9 @@ class ChangeFilterRealTimeNewsUseCase @Inject constructor(
         subscribeSymbols?.let { symbols ->
             val response = newsRepository.changeFilterRealTimeNews(symbols = symbols, actionAlpaca = ActionAlpaca.Subscribe)
             when(response){
-                is Resource.Success -> emit(Resource.Success(data = response.data))
+                is Resource.Success -> {
+                    emit(Resource.Success(data = response.data))
+                }
                 is Resource.Error -> {
                     symbolsToRevert.addAll(subscribeSymbols)
                 }

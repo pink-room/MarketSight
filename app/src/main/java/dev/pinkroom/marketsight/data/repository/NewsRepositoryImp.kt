@@ -2,7 +2,9 @@ package dev.pinkroom.marketsight.data.repository
 
 import dev.pinkroom.marketsight.common.ActionAlpaca
 import dev.pinkroom.marketsight.common.Constants.DEFAULT_PAGINATION_TOKEN_REQUEST_NEWS
+import dev.pinkroom.marketsight.common.Constants.DELAY_BETWEEN_CALLS_SUBSCRIBE_NEWS
 import dev.pinkroom.marketsight.common.Constants.LIMIT_NEWS
+import dev.pinkroom.marketsight.common.Constants.RETRY_COUNT_SUBSCRIBE_NEWS
 import dev.pinkroom.marketsight.common.DispatcherProvider
 import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
@@ -14,9 +16,9 @@ import dev.pinkroom.marketsight.data.mapper.toNewsMap
 import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
 import dev.pinkroom.marketsight.domain.model.news.NewsResponse
 import dev.pinkroom.marketsight.domain.repository.NewsRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.last
 import java.sql.SQLException
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -36,17 +38,22 @@ class NewsRepositoryImp @Inject constructor(
     override suspend fun changeFilterRealTimeNews(
         symbols: List<String>,
         actionAlpaca: ActionAlpaca,
-    ): Resource<List<String>> = flow {
+    ): Resource<List<String>> {
         val message = MessageAlpacaServiceDto(action = actionAlpaca.action, news = symbols)
-        newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = message).collect{ response ->
-            when(response){
-                is Resource.Error -> {
-                    emit(Resource.Error(data = symbols))
-                }
-                is Resource.Success -> emit(Resource.Success(data = response.data.news ?: symbols))
+        val response = newsRemoteDataSource.sendSubscribeMessageToAlpacaService(
+            message = message,
+            retryCount = RETRY_COUNT_SUBSCRIBE_NEWS,
+            delayTimeInMillisBetweenRequest = DELAY_BETWEEN_CALLS_SUBSCRIBE_NEWS,
+        ).first()
+        return when(response){
+            is Resource.Error -> {
+                Resource.Error(data = symbols)
+            }
+            is Resource.Success -> {
+                Resource.Success(data = response.data.news ?: symbols)
             }
         }
-    }.flowOn(dispatchers.IO).last()
+    }
 
     override suspend fun getNews(
         cleanCache: Boolean,

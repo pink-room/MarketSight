@@ -283,7 +283,7 @@ class NewsRepositoryImpTest{
         val response = newsRepository.changeFilterRealTimeNews(symbols = messageToSend.news!!, actionAlpaca = ActionAlpaca.Subscribe)
 
         // THEN
-        verify { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = messageToSend) }
+        verify { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = messageToSend, retryCount = any(), delayTimeInMillisBetweenRequest = any()) }
         assertThat(response is Resource.Success).isTrue()
         val data = response as Resource.Success
         assertThat(data.data).isEqualTo(messageToSend.news)
@@ -299,7 +299,7 @@ class NewsRepositoryImpTest{
         val response = newsRepository.changeFilterRealTimeNews(symbols = messageToSend.news!!, actionAlpaca = ActionAlpaca.Subscribe)
 
         // THEN
-        verify { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = messageToSend) }
+        verify { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(message = messageToSend, retryCount = any(), delayTimeInMillisBetweenRequest = any()) }
         assertThat(response is Resource.Error).isTrue()
         val data = response as Resource.Error
         assertThat(data.data).isEqualTo(messageToSend.news)
@@ -460,7 +460,11 @@ class NewsRepositoryImpTest{
             trades = messageAlpacaServiceDto.trades,
         )
 
-        every { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(any()) } returns(
+        every { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(
+            message = any(),
+            delayTimeInMillisBetweenRequest = any(),
+            retryCount = any()
+        ) } returns(
             flow {
                 emit(Resource.Success(data = returnedMessageService))
             }
@@ -468,7 +472,9 @@ class NewsRepositoryImpTest{
     }
 
     private fun mockMessageSubscriptionServiceWithError() {
-        every { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(any()) } returns(
+        every { newsRemoteDataSource.sendSubscribeMessageToAlpacaService(
+            message = any(), delayTimeInMillisBetweenRequest = any(), retryCount = any()
+        ) } returns(
             flow {
                 emit(Resource.Error())
             }

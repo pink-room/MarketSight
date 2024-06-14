@@ -30,6 +30,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -90,6 +91,7 @@ class NewsViewModel @Inject constructor(
     )
 
     private var initNewsJob: Job? = null
+    private var jobUpdateFilterRealTimeNews: Job? = null
     private var connectionStatus = Unavailable
     private var previousFilters: NewsFilters = uiState.value.filters
 
@@ -275,12 +277,15 @@ class NewsViewModel @Inject constructor(
     }
 
     private fun updateFiltersRealTimeNews(newFilters: NewsFilters) {
-        viewModelScope.launch(dispatchers.IO) {
+        jobUpdateFilterRealTimeNews?.cancel()
+        jobUpdateFilterRealTimeNews = viewModelScope.launch(dispatchers.IO) {
             _uiState.update { it.copy(realTimeNews = emptyList()) }
+            if (connectionStatus != Available) return@launch
+
             changeFilterRealTimeNewsUseCase(
                 subscribeSymbols = newFilters.symbols.filter { it.isSubscribed }.map { it.symbol },
                 unsubscribeSymbols = newFilters.symbols.filter { !it.isSubscribed }.map { it.symbol }
-            ).collect{ response ->
+            ).collectLatest { response ->
                 when(response){
                     is Resource.Success -> Unit
                     is Resource.Error -> {

@@ -23,4 +23,8 @@ object Constants {
     const val NEWS_ENTITY_NAME = "NewsEntity"
     const val SYMBOL_COLUMN_NAME_NEWS_ENTITY = "symbols"
     const val UPDATE_AT_COLUMN_NAME_NEWS_ENTITY = "updatedAt"
+
+    // WS
+    const val RETRY_COUNT_SUBSCRIBE_NEWS = 5
+    const val DELAY_BETWEEN_CALLS_SUBSCRIBE_NEWS = 4000L
 }

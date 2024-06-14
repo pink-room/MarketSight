@@ -10,12 +10,13 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.common.formatToStandardIso
 import dev.pinkroom.marketsight.common.toObject
+import dev.pinkroom.marketsight.common.verifyIfIsError
 import dev.pinkroom.marketsight.data.remote.AlpacaNewsApi
 import dev.pinkroom.marketsight.data.remote.AlpacaService
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_api.NewsResponseDto
 import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.NewsMessageDto
-import dev.pinkroom.marketsight.data.remote.model.dto.alpaca_news_service.SubscriptionMessageDto
 import dev.pinkroom.marketsight.data.remote.model.dto.request.MessageAlpacaServiceDto
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -60,18 +61,35 @@ class NewsRemoteDataSource @Inject constructor(
         }
     }.flowOn(dispatchers.IO)
 
-    fun sendSubscribeMessageToAlpacaService(message: MessageAlpacaServiceDto) = flow<Resource<SubscriptionMessageDto>> {
+    fun sendSubscribeMessageToAlpacaService(
+        message: MessageAlpacaServiceDto,
+        retryCount: Int = 0,
+        delayTimeInMillisBetweenRequest: Long = 0L,
+    ) = flow {
+        var count = 0
         alpacaService.sendMessage(message = message)
         alpacaService.observeResponse().collect { data ->
             data.forEach {
                 gson.toObject(value = it, helperIdentifier = HelperIdentifierMessagesAlpacaWS.Subscription)?.let { sub ->
                     emit(Resource.Success(sub))
+                    return@collect
                 } ?: run {
-                    emit(Resource.Error(message = "Something went wrong on subscribe"))
+                    if (gson.verifyIfIsError(it) != null) {
+                        if (count == retryCount) {
+                            emit(Resource.Error(message = "Something went wrong on subscribe"))
+                            return@collect
+                        } else {
+                            count++
+                            delay(delayTimeInMillisBetweenRequest)
+                            alpacaService.sendMessage(message = message)
+                        }
+                    } else {
+                        alpacaService.sendMessage(message = message)
+                    }
                 }
             }
         }
-    }.flowOn(dispatchers.IO).take(1)
+    }.flowOn(dispatchers.IO)
 
     suspend fun getNews(
         symbols: List<String>? = null,

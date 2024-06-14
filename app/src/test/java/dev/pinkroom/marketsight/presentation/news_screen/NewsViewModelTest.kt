@@ -58,11 +58,22 @@ class NewsViewModelTest{
     private val connectivityObserver = mockk<ConnectivityObserver>(relaxed = true, relaxUnitFun = true)
     private lateinit var newsViewModel: NewsViewModel
 
-    private fun initViewModel(mockGetNews: Boolean = false) {
+    private fun initViewModel(mockGetNews: Boolean = false, mockNetwork: Boolean = false) {
         if (mockGetNews){
             val news = NewsDtoFactory().buildList(number = LIMIT_NEWS).map { it.toNewsInfo() }
             mockResponseGetNewsSuccess(news)
         }
+
+        if (mockNetwork) {
+            coEvery {
+                connectivityObserver.observe()
+            }.returns(
+                flow {
+                    emit(ConnectivityObserver.Status.Available)
+                }
+            )
+        }
+
         newsViewModel = NewsViewModel(
             getNewsUseCase = getNewsUseCase,
             getRealTimeNewsUseCase = getRealTimeNewsUseCase,
@@ -256,7 +267,7 @@ class NewsViewModelTest{
     @Test
     fun `When RetryRealTimeNewsSubscribe event is called, then send request to service`() = runTest {
         // GIVEN
-        initViewModel(mockGetNews = true)
+        initViewModel(mockGetNews = true, mockNetwork = true)
         val filters = newsViewModel.uiState.value.filters
 
         // WHEN
@@ -276,7 +287,7 @@ class NewsViewModelTest{
     @Test
     fun `When RetryRealTimeNewsSubscribe event is called, then receive Error from service and send Action to show SnackBar`() = runTest {
         // GIVEN
-        initViewModel(mockGetNews = true)
+        initViewModel(mockGetNews = true, mockNetwork = true)
         val filters = newsViewModel.uiState.value.filters
         mockChangeFilterRealTimeNewsError()
 
@@ -592,7 +603,7 @@ class NewsViewModelTest{
     @Test
     fun `When ApplyFilters event is called, Then update news with new filters`() = runTest {
         // GIVEN
-        initViewModel(mockGetNews = true)
+        initViewModel(mockGetNews = true, mockNetwork = true)
         val dateInMillis = 1714399712434L
 
         // WHEN
