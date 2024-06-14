@@ -4,11 +4,11 @@ import dev.pinkroom.marketsight.common.Resource
 
 class DefaultPagination<Key, T>(
     private val initialKey: Key?,
-    private inline val onLoadUpdated: (Boolean) -> Unit,
-    private inline val onRequest: suspend (nextPageToken: Key?, nextPageNumber: Int) -> Resource<T>,
-    private inline val getNextKey: suspend (T) -> Key?,
-    private inline val onError: suspend (message: String?) -> Unit,
-    private inline val onSuccess: suspend (data: T, newKey: Key?) -> Unit
+    private val onLoadUpdated: (Boolean) -> Unit,
+    private val onRequest: suspend (nextPageToken: Key?, nextPageNumber: Int) -> Resource<T>,
+    private val getNextKey: suspend (T) -> Key?,
+    private val onError: suspend (message: String?) -> Unit,
+    private val onSuccess: suspend (data: T, newKey: Key?) -> Unit
 ): Pagination<Key, T> {
 
     private var currentKey = initialKey

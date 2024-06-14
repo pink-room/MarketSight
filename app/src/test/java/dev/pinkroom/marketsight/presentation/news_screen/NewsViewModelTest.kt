@@ -51,13 +51,18 @@ class NewsViewModelTest{
     val coroutineRule = MainCoroutineRule()
 
     private val dispatchers = TestDispatcherProvider()
+    private val newsFactory = NewsDtoFactory()
     private val getNews = mockk<GetNews>(relaxed = true, relaxUnitFun = true)
     private val getRealTimeNews = mockk<GetRealTimeNews>(relaxed = true, relaxUnitFun = true)
     private val changeFilterRealTimeNews = mockk<ChangeFilterRealTimeNews>(relaxed = true, relaxUnitFun = true)
     private val connectivityObserver = mockk<ConnectivityObserver>(relaxed = true, relaxUnitFun = true)
     private lateinit var newsViewModel: NewsViewModel
 
-    private fun initViewModel() {
+    private fun initViewModel(mockGetNews: Boolean = false) {
+        if (mockGetNews){
+            val news = NewsDtoFactory().buildList(number = LIMIT_NEWS).map { it.toNewsInfo() }
+            mockResponseGetNewsSuccess(news)
+        }
         newsViewModel = NewsViewModel(
             getNews = getNews,
             getRealTimeNews = getRealTimeNews,
@@ -70,7 +75,7 @@ class NewsViewModelTest{
     @Test
     fun `Given access to Net, When init VM, Then Success on Get News and RealTime News`() = runTest {
         // GIVEN
-        val news = NewsDtoFactory().buildList(number = LIMIT_NEWS).map { it.toNewsInfo() }
+        val news = newsFactory.buildList(number = LIMIT_NEWS).map { it.toNewsInfo() }
         mockResponseGetNewsSuccess(news)
         mockGetRealTimeNews(news)
 
@@ -88,6 +93,9 @@ class NewsViewModelTest{
                 symbols = filters.getSubscribedSymbols(),
                 startDate = filters.startDateSort?.atStartOfDay(),
                 endDate = filters.endDateSort?.atEndOfTheDay(),
+                offset = 0,
+                fetchFromRemote = true,
+                cleanCache = true,
             )
         }
         assertThat(uiState.news).isNotEmpty()
@@ -116,14 +124,45 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                offset = any(), fetchFromRemote = any(), cleanCache = any(),
             )
         }
         assertThat(uiState.news).isEmpty()
         assertThat(uiState.mainNews).isEmpty()
         assertThat(uiState.isLoading).isFalse()
-        assertThat(uiState.mainNews).isEmpty()
-        assertThat(uiState.news).isEmpty()
         assertThat(uiState.errorMessage).isNotNull()
+    }
+
+    @Test
+    fun `Start Without Net, When init VM, Then Error on Get News and show cached news`() = runTest {
+        // GIVEN
+        val news = newsFactory.buildList(number = LIMIT_NEWS).map { it.toNewsInfo() }
+        val data = NewsResponse(news = news, nextPageToken = "ASSAAS")
+        mockResponseGetNewsError(data = data)
+
+        // WHEN
+        initViewModel()
+        advanceUntilIdle()
+
+        // THEN
+        val uiState = newsViewModel.uiState.value
+
+        coVerify {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                offset = any(), fetchFromRemote = any(), cleanCache = any(),
+            )
+        }
+        assertThat(uiState.news).isNotEmpty()
+        assertThat(uiState.mainNews).isNotEmpty()
+        assertThat(uiState.isLoading).isFalse()
+        assertThat(uiState.mainNews).isEqualTo(news.take(MAX_ITEMS_CAROUSEL))
+        assertThat(uiState.news).isEqualTo(news.drop(MAX_ITEMS_CAROUSEL))
+        assertThat(uiState.errorMessage).isNotNull()
+
+        val action = newsViewModel.action.first()
+        assertThat(action).isInstanceOf(NewsAction.ShowSnackBar::class.java)
     }
 
     @Test
@@ -145,11 +184,18 @@ class NewsViewModelTest{
             assertThat(item.news).isEmpty()
             assertThat(item.errorMessage).isNotNull()
         }
+        newsViewModel.action.test {
+            assertThat(awaitItem()).isInstanceOf(NewsAction.CloseSnackBar::class.java)
+        }
         advanceUntilIdle()
         val uiState = newsViewModel.uiState.value
 
         coVerify(exactly = 2) {
-            getNews.invoke()
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                offset = any(), fetchFromRemote = any(), cleanCache = any(),
+            )
         }
         assertThat(uiState.news).isNotEmpty()
         assertThat(uiState.mainNews).isNotEmpty()
@@ -176,6 +222,7 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                cleanCache = true, fetchFromRemote = true, offset = 0,
             )
         }
         assertThat(uiState.news).isNotEmpty()
@@ -188,7 +235,7 @@ class NewsViewModelTest{
     @Test
     fun `When request for news is running, Then if the call is made again it is ignored`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
 
         // WHEN
         newsViewModel.onEvent(event = NewsEvent.RetryNews)
@@ -201,6 +248,7 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                cleanCache = any(), fetchFromRemote = any(), offset = any(),
             )
         }
     }
@@ -208,7 +256,7 @@ class NewsViewModelTest{
     @Test
     fun `When RetryRealTimeNewsSubscribe event is called, then send request to service`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val filters = newsViewModel.uiState.value.filters
 
         // WHEN
@@ -228,7 +276,7 @@ class NewsViewModelTest{
     @Test
     fun `When RetryRealTimeNewsSubscribe event is called, then receive Error from service and send Action to show SnackBar`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val filters = newsViewModel.uiState.value.filters
         mockChangeFilterRealTimeNewsError()
 
@@ -251,7 +299,7 @@ class NewsViewModelTest{
     @Test
     fun `When RefreshNews event is called, then call init news`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         advanceUntilIdle()
 
         // WHEN
@@ -267,6 +315,7 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                offset = 0, fetchFromRemote = true, cleanCache = true,
             )
         }
     }
@@ -287,10 +336,84 @@ class NewsViewModelTest{
         // THEN
         val uiState = newsViewModel.uiState.value
 
-        coVerify(exactly = 2) {
+        coVerify {
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                offset = 0, cleanCache = true, fetchFromRemote = true
+            )
+        }
+        coVerify {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                offset = LIMIT_NEWS, cleanCache = false, fetchFromRemote = true
+            )
+        }
+        assertThat(uiState.news.size).isGreaterThan(news.size)
+    }
+
+    @Test
+    fun `When LoadMoreNews event is called to fetch from remote, then get news error`() = runTest {
+        // GIVEN
+        val news = NewsDtoFactory().buildList(number = LIMIT_NEWS).map { it.toNewsInfo() }
+        val nextToken = "RandomStringToken"
+        mockResponseGetNewsLoadMoreError(news = news, nextPageToken = nextToken)
+        initViewModel()
+        advanceUntilIdle()
+
+        // WHEN
+        newsViewModel.onEvent(event = NewsEvent.LoadMoreNews)
+        advanceUntilIdle()
+
+        // THEN
+        val action = newsViewModel.action.first()
+
+        coVerify {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                offset = 0, cleanCache = true, fetchFromRemote = true
+            )
+        }
+        coVerify {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                offset = LIMIT_NEWS, cleanCache = false, fetchFromRemote = true
+            )
+        }
+        assertThat(action is NewsAction.ShowSnackBar).isTrue()
+    }
+
+    @Test
+    fun `When LoadMoreNews event is called after read cached news, then get news`() = runTest {
+        // GIVEN
+        val news = NewsDtoFactory().buildList(number = LIMIT_NEWS).map { it.toNewsInfo() }
+        val nextToken = "RandomStringToken"
+        mockResponseGetCachedNewsSuccess(news = news, nextPageToken = nextToken)
+        initViewModel()
+        advanceUntilIdle()
+
+        // WHEN
+        newsViewModel.onEvent(event = NewsEvent.LoadMoreNews)
+        advanceUntilIdle()
+
+        // THEN
+        val uiState = newsViewModel.uiState.value
+
+        coVerify {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                offset = 0, cleanCache = true, fetchFromRemote = true
+            )
+        }
+        coVerify {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                offset = LIMIT_NEWS, cleanCache = false, fetchFromRemote = false
             )
         }
         assertThat(uiState.news.size).isGreaterThan(news.size)
@@ -315,6 +438,7 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                fetchFromRemote = any(), cleanCache = any(), offset = any(),
             )
         }
     }
@@ -335,6 +459,7 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                offset = any(), cleanCache = any(), fetchFromRemote = any(),
             )
         }
     }
@@ -342,7 +467,7 @@ class NewsViewModelTest{
     @Test
     fun `When ShowOrHideFilters event is called, Then change isToShowFilters`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         advanceUntilIdle()
         val isToShow = true
 
@@ -362,7 +487,7 @@ class NewsViewModelTest{
         val isToShow = true
 
         // WHEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         newsViewModel.onEvent(event = NewsEvent.ShowOrHideFilters(isToShow = isToShow))
         advanceUntilIdle()
 
@@ -374,7 +499,7 @@ class NewsViewModelTest{
     @Test
     fun `When ChangeSort event is called, Then update filters in uiState`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val newSort = SortType.ASC
 
         // WHEN
@@ -389,7 +514,7 @@ class NewsViewModelTest{
     @Test
     fun `When ChangeSymbol event is called, Then update filters in uiState`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val allSymbols = newsViewModel.uiState.value.filters.symbols
         val newSymbolToChange = allSymbols.last()
 
@@ -408,7 +533,7 @@ class NewsViewModelTest{
     @Test
     fun `When ChangeSymbol event is called to unsubscribe last subscribed symbol, Then all symbol is subscribed`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         newsViewModel.onEvent(event = NewsEvent.ChangeSymbol(symbolToChange = newsViewModel.uiState.value.filters.symbols.last())) // SUBSCRIBE LAST
         advanceUntilIdle()
 
@@ -427,7 +552,7 @@ class NewsViewModelTest{
     @Test
     fun `When ChangeSymbol event is called to subscribe ALL, Then all symbol is subscribed and other items are unsubscribed`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val symbolToChange = newsViewModel.uiState.value.filters.symbols.size - 1
         newsViewModel.onEvent(event = NewsEvent.ChangeSymbol(symbolToChange = newsViewModel.uiState.value.filters.symbols.elementAt(symbolToChange)))
         newsViewModel.onEvent(event = NewsEvent.ChangeSymbol(symbolToChange = newsViewModel.uiState.value.filters.symbols.last()))
@@ -449,7 +574,7 @@ class NewsViewModelTest{
     @Test
     fun `When ChangeDate event is called, Then update date`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val dateInMillis = 1714399712434L
 
         // WHEN
@@ -467,7 +592,7 @@ class NewsViewModelTest{
     @Test
     fun `When ApplyFilters event is called, Then update news with new filters`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val dateInMillis = 1714399712434L
 
         // WHEN
@@ -479,11 +604,20 @@ class NewsViewModelTest{
 
         // THEN
         val expectedDate = Instant.ofEpochMilli(dateInMillis).atZone(ZoneOffset.UTC).toLocalDate()
-        coVerify(exactly = 2) {
+        coVerify(exactly = 1) {
             getNews.invoke(
                 startDate = expectedDate.atStartOfDay(),
                 symbols = listOf(newsViewModel.uiState.value.filters.symbols.last().symbol),
-                pageToken = any(), endDate = any(), sortType = any()
+                pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = true, offset = any(),
+            )
+        }
+        coVerify(exactly = 1) {
+            getNews.invoke(
+                startDate = expectedDate.atStartOfDay(),
+                symbols = listOf(newsViewModel.uiState.value.filters.symbols.last().symbol),
+                pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = false, offset = any(),
             )
         }
         verify {
@@ -497,7 +631,7 @@ class NewsViewModelTest{
     @Test
     fun `When ApplyFilters event is called and filters are the same, Then just ignore`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
 
         // WHEN
         newsViewModel.onEvent(event = NewsEvent.ApplyFilters)
@@ -505,7 +639,10 @@ class NewsViewModelTest{
 
         // THEN
         coVerify(exactly = 1) { // 1 is because GetNews is called in INIT
-            getNews.invoke()
+            getNews.invoke(
+                startDate = any(), symbols = any(), pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = any(), offset = any(),
+            )
         }
         verify(exactly = 0) {
             changeFilterRealTimeNews.invoke()
@@ -515,7 +652,7 @@ class NewsViewModelTest{
     @Test
     fun `When ApplyFilters event is called and filters don't change in symbols, Then real time changeFilterRealTimeNews is not called`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val dateInMillis = 1714399712434L
 
         // WHEN
@@ -524,9 +661,18 @@ class NewsViewModelTest{
         advanceUntilIdle()
 
         // THEN
-        coVerify(exactly = 2) {
+        coVerify(exactly = 1) {
             getNews.invoke(
-                startDate = any()
+                startDate = any(), symbols = any(),
+                pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = true, offset = any(),
+            )
+        }
+        coVerify(exactly = 1) {
+            getNews.invoke(
+                startDate = any(), symbols = any(),
+                pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = false, offset = any(),
             )
         }
         verify(exactly = 0) {
@@ -537,7 +683,7 @@ class NewsViewModelTest{
     @Test
     fun `When ClearAllFilters event is called, Then update news related to base filters`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val dateInMillis = 1714399712434L
 
         // WHEN
@@ -550,9 +696,18 @@ class NewsViewModelTest{
         val uiState = newsViewModel.uiState.value
         assertThat(uiState.isToShowFilters).isFalse()
         assertThat(uiState.filters).isEqualTo(NewsFilters())
-        coVerify(exactly = 3) {
+        coVerify(exactly = 2) {
             getNews.invoke(
-                startDate = any()
+                startDate = any(), symbols = any(),
+                pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = false, offset = any(),
+            )
+        }
+        coVerify(exactly = 1) {
+            getNews.invoke(
+                startDate = any(), symbols = any(),
+                pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = true, offset = any(),
             )
         }
     }
@@ -560,7 +715,7 @@ class NewsViewModelTest{
     @Test
     fun `When ClearAllFilters event is called but the filters applied are the base filters, Then just close the bottom sheet`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val dateInMillis = 1714399712434L
 
         // WHEN
@@ -573,14 +728,18 @@ class NewsViewModelTest{
         assertThat(uiState.isToShowFilters).isFalse()
         assertThat(uiState.filters).isEqualTo(NewsFilters())
         coVerify(exactly = 1) {
-            getNews.invoke()
+            getNews.invoke(
+                startDate = any(), symbols = any(),
+                pageToken = any(), endDate = any(), sortType = any(),
+                limitPerPage = any(), fetchFromRemote = any(), cleanCache = any(), offset = any(),
+            )
         }
     }
 
     @Test
     fun `When RevertFilters event is called, Then just revert filters to last filters`() = runTest {
         // GIVEN
-        initViewModel()
+        initViewModel(mockGetNews = true)
         val dateInMillis = 1714399712434L
 
         // WHEN
@@ -620,6 +779,7 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                cleanCache = any(), fetchFromRemote = any(), offset = any(),
             )
         }.coAnswers {
             delay(1000)
@@ -627,14 +787,48 @@ class NewsViewModelTest{
         }
     }
 
-    private fun mockResponseGetNewsError() {
+    private fun mockResponseGetNewsLoadMoreError(
+        news: List<NewsInfo>,
+        nextPageToken: String? = null,
+    ) {
         coEvery {
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                cleanCache = any(), fetchFromRemote = any(), offset = any(),
+            )
+        }.returnsMany(
+            Resource.Success(data = NewsResponse(news = news, nextPageToken = nextPageToken)),
+            Resource.Error(message = "Error on Load More")
+        )
+    }
+
+    private fun mockResponseGetCachedNewsSuccess(
+        news: List<NewsInfo>,
+        nextPageToken: String? = null,
+    ) {
+        coEvery {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                cleanCache = any(), fetchFromRemote = any(), offset = any(),
+            )
+        }.returnsMany(
+            Resource.Error(data = NewsResponse(news = news, nextPageToken = nextPageToken)),
+            Resource.Success(data = NewsResponse(news = news, nextPageToken = nextPageToken))
+        )
+    }
+
+    private fun mockResponseGetNewsError(data: NewsResponse? = null) {
+        coEvery {
+            getNews.invoke(
+                pageToken = any(), limitPerPage = any(), sortType = any(),
+                symbols = any(), startDate = any(), endDate = any(),
+                cleanCache = any(), fetchFromRemote = any(), offset = any(),
             )
         }.returns(
-            Resource.Error(message = "Error on GetNews")
+            if (data == null) Resource.Error(message = "Error on GetNews")
+            else Resource.Error(data = data, message = "Load from Cache")
         )
     }
 
@@ -645,6 +839,7 @@ class NewsViewModelTest{
             getNews.invoke(
                 pageToken = any(), limitPerPage = any(), sortType = any(),
                 symbols = any(), startDate = any(), endDate = any(),
+                offset = any(), fetchFromRemote = any(), cleanCache = any(),
             )
         }.returnsMany(
             Resource.Error(message = "Error on GetNews"),

@@ -3,6 +3,8 @@ package dev.pinkroom.marketsight.data.repository
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.github.javafaker.Faker
 import dev.pinkroom.marketsight.common.ActionAlpaca
@@ -10,6 +12,7 @@ import dev.pinkroom.marketsight.common.Resource
 import dev.pinkroom.marketsight.common.SortType
 import dev.pinkroom.marketsight.data.data_source.NewsLocalDataSource
 import dev.pinkroom.marketsight.data.data_source.NewsRemoteDataSource
+import dev.pinkroom.marketsight.data.local.entity.NewsEntity
 import dev.pinkroom.marketsight.data.mapper.toImageEntity
 import dev.pinkroom.marketsight.data.mapper.toNewsEntity
 import dev.pinkroom.marketsight.data.mapper.toNewsInfo
@@ -32,6 +35,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
+import java.sql.SQLException
 
 @ExperimentalCoroutinesApi
 class NewsRepositoryImpTest{
@@ -96,6 +100,18 @@ class NewsRepositoryImpTest{
                 sort = sort,
             )
         }
+        coVerify {
+            newsLocalDataSource.cacheNews(
+                limit = limit,
+                offset = 0,
+                startDate = null,
+                endDate = null,
+                symbols = symbols,
+                data = any(),
+                isAsc = false,
+                clearCurrentCache = true
+            )
+        }
         assertThat(response is Resource.Success).isTrue()
         val data = response as Resource.Success
         assertThat(data.data.news.size).isEqualTo(limit)
@@ -137,6 +153,124 @@ class NewsRepositoryImpTest{
             )
         }
         assertThat(response is Resource.Error).isTrue()
+        assertThat((response as Resource.Error).data).isNotNull()
+    }
+
+    @Test
+    fun `When cached news is empty, then nextPageToken is null`() = runTest {
+        // GIVEN
+        mockGetNewsLocalDataSource(news = emptyList())
+
+        // WHEN
+        val response = newsRepository.getNews(
+            symbols = null,
+            limit = 20,
+            pageToken = null,
+            sort = null,
+            fetchFromRemote = false,
+            offset = 0,
+            cleanCache = false,
+        )
+
+        // THEN
+        coVerify(exactly = 0) {
+            newsRemoteDataSource.getNews(
+                symbols = any(),
+                pageToken = any(),
+                sort = any(),
+                limit = any(),
+            )
+        }
+        coVerify {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+            )
+        }
+        assertThat(response is Resource.Success).isTrue()
+        assertThat((response as Resource.Success).data.nextPageToken).isNull()
+    }
+
+    @Test
+    fun `When cached news throw error, then data is null`() = runTest {
+        // GIVEN
+        mockGetNewsErrorLocalDataSource()
+
+        // WHEN
+        val response = newsRepository.getNews(
+            symbols = null,
+            limit = 20,
+            pageToken = null,
+            sort = null,
+            fetchFromRemote = false,
+            offset = 0,
+            cleanCache = false,
+        )
+
+        // THEN
+        coVerify(exactly = 0) {
+            newsRemoteDataSource.getNews(
+                symbols = any(),
+                pageToken = any(),
+                sort = any(),
+                limit = any(),
+            )
+        }
+        coVerify {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+            )
+        }
+        assertThat(response is Resource.Error).isTrue()
+        assertThat((response as Resource.Error).data).isNull()
+    }
+
+    @Test
+    fun `Given params, then roomDb throw error on call getNews`() = runTest {
+        // GIVEN
+        mockGetNewsLocalSourceWithSqlError()
+
+        // WHEN
+        val response = newsRepository.getNews(
+            symbols = null,
+            limit = null,
+            pageToken = null,
+            sort = null,
+            fetchFromRemote = false,
+            offset = 0,
+            cleanCache = false,
+        )
+
+        // THEN
+        coVerify(exactly = 0) {
+            newsRemoteDataSource.getNews(
+                symbols = any(),
+                pageToken = any(),
+                sort = any(),
+                limit = any(),
+            )
+        }
+        coVerify {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+            )
+        }
+        assertThat(response is Resource.Error).isTrue()
+        assertThat((response as Resource.Error).data).isNull()
     }
 
     @Test
@@ -212,6 +346,36 @@ class NewsRepositoryImpTest{
         )
     }
 
+    private fun mockGetNewsLocalDataSource(news: List<NewsEntity>) {
+        coEvery {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+            )
+        }.returns(
+            news
+        )
+    }
+
+    private fun mockGetNewsErrorLocalDataSource() {
+        coEvery {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+            )
+        }.throws(
+            Exception("Test Error")
+        )
+    }
+
     private fun mockNewsResponseApiWithError(limit: Int, isCacheEmpty: Boolean) {
         coEvery {
             newsRemoteDataSource.getNews(
@@ -262,6 +426,21 @@ class NewsRepositoryImpTest{
             )
         }.returns(
             news.map { it.toNewsEntity() }
+        )
+    }
+
+    private fun mockGetNewsLocalSourceWithSqlError() {
+        coEvery {
+            newsLocalDataSource.getNews(
+                symbols = any(),
+                isAsc = any(),
+                limit = any(),
+                offset = any(),
+                endDate = any(),
+                startDate = any(),
+            )
+        }.throws(
+            SQLException("Test Error SQL")
         )
     }
 
